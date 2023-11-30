@@ -21,7 +21,7 @@ import { shallow } from "zustand/shallow";
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 import ObjectNode from "./ObjectNode";
 import VariableNode from "./VariableNode";
-import { useCallback, useState, DragEvent, useRef } from "react";
+import { useCallback, useState, DragEvent, useRef, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import { Attribute, Obj, Variable, numericDataTypes } from "./memory";
 import { isConnectedToVariable } from "./utils";
@@ -178,28 +178,6 @@ export const MemoryView = () => {
 
   const onSaveURL = () => {
     updateMemory({ ...memory, ...getMemory(edges, nodes) });
-  };
-
-  const onSaveShortlink = () => {
-    const json = { ...memory, ...getMemory(edges, nodes) };
-    fetch(`https://json.openpatch.org/api/v2/post`, {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(json),
-    })
-      .then((r) => r.json())
-      .then((json) => {
-        prompt(
-          "Upload finished. You state is saved at the following URL.",
-          window.location.origin + "/#json=" + json.id,
-        );
-      })
-      .catch(() => {
-        alert("Something went wrong. Please try again!");
-      });
   };
 
   const onDownloadPng = () => {
@@ -361,7 +339,6 @@ export const MemoryView = () => {
         >
           <Panel position="top-right">
             <div className="button-group">
-              <button onClick={onSaveShortlink}>Save (Shortlink)</button>
               <button onClick={onSaveURL}>Save (URL)</button>
               <button onClick={onDownloadPng}>Download (PNG)</button>
               <button onClick={onEdit}>Edit</button>
