@@ -1,5 +1,5 @@
 import { Edge, Node } from "reactflow";
-import { Memory, Obj, Variable } from "./memory";
+import { Memory, Obj, Variable, primitveDataTypes } from "./memory";
 
 export type EdgeData = {};
 
@@ -38,12 +38,12 @@ export const getEdgesAndNodes = (
     });
 
     Object.entries(data.attributes).forEach(([name, value]) => {
-      if (typeof value === "string" && value?.startsWith("@")) {
+      if (!primitveDataTypes.includes(value.dataType)) {
         edges.push({
           id: `${id}+${name}`,
           source: id,
           sourceHandle: name,
-          target: value,
+          target: value.value as string,
         });
       }
     });
@@ -68,11 +68,16 @@ export const getMemory = (
         position: n.position,
       };
       Object.entries(obj.attributes).forEach(([name, value]) => {
-        const e = edges.find((e) => e.source == n.id && e.sourceHandle == name);
-        if (typeof value === "string" && value?.startsWith("@") && e == null) {
-          obj.attributes[name] = null;
-        } else if (e?.target) {
-          obj.attributes[name] = e.target;
+        if (!primitveDataTypes.includes(value.dataType)) {
+          const e = edges.find(
+            (e) => e.source == n.id && e.sourceHandle == name,
+          );
+          if (e?.target) {
+            obj.attributes[name] = {
+              ...value,
+              value: e.target,
+            };
+          }
         }
       });
       objects[n.id] = obj;

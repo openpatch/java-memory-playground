@@ -23,7 +23,7 @@ import ObjectNode from "./ObjectNode";
 import VariableNode from "./VariableNode";
 import { useCallback, useState, DragEvent, useRef } from "react";
 import { Sidebar } from "./Sidebar";
-import { Obj, Variable } from "./memory";
+import { Attribute, Obj, Variable, numericDataTypes } from "./memory";
 import { isConnectedToVariable } from "./utils";
 
 const selector = (state: RFState) => ({
@@ -40,16 +40,21 @@ const nodeTypes = {
 
 const createAttributesForObject = (
   attributes: Record<string, string>,
-): Record<string, string | boolean | number | null> => {
-  const objAttributes: Record<string, string | null> = {};
+): Record<string, Attribute> => {
+  const objAttributes: Record<string, Attribute> = {};
   Object.entries(attributes).forEach(([name, dataType]) => {
     let value = null;
-    if (
-      ["int", "char", "float", "double", "boolean", "String"].includes(dataType)
-    ) {
+    if (dataType == "boolean") {
+      value = false;
+    } else if (numericDataTypes.includes(dataType)) {
+      value = 0;
+    } else if (dataType == "String") {
       value = "";
     }
-    objAttributes[name] = value;
+    objAttributes[name] = {
+      value,
+      dataType,
+    };
   });
   return objAttributes;
 };
@@ -95,6 +100,7 @@ export const MemoryView = () => {
     connectingNode.current = null;
     setEdges((eds) => addEdge(params, eds));
   }, []);
+
   const onConnectStart = useCallback<OnConnectStart>((_, params) => {
     if (params.handleType == "source") {
       connectingNode.current = params;
@@ -159,7 +165,9 @@ export const MemoryView = () => {
 
   const onGC = () => {
     setNodes((nds) =>
-      nds.filter((n) => n.type != "object" || isConnectedToVariable(n.id, nodes, edges)),
+      nds.filter(
+        (n) => n.type != "object" || isConnectedToVariable(n.id, nodes, edges),
+      ),
     );
   };
 
@@ -233,10 +241,16 @@ export const MemoryView = () => {
           const length = window.prompt(`Length of the ${name} array?`);
           if (length == null) return;
           objAttributes = {
-            length: Number.parseInt(length),
+            length: {
+              dataType: "int",
+              value: Number.parseInt(length),
+            },
           };
           for (let i = 0; i < Number.parseInt(length); i++) {
-            objAttributes[`[${i}]`] = null;
+            objAttributes[`[${i}]`] = {
+              dataType: "Object",
+              value: null,
+            };
           }
         }
         if (name != null) {
@@ -332,7 +346,9 @@ export const MemoryView = () => {
           </Panel>
           <Panel position="bottom-right">
             <div className="button-group">
-              <button className="button-gc" onClick={onGC}>Run Garbage Collector</button>
+              <button className="button-gc" onClick={onGC}>
+                Run Garbage Collector
+              </button>
             </div>
           </Panel>
           <Controls />

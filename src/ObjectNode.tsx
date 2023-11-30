@@ -1,27 +1,60 @@
+import { ChangeEventHandler } from "react";
 import {
   Handle,
   NodeProps,
   Position,
   useEdges,
   useNodes,
+  useReactFlow,
 } from "reactflow";
-import { Obj } from "./memory";
+import { Attribute, Obj, numericDataTypes, primitveDataTypes } from "./memory";
 import { isConnectedToVariable } from "./utils";
 
-function Attribute({
+function AttributeHandle({
   name,
   value,
   isConnected,
+  isFinal,
   isConnectable,
+  nodeId,
 }: {
   name: string;
-  value: string | number | boolean | null;
+  value: Attribute;
   nodeId: string;
+  isFinal: boolean;
   isConnected: boolean;
   isConnectable: boolean;
 }) {
-  return (typeof value == "string" && value?.startsWith("@")) ||
-    value == null ? (
+  const { setNodes } = useReactFlow();
+
+  const onChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    let value: any = e.target.value;
+    if (e.target.type === "checkbox") {
+      value = e.target.checked;
+    }
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.id == nodeId) {
+          return {
+            ...n,
+            data: {
+              ...n.data,
+              attributes: {
+                ...n.data.attributes,
+                [name]: {
+                  ...n.data.attributes[name],
+                  value,
+                },
+              },
+            },
+          };
+        }
+        return n;
+      }),
+    );
+  };
+
+  return !primitveDataTypes.includes(value.dataType) ? (
     <div className="object-node__attribute">
       <div className="object-node__attribute-name">{name} =</div>
       <Handle
@@ -33,13 +66,40 @@ function Attribute({
     </div>
   ) : (
     <div className="object-node__attribute">
-      <div className="object-node__attribute-name">
-        {name} = {value}
-      </div>
+      <div className="object-node__attribute-name">{name} =</div>
+      {isFinal ? (
+        <span className="object-node__attribute-value">{value.value}</span>
+      ) : (
+        <>
+          {value.dataType === "boolean" && (
+            <input
+              type="checkbox"
+              onChange={onChange}
+              checked={Boolean(value.value)}
+              className="object-node__attribute-value"
+            />
+          )}
+          {numericDataTypes.includes(value.dataType) && (
+            <input
+              onChange={onChange}
+              type="number"
+              value={(value.value as number) || 0}
+              className="object-node__attribute-value"
+            />
+          )}
+          {value.dataType == "String" && (
+            <input
+              type="text"
+              onChange={onChange}
+              value={(value.value as string) || ""}
+              className="object-node__attribute-value"
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }
-
 
 function ObjectNode({ id, data }: NodeProps<Obj>) {
   const nodes = useNodes();
@@ -61,10 +121,11 @@ function ObjectNode({ id, data }: NodeProps<Obj>) {
       </div>
       <div className={`object-node__body ${gc ? "gc" : ""}`}>
         {Object.entries(data.attributes).map(([name, value]) => (
-          <Attribute
+          <AttributeHandle
             key={`${id}+${name}`}
+            isFinal={data.klass === "Array"}
             isConnected={
-              attributeEdges.find((e) => e.sourceHandle == name) != null
+              attributeEdges.find((e) => e.sourceHandle == name)?.target != null
             }
             isConnectable={!gc}
             nodeId={id}

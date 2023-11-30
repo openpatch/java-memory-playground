@@ -3,13 +3,14 @@
 }
 
 input {
-  font-size: 24px;
-  width: 100%;
-  border-width: 3px;
+  display: inline-block;
+  border-width: 1px;
+  margin-left: 4px;
   border-style: solid;
   border-radius: 8px;
   border-color: grey;
-  padding:4px;
+  width: 100px;
+  padding: 4px;
 }
 
 .memory-view {
@@ -42,7 +43,7 @@ input {
 .sidebar-variable {
   font-size: 14px;
   border: 1px solid #000;
-  background: #9FE2BF;
+  background: #9fe2bf;
   padding: 8px;
   border-radius: 8px;
   text-align: center;
@@ -54,7 +55,9 @@ input {
   font-size: 12px;
   background: #f5f5f6;
   color: #222;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 15%), 0 2px 4px -1px rgb(0 0 0 / 8%);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 15%),
+    0 2px 4px -1px rgb(0 0 0 / 8%);
   border-radius: 8px;
 }
 
@@ -83,9 +86,11 @@ input {
   display: flex;
   align-items: center;
   font-size: 10px;
-  background: #9FE2BF;
+  background: #9fe2bf;
   color: #222;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 15%), 0 2px 4px -1px rgb(0 0 0 / 8%);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 15%),
+    0 2px 4px -1px rgb(0 0 0 / 8%);
   border-radius: 8px;
   padding: 10px;
 }
@@ -102,6 +107,7 @@ input {
 
 .object-node__attribute-name {
   flex: 1;
+  text-align: right;
 }
 
 .object-node__header {
@@ -112,7 +118,7 @@ input {
 }
 
 .object-node__header.gc {
-  background: #FF9C9C;
+  background: #ff9c9c;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
   opacity: 0.7;
@@ -120,16 +126,15 @@ input {
 
 .button-gc {
   color: #000;
-  background: #FF9C9C;
+  background: #ff9c9c;
 }
 
 .object-node__body.gc {
-  background: #FF9C9C;
+  background: #ff9c9c;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   opacity: 0.7;
 }
-
 
 .object-node__name {
   flex: 1;

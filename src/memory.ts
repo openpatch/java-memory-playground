@@ -1,3 +1,14 @@
+export const numericDataTypes = ["int", "float", "double", "char"];
+
+export const primitveDataTypes = [
+  "int",
+  "float",
+  "double",
+  "char",
+  "boolean",
+  "String",
+];
+
 export type DataType =
   | "int"
   | "float"
@@ -12,9 +23,14 @@ export type Klass = {
   attributes: Record<string, DataType>;
 };
 
+export type Attribute = {
+  dataType: DataType;
+  value: string | number | boolean | null;
+};
+
 export type Obj = {
   klass: string;
-  attributes: Record<string, string | number | boolean | null>;
+  attributes: Record<string, Attribute>;
   position: {
     x: number;
     y: number;
@@ -71,6 +87,7 @@ export const initialMemory: Memory = {
       attributes: {
         username: "String",
         text: "String",
+        isRead: "boolean",
       },
     },
   },
@@ -78,8 +95,14 @@ export const initialMemory: Memory = {
     "@11": {
       klass: "List",
       attributes: {
-        current: "@33",
-        first: "@33",
+        current: {
+          dataType: "Node",
+          value: "@33",
+        },
+        first: {
+          dataType: "Node",
+          value: "@33",
+        },
       },
       position: {
         x: 250,
@@ -89,8 +112,14 @@ export const initialMemory: Memory = {
     "@33": {
       klass: "Node",
       attributes: {
-        next: null,
-        content: "@55",
+        next: {
+          dataType: "Node",
+          value: null,
+        },
+        content: {
+          dataType: "Message",
+          value: "@55",
+        },
       },
       position: {
         x: 400,
@@ -100,8 +129,14 @@ export const initialMemory: Memory = {
     "@44": {
       klass: "Node",
       attributes: {
-        next: null,
-        content: null,
+        next: {
+          dataType: "Node",
+          value: null,
+        },
+        content: {
+          dataType: "Message",
+          value: null,
+        },
       },
       position: {
         x: 600,
@@ -111,8 +146,12 @@ export const initialMemory: Memory = {
     "@55": {
       klass: "Message",
       attributes: {
-        username: '"mike"',
-        text: '"Hello World!"',
+        username: {
+          dataType: "String",
+          value: '"mike"',
+        },
+        text: { dataType: "String", value: '"Hello World!"' },
+        isRead: { dataType: "boolean", value: true },
       },
       position: {
         x: 400,
