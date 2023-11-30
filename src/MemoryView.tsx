@@ -180,6 +180,28 @@ export const MemoryView = () => {
     updateMemory({ ...memory, ...getMemory(edges, nodes) });
   };
 
+  const onSaveShortlink = () => {
+    const json = { ...memory, ...getMemory(edges, nodes) };
+    fetch(`https://json.openpatch.org/api/v2/post`, {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(json),
+    })
+      .then((r) => r.json())
+      .then((json) => {
+        prompt(
+          "Upload finished. You state is saved at the following URL.",
+          window.location.origin + "/#json=" + json.id,
+        );
+      })
+      .catch(() => {
+        alert("Something went wrong. Please try again!");
+      });
+  };
+
   const onDownloadPng = () => {
     toPng(document.querySelector(".memory") as any, {
       filter: (node) => {
@@ -339,6 +361,7 @@ export const MemoryView = () => {
         >
           <Panel position="top-right">
             <div className="button-group">
+              <button onClick={onSaveShortlink}>Save (Shortlink)</button>
               <button onClick={onSaveURL}>Save (URL)</button>
               <button onClick={onDownloadPng}>Download (PNG)</button>
               <button onClick={onEdit}>Edit</button>
