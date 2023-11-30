@@ -119,16 +119,6 @@ export const initialMemory: Memory = {
         y: 250,
       },
     },
-    "@66": {
-      klass: "Array",
-      attributes: {
-        length: 5
-      },
-      position: {
-        x: 400,
-        y: 250,
-      },
-    },
   },
   variables: {
     "@v00": {
