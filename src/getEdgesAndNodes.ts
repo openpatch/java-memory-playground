@@ -69,7 +69,7 @@ export const getMemory = (
       };
       Object.entries(obj.attributes).forEach(([name, value]) => {
         const e = edges.find((e) => e.source == n.id && e.sourceHandle == name);
-        if (value?.startsWith("@") && e == null) {
+        if (typeof value === "string" && value?.startsWith("@") && e == null) {
           obj.attributes[name] = null;
         } else if (e?.target) {
           obj.attributes[name] = e.target;
