@@ -38,7 +38,7 @@ export const getEdgesAndNodes = (
     });
 
     Object.entries(data.attributes).forEach(([name, value]) => {
-      if (!primitveDataTypes.includes(value.dataType)) {
+      if (!primitveDataTypes.includes(value.dataType) && value.value != null) {
         edges.push({
           id: `${id}+${name}`,
           source: id,
@@ -61,6 +61,8 @@ export const getMemory = (
 ): Partial<Memory> => {
   const variables: Memory["variables"] = {};
   const objects: Memory["objects"] = {};
+
+  console.log(edges)
   nodes.forEach((n) => {
     if (n.type == "object") {
       const obj: Obj = {
@@ -72,12 +74,10 @@ export const getMemory = (
           const e = edges.find(
             (e) => e.source == n.id && e.sourceHandle == name,
           );
-          if (e?.target) {
             obj.attributes[name] = {
-              ...value,
-              value: e.target,
+              dataType: value.dataType,
+              value: e?.target || null,
             };
-          }
         }
       });
       objects[n.id] = obj;

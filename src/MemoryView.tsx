@@ -21,7 +21,7 @@ import { shallow } from "zustand/shallow";
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 import ObjectNode from "./ObjectNode";
 import VariableNode from "./VariableNode";
-import { useCallback, useState, DragEvent, useRef, useEffect } from "react";
+import { useCallback, useState, DragEvent, useRef } from "react";
 import { Sidebar } from "./Sidebar";
 import { Attribute, Obj, Variable, numericDataTypes } from "./memory";
 import { isConnectedToVariable } from "./utils";
@@ -96,10 +96,14 @@ export const MemoryView = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const nodeIds: string[] = nodes.map((n) => n.id);
-  const onConnect = useCallback<OnConnect>((params) => {
-    connectingNode.current = null;
-    setEdges((eds) => addEdge(params, eds));
-  }, []);
+  const onConnect = useCallback<OnConnect>(
+    (params) => {
+      connectingNode.current = null;
+      console.log(params)
+      setEdges((eds) => addEdge(params, eds));
+    },
+    [setEdges],
+  );
 
   const onConnectStart = useCallback<OnConnectStart>((_, params) => {
     if (params.handleType == "source") {
@@ -128,10 +132,10 @@ export const MemoryView = () => {
 
       if (targetIsPane && node?.type == "object" && reactFlowInstance != null) {
         const objNode: Node<Obj> = node as any;
+        const objKlass = memory.klasses[objNode.data["klass"]];
+        if (!objKlass) return;
         const klassName =
-          memory.klasses[objNode.data["klass"]].attributes[
-            connectingNode.current.handleId || ""
-          ];
+          objKlass.attributes[connectingNode.current.handleId || ""];
         const klass = memory.klasses[klassName];
         const position = reactFlowInstance.screenToFlowPosition({
           x: (event as any).clientX,
@@ -177,7 +181,15 @@ export const MemoryView = () => {
   };
 
   const onSaveURL = () => {
-    updateMemory({ ...memory, ...getMemory(edges, nodes) });
+    if (reactFlowInstance) {
+      updateMemory({
+        ...memory,
+        ...getMemory(
+          edges,
+          nodes,
+        ),
+      });
+    }
   };
 
   const onDownloadPng = () => {
