@@ -62,7 +62,6 @@ export const getMemory = (
   const variables: Memory["variables"] = {};
   const objects: Memory["objects"] = {};
 
-  console.log(edges)
   nodes.forEach((n) => {
     if (n.type == "object") {
       const obj: Obj = {
@@ -74,10 +73,10 @@ export const getMemory = (
           const e = edges.find(
             (e) => e.source == n.id && e.sourceHandle == name,
           );
-            obj.attributes[name] = {
-              dataType: value.dataType,
-              value: e?.target || null,
-            };
+          obj.attributes[name] = {
+            dataType: value.dataType,
+            value: e?.target || null,
+          };
         }
       });
       objects[n.id] = obj;
