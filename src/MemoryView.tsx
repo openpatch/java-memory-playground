@@ -188,18 +188,28 @@ export const MemoryView = () => {
     }
   };
 
+  const loadFromHash = useCallback(() => {
+    const id = window.location.hash.slice(6);
+    if (id && confirm("Do you want to replace your diagram?")) {
+      fetch(`${import.meta.env.VITE_JSON_STORE}/api/v2/${id}`, {
+        method: "GET",
+        mode: "cors",
+      })
+        .then((r) => r.json())
+        .then((j) => updateMemory(j));
+    }
+  }, [updateMemory]);
+
   useEffect(() => {
     if (window.location.hash) {
-      const id = window.location.hash.slice(6);
-      if (id && confirm("Do you want to replace your diagram?")) {
-        fetch(`${import.meta.env.VITE_JSON_STORE}/api/v2/${id}`, {
-          method: "GET",
-          mode: "cors",
-        })
-          .then((r) => r.json())
-          .then((j) => updateMemory(j));
-      }
+      loadFromHash();
     }
+
+    window.addEventListener("hashchange", loadFromHash);
+
+    return () => {
+      window.removeEventListener("hashchange", loadFromHash);
+    };
   }, []);
 
   const onSaveURL = () => {
@@ -212,7 +222,7 @@ export const MemoryView = () => {
       },
       body: JSON.stringify(memory),
     })
-      .then(r => r.json())
+      .then((r) => r.json())
       .then((json) => {
         prompt(
           "The uploaded is complete. Visit the URL to see your saved diagram",
