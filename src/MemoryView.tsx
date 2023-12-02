@@ -25,7 +25,6 @@ import { useCallback, useState, DragEvent, useRef, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import { Attribute, Obj, Variable, numericDataTypes } from "./memory";
 import { isConnectedToVariable } from "./utils";
-import QRCode from "react-qr-code";
 
 const selector = (state: RFState) => ({
   selectedNodeId: state.selectedNodeId,

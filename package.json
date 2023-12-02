@@ -19,7 +19,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-modal": "^3.16.1",
-    "react-qr-code": "^2.0.12",
     "reactflow": "^11.9.4",
     "zustand": "^4.4.7"
   },
