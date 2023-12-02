@@ -21,10 +21,11 @@ import { shallow } from "zustand/shallow";
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 import ObjectNode from "./ObjectNode";
 import VariableNode from "./VariableNode";
-import { useCallback, useState, DragEvent, useRef } from "react";
+import { useCallback, useState, DragEvent, useRef, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import { Attribute, Obj, Variable, numericDataTypes } from "./memory";
 import { isConnectedToVariable } from "./utils";
+import QRCode from "react-qr-code";
 
 const selector = (state: RFState) => ({
   selectedNodeId: state.selectedNodeId,
@@ -99,7 +100,6 @@ export const MemoryView = () => {
   const onConnect = useCallback<OnConnect>(
     (params) => {
       connectingNode.current = null;
-      console.log(params)
       setEdges((eds) => addEdge(params, eds));
     },
     [setEdges],
@@ -176,20 +176,53 @@ export const MemoryView = () => {
   };
 
   const onEdit = () => {
-    onSaveURL();
+    onSave();
     setRoute("edit");
   };
 
-  const onSaveURL = () => {
+  const onSave = () => {
     if (reactFlowInstance) {
       updateMemory({
         ...memory,
-        ...getMemory(
-          edges,
-          nodes,
-        ),
+        ...getMemory(edges, nodes),
       });
     }
+  };
+
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = window.location.hash.slice(6);
+      if (id && confirm("Do you want to replace your diagram?")) {
+        fetch(`${import.meta.env.VITE_JSON_STORE}/api/v2/${id}`, {
+          method: "GET",
+          mode: "cors",
+        })
+          .then((r) => r.json())
+          .then((j) => updateMemory(j));
+      }
+    }
+  }, []);
+
+  const onSaveURL = () => {
+    onSave();
+    fetch(`${import.meta.env.VITE_JSON_STORE}/api/v2/post`, {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(memory),
+    })
+      .then(r => r.json())
+      .then((json) => {
+        prompt(
+          "The uploaded is complete. Visit the URL to see your saved diagram",
+          window.location.origin + "/#json=" + json.id,
+        );
+      })
+      .catch(() => {
+        alert("Something went wrong. Please try again!");
+      });
   };
 
   const onDownloadPng = () => {

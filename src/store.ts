@@ -50,7 +50,7 @@ const useStore = createWithEqualityFn(
     }),
     {
       name: "pako",
-      storage: createJSONStorage(() => hashStorage),
+      storage: createJSONStorage(() => localStorage),
       partialize: (state): any => ({
         memory: state.memory,
       }),
