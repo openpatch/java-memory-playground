@@ -13,7 +13,6 @@ import { isConnectedToVariable } from "./utils";
 function AttributeHandle({
   name,
   value,
-  isConnected,
   isFinal,
   isConnectable,
   nodeId,
