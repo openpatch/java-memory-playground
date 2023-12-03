@@ -100,7 +100,20 @@ export const MemoryView = () => {
     (params) => {
       connectingNode.current = null;
       console.log(params)
-      setEdges((eds) => addEdge(params, eds));
+      setEdges((eds) =>
+        addEdge(
+          params,
+          eds.filter(
+            (e) => {
+              console.log(e)
+              return !(
+                e.source === params.source &&
+                e.sourceHandle == params.sourceHandle
+              )
+            }
+          ),
+        ),
+      );
     },
     [setEdges],
   );
@@ -125,7 +138,8 @@ export const MemoryView = () => {
   const onConnectEnd = useCallback<OnConnectEnd>(
     (event) => {
       const node = nodes.find((n) => n.id == connectingNode.current?.nodeId);
-      if (!connectingNode.current || !memory.options.createNewOnEdgeDrop) return;
+      if (!connectingNode.current || !memory.options.createNewOnEdgeDrop)
+        return;
       const targetIsPane = (event.target as HTMLElement).classList.contains(
         "react-flow__pane",
       );
@@ -184,10 +198,7 @@ export const MemoryView = () => {
     if (reactFlowInstance) {
       updateMemory({
         ...memory,
-        ...getMemory(
-          edges,
-          nodes,
-        ),
+        ...getMemory(edges, nodes),
       });
     }
   };
