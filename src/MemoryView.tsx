@@ -125,7 +125,7 @@ export const MemoryView = () => {
   const onConnectEnd = useCallback<OnConnectEnd>(
     (event) => {
       const node = nodes.find((n) => n.id == connectingNode.current?.nodeId);
-      if (!connectingNode.current) return;
+      if (!connectingNode.current || !memory.options.createNewOnEdgeDrop) return;
       const targetIsPane = (event.target as HTMLElement).classList.contains(
         "react-flow__pane",
       );

@@ -54,7 +54,8 @@ export type Memory = {
     zoom: number;
   };
   options: {
-    hideSidebar: boolean;
+    hideSidebar?: boolean;
+    createNewOnEdgeDrop?: boolean;
   };
   klasses: Record<string, Klass>;
   objects: Record<string, Obj>;
