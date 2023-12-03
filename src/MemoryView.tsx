@@ -99,18 +99,15 @@ export const MemoryView = () => {
   const onConnect = useCallback<OnConnect>(
     (params) => {
       connectingNode.current = null;
-      console.log(params)
       setEdges((eds) =>
         addEdge(
           params,
           eds.filter(
-            (e) => {
-              console.log(e)
-              return !(
+            (e) =>
+              !(
                 e.source === params.source &&
                 e.sourceHandle == params.sourceHandle
-              )
-            }
+              ),
           ),
         ),
       );
