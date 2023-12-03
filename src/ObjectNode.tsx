@@ -59,7 +59,7 @@ function AttributeHandle({
       <div className="object-node__attribute-name">{name} =</div>
       <Handle
         type="source"
-        isConnectable={!isConnected && isConnectable}
+        isConnectable={isConnectable}
         position={Position.Right}
         id={name}
       />
