@@ -32,7 +32,6 @@ import {
 } from "./memory";
 import {
   isConnectedTo,
-  isConnectedToActiveMethodCall,
   isConnectedToMethodCall,
   isConnectedToVariable,
 } from "./utils";
