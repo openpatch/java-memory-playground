@@ -1,5 +1,5 @@
 import { Edge, Node } from "reactflow";
-import { Memory, Obj, Variable, primitveDataTypes } from "./memory";
+import { Memory, MethodCall, Obj, Variable, primitveDataTypes } from "./memory";
 
 export type EdgeData = {};
 
@@ -7,9 +7,9 @@ export const getEdgesAndNodes = (
   memory: Memory,
 ): {
   edges: Edge<EdgeData>[];
-  nodes: Node<Obj | Variable>[];
+  nodes: Node<Obj | Variable | MethodCall>[];
 } => {
-  const nodes: Node<Obj | Variable>[] = [];
+  const nodes: Node<Obj | Variable | MethodCall>[] = [];
   const edges: Edge<EdgeData>[] = [];
 
   Object.entries(memory.variables).forEach(([id, data]) => {
@@ -29,6 +29,27 @@ export const getEdgesAndNodes = (
     }
   });
 
+  Object.entries(memory.methodCalls || {}).forEach(([id, data]) => {
+    nodes.push({
+      id,
+      type: "method-call",
+      data,
+      position: data.position,
+    });
+
+    Object.entries(data.localVariables).forEach(([name, value]) => {
+      if (!primitveDataTypes.includes(value.dataType) && value.value != null) {
+        edges.push({
+          id: `method-call-${id}+${name}`,
+          type: "reference",
+          source: id,
+          sourceHandle: name,
+          target: value.value as string,
+        });
+      }
+    });
+  });
+
   Object.entries(memory.objects).forEach(([id, data]) => {
     nodes.push({
       id,
@@ -42,6 +63,7 @@ export const getEdgesAndNodes = (
         edges.push({
           id: `${id}+${name}`,
           source: id,
+          type: "reference",
           sourceHandle: name,
           target: value.value as string,
         });
@@ -57,10 +79,11 @@ export const getEdgesAndNodes = (
 
 export const getMemory = (
   edges: Edge<EdgeData>[],
-  nodes: Node<Obj | Variable>[],
+  nodes: Node<Obj | Variable | MethodCall>[],
 ): Partial<Memory> => {
   const variables: Memory["variables"] = {};
   const objects: Memory["objects"] = {};
+  const methodCalls: Memory["methodCalls"] = {};
 
   nodes.forEach((n) => {
     if (n.type == "object") {
@@ -80,6 +103,23 @@ export const getMemory = (
         }
       });
       objects[n.id] = obj;
+    } else if (n.type == "method-call") {
+      const methodCall: MethodCall = {
+        ...(n.data as MethodCall),
+        position: n.position,
+      };
+      Object.entries(methodCall.localVariables).forEach(([name, value]) => {
+        if (!primitveDataTypes.includes(value.dataType)) {
+          const e = edges.find(
+            (e) => e.source == n.id && e.sourceHandle == name,
+          );
+          methodCall.localVariables[name] = {
+            dataType: value.dataType,
+            value: e?.target || null,
+          };
+        }
+      });
+      methodCalls[methodCall.index] = methodCall;
     } else if (n.type == "variable") {
       const variable: Variable = {
         ...(n.data as Variable),
@@ -90,5 +130,5 @@ export const getMemory = (
       variables[n.id] = variable;
     }
   });
-  return { variables, objects };
+  return { variables, objects, methodCalls };
 };

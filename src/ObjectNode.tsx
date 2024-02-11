@@ -8,7 +8,7 @@ import {
   useReactFlow,
 } from "reactflow";
 import { Attribute, Obj, numericDataTypes, primitveDataTypes } from "./memory";
-import { isConnectedToVariable } from "./utils";
+import { isConnectedToMethodCall, isConnectedToVariable } from "./utils";
 
 function AttributeHandle({
   name,
@@ -103,7 +103,7 @@ function AttributeHandle({
 function ObjectNode({ id, data }: NodeProps<Obj>) {
   const nodes = useNodes();
   const edges = useEdges();
-  const gc = !isConnectedToVariable(id, nodes, edges);
+  const gc = !isConnectedToVariable(id, nodes, edges) && !isConnectedToMethodCall(id, nodes, edges);
 
   const attributeEdges = edges.filter((e) => e.source == id);
   return (

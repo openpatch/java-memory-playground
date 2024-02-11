@@ -47,6 +47,16 @@ export type Variable = {
   };
 };
 
+export type MethodCall = {
+  name: String;
+  index: number;
+  localVariables: Record<string, Attribute>;
+  position: {
+    x: number;
+    y: number;
+  };
+};
+
 export type Memory = {
   viewport: {
     x: number;
@@ -55,22 +65,52 @@ export type Memory = {
   };
   options: {
     hideSidebar?: boolean;
+    hideCallMethod?: boolean;
+    hideDeclareGlobalVariable?: boolean;
     createNewOnEdgeDrop?: boolean;
   };
   klasses: Record<string, Klass>;
   objects: Record<string, Obj>;
   variables: Record<string, Variable>;
+  methodCalls: Record<number, MethodCall>;
 };
 
 export const initialMemory: Memory = {
   options: {
     hideSidebar: false,
+    hideCallMethod: false,
+    hideDeclareGlobalVariable: false,
   },
   viewport: {
     x: 0,
     y: 0,
     zoom: 1,
   },
+  methodCalls: {
+    1: {
+      name: "App.main",
+      localVariables: {
+        myList: {
+          dataType: "List",
+          value: "@11",
+        },
+        tmp1: {
+          dataType: "List",
+          value: null,
+        },
+        tmp2: {
+          dataType: "List",
+          value: null,
+        },
+      },
+      index: 0,
+      position: {
+        x: 0,
+        y: 0
+      }
+    },
+  },
+  variables: {},
   klasses: {
     List: {
       attributes: {
@@ -157,35 +197,6 @@ export const initialMemory: Memory = {
       position: {
         x: 400,
         y: 250,
-      },
-    },
-  },
-  variables: {
-    "@v00": {
-      name: "myList",
-      dataType: "List",
-      value: "@11",
-      position: {
-        x: 100,
-        y: 100,
-      },
-    },
-    "@v01": {
-      name: "tmp1",
-      dataType: "List",
-      value: null,
-      position: {
-        x: 100,
-        y: 150,
-      },
-    },
-    "@v02": {
-      name: "tmp2",
-      dataType: "List",
-      value: null,
-      position: {
-        x: 100,
-        y: 200,
       },
     },
   },

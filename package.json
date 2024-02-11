@@ -19,7 +19,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-modal": "^3.16.1",
-    "reactflow": "^11.9.4",
+    "reactflow": "^11.10.3",
     "zustand": "^4.4.7"
   },
   "license": "MIT",

@@ -23,8 +23,21 @@ import ObjectNode from "./ObjectNode";
 import VariableNode from "./VariableNode";
 import { useCallback, useState, DragEvent, useRef } from "react";
 import { Sidebar } from "./Sidebar";
-import { Attribute, Obj, Variable, numericDataTypes } from "./memory";
-import { isConnectedToVariable } from "./utils";
+import {
+  Attribute,
+  MethodCall,
+  Obj,
+  Variable,
+  numericDataTypes,
+} from "./memory";
+import {
+  isConnectedTo,
+  isConnectedToActiveMethodCall,
+  isConnectedToMethodCall,
+  isConnectedToVariable,
+} from "./utils";
+import MethodCallNode from "./MethodCallNode";
+import ReferenceEdge from "./ReferenceEdge";
 
 const selector = (state: RFState) => ({
   selectedNodeId: state.selectedNodeId,
@@ -36,6 +49,11 @@ const selector = (state: RFState) => ({
 const nodeTypes = {
   object: ObjectNode,
   variable: VariableNode,
+  "method-call": MethodCallNode,
+};
+
+const edgeTypes = {
+  reference: ReferenceEdge,
 };
 
 const createAttributesForObject = (
@@ -181,7 +199,7 @@ export const MemoryView = () => {
   const onGC = () => {
     setNodes((nds) =>
       nds.filter(
-        (n) => n.type != "object" || isConnectedToVariable(n.id, nodes, edges),
+        (n) => n.type != "object" || isConnectedToVariable(n.id, nodes, edges) || isConnectedToMethodCall(n.id, nodes, edges),
       ),
     );
   };
@@ -253,6 +271,33 @@ export const MemoryView = () => {
 
       const k = memory.klasses[type];
 
+      if (type == "method-call") {
+        const name = window.prompt(`Name of the method?`);
+        if (name != null) {
+          const index = reactFlowInstance
+            .getNodes()
+            .filter((n) => n.type === "method-call").length;
+          const newNode: Node<MethodCall> = {
+            id: getId(),
+            type: "method-call",
+            position,
+            data: {
+              index,
+              name,
+              position,
+              localVariables: {
+                this: {
+                  dataType: "object",
+                  value: null,
+                },
+              },
+            },
+          };
+          setNodes((nds) => nds.concat(newNode));
+          return;
+        }
+      }
+
       if (type != "variable") {
         const name = window.prompt(`Name for the new ${type}?`);
         let objAttributes = createAttributesForObject(k?.attributes || {});
@@ -311,7 +356,7 @@ export const MemoryView = () => {
           setEdges((egs) => egs.concat(newEdge));
         }
       } else if (type == "variable") {
-        const name = window.prompt("Name for the new variable?");
+        const name = window.prompt("Name for the new global variable?");
 
         if (name != null) {
           const newNode: Node<Variable> = {
@@ -327,18 +372,53 @@ export const MemoryView = () => {
     [reactFlowInstance],
   );
 
+  const methodCalls = nodes.filter(
+    (n): n is Node<MethodCall> => n.type === "method-call",
+  );
+  let lastMethodCall = methodCalls[0];
+  methodCalls.forEach((methodCall) => {
+    if (lastMethodCall.data.index < methodCall.data.index) {
+      lastMethodCall = methodCall;
+    }
+  });
+
   return (
     <div className="memory-view">
       {!memory.options.hideSidebar && <Sidebar memory={memory} />}
       <ReactFlowProvider>
         <ReactFlow
           className="memory"
-          nodes={nodes}
+          nodes={nodes.map((n) => {
+            n.className = "";
+            if (
+              (lastMethodCall !== undefined &&
+              isConnectedTo(n.id, lastMethodCall.id, nodes, edges)) ||
+              isConnectedToVariable(n.id, nodes, edges)
+            ) {
+              n.className = "active";
+            }
+            if (n.id === lastMethodCall?.id) {
+              n.className = "active";
+            }
+            return n;
+          })}
+          edges={edges.map((e) => {
+            const node = nodes.find((n) => n.id == e.source);
+            e.className = "";
+            if (node && node.className?.includes("active") || node?.type === "variable") {
+              e.className = "active";
+            }
+            return e;
+          })}
           elevateEdgesOnSelect={true}
           defaultEdgeOptions={{
             type: "smoothstep",
+            style: {
+              stroke: "#778899",
+            },
             markerEnd: {
               type: MarkerType.ArrowClosed,
+              color: "#778899",
             },
           }}
           onConnect={onConnect}
@@ -352,9 +432,9 @@ export const MemoryView = () => {
           proOptions={{
             hideAttribution: true,
           }}
-          edges={edges}
           fitView
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           minZoom={0.1}
         >
           <Panel position="top-right">
