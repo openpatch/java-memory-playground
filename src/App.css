@@ -141,8 +141,8 @@ input {
 .react-flow__node-variable .react-flow__handle,
 .react-flow__node-object .react-flow__handle {
   position: unset;
-  width: 15px;
-  height: 15px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background-color: #778899;
 }
@@ -178,6 +178,7 @@ input {
 
 .method-call-node__buttons {
   display: flex;
+  margin-top: 8px;
   flex-direction: column;
   gap: 8px;
 }
@@ -189,21 +190,23 @@ input {
 }
 
 .method-call-node__variable {
-  padding-bottom: 8px;
   border-bottom: 1px solid #e2e8f0;
 }
 
 .method-call-node__variable,
 .object-node__attribute {
   display: flex;
+  padding-bottom: 8px;
+  padding-top: 8px;
   justify-content: center;
-  margin-bottom: 8px;
 }
 
 .method-call-node__variable-name,
 .object-node__attribute-name {
   flex: 1;
-  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: end;
 }
 
 .method-call-node__header,
