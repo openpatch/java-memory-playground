@@ -113,6 +113,19 @@ export const MemoryView = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const nodeIds: string[] = nodes.map((n) => n.id);
+
+  const methodCalls = nodes.filter(
+    (n): n is Node<MethodCall> => n.type === "method-call",
+  );
+  let previousMethodCall = methodCalls[0];
+  let lastMethodCall = methodCalls[0];
+  methodCalls.forEach((methodCall) => {
+    if (lastMethodCall.data.index < methodCall.data.index) {
+      previousMethodCall = lastMethodCall;
+      lastMethodCall = methodCall;
+    }
+  });
+
   const onConnect = useCallback<OnConnect>(
     (params) => {
       connectingNode.current = null;
@@ -198,7 +211,10 @@ export const MemoryView = () => {
   const onGC = () => {
     setNodes((nds) =>
       nds.filter(
-        (n) => n.type != "object" || isConnectedToVariable(n.id, nodes, edges) || isConnectedToMethodCall(n.id, nodes, edges),
+        (n) =>
+          n.type != "object" ||
+          isConnectedToVariable(n.id, nodes, edges) ||
+          isConnectedToMethodCall(n.id, nodes, edges),
       ),
     );
   };
@@ -328,31 +344,53 @@ export const MemoryView = () => {
               position,
             },
           };
-          const newVar: Node<Variable> = {
-            id: getId(),
-            type: "variable",
-            position: {
-              x: position.x - 100,
-              y: position.y,
-            },
-            data: {
-              name,
-              value: null,
+
+          if (lastMethodCall === undefined) {
+            const newVar: Node<Variable> = {
+              id: getId(),
+              type: "variable",
               position: {
                 x: position.x - 100,
                 y: position.y,
               },
-              dataType: type,
-            },
-          };
-          setNodes((nds) => nds.concat(newNode, newVar));
-
-          const newEdge: Edge = {
-            id: getId(),
-            source: newVar.id,
-            target: newNode.id,
-          };
-          setEdges((egs) => egs.concat(newEdge));
+              data: {
+                name,
+                value: newNode.id,
+                position: {
+                  x: position.x - 100,
+                  y: position.y,
+                },
+                dataType: type,
+              },
+            };
+            setNodes((nds) => nds.concat(newNode, newVar));
+            const newEdge: Edge = {
+              id: getId(),
+              source: newVar.id,
+              target: newNode.id,
+            };
+            setEdges((egs) => egs.concat(newEdge));
+          } else {
+            setNodes((nds) =>
+              nds.map((n) => {
+                if (n.id == lastMethodCall.id) {
+                  lastMethodCall.data.localVariables[name] = {
+                    dataType: "Object",
+                    value: newNode.id
+                  }
+                  return lastMethodCall;
+                }
+                return n;
+              }).concat(newNode),
+            );
+            const newEdge: Edge = {
+              id: getId(),
+              source: lastMethodCall.id,
+              sourceHandle: name,
+              target: newNode.id,
+            };
+            setEdges((egs) => egs.concat(newEdge));
+          }
         }
       } else if (type == "variable") {
         const name = window.prompt("Name for the new global variable?");
@@ -371,16 +409,6 @@ export const MemoryView = () => {
     [reactFlowInstance],
   );
 
-  const methodCalls = nodes.filter(
-    (n): n is Node<MethodCall> => n.type === "method-call",
-  );
-  let lastMethodCall = methodCalls[0];
-  methodCalls.forEach((methodCall) => {
-    if (lastMethodCall.data.index < methodCall.data.index) {
-      lastMethodCall = methodCall;
-    }
-  });
-
   return (
     <div className="memory-view">
       {!memory.options.hideSidebar && <Sidebar memory={memory} />}
@@ -389,32 +417,50 @@ export const MemoryView = () => {
           className="memory"
           nodes={nodes.map((n) => {
             n.className = "";
+            n.deletable = false;
+            if (
+              previousMethodCall !== undefined &&
+              isConnectedTo(n.id, previousMethodCall.id, nodes, edges)
+            ) {
+              n.className = "previous-method-call";
+            }
+            if (n.id === previousMethodCall?.id) {
+              n.className = "previous-method-call";
+            }
             if (
               (lastMethodCall !== undefined &&
-              isConnectedTo(n.id, lastMethodCall.id, nodes, edges)) ||
+                isConnectedTo(n.id, lastMethodCall.id, nodes, edges)) ||
               isConnectedToVariable(n.id, nodes, edges)
             ) {
-              n.className = "active";
+              n.className = "last-method-call";
             }
             if (n.id === lastMethodCall?.id) {
-              n.className = "active";
+              n.className = "last-method-call";
+            }
+            if (n.type === "variable") {
+              n.deletable = true;
             }
             return n;
           })}
           edges={edges.map((e) => {
             const node = nodes.find((n) => n.id == e.source);
             e.className = "";
-            if (node && node.className?.includes("active") || node?.type === "variable") {
-              e.className = "active";
+            e.deletable = false;
+            if (node && node.className?.includes("previous-method-call")) {
+              e.className = "previous-method-call";
+            }
+            if (
+              (node && node.className?.includes("last-method-call")) ||
+              node?.type === "variable"
+            ) {
+              e.className = "last-method-call";
+              e.deletable = true;
             }
             return e;
           })}
           elevateEdgesOnSelect={true}
           defaultEdgeOptions={{
             type: "smoothstep",
-            style: {
-              stroke: "#778899",
-            },
             markerEnd: {
               type: MarkerType.ArrowClosed,
               color: "#778899",

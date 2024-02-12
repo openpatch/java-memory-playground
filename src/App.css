@@ -83,16 +83,41 @@ input {
 }
 
 .react-flow__edge-path {
-  opacity: 0.4;
+  opacity: 0.2;
 }
 
-.react-flow__edge.active .react-flow__edge-path {
+.react-flow__edge .react-flow__edge-path {
+  stroke: grey;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: red!important;
+}
+
+.react-flow__node.selected {
+  outline: 2px solid red!important;
+}
+
+.react-flow__edge.previous-method-call .react-flow__edge-path {
+  opacity: 0.6;
+}
+
+.react-flow__edge.last-method-call .react-flow__edge-path {
   opacity: 1;
 }
 
-.react-flow__node-method-call.active,
-.react-flow__node-object.active {
+.react-flow__node-method-call.last-method-call,
+.react-flow__node-object.last-method-call {
   opacity: 1;
+}
+
+.react-flow__node-method-call.previous-method-call,
+.react-flow__node-object.previous-method-call {
+  opacity: 0.6;
+}
+
+.react-flow__node-variable {
+  border-radius: 8px;
 }
 
 .react-flow__node-method-call,
@@ -149,6 +174,12 @@ input {
 
 .variable-node__name {
   font-size: 14px;
+}
+
+.method-call-node__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .method-call-node__delete {

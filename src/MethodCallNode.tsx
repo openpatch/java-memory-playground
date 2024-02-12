@@ -68,11 +68,13 @@ function LocalVariableHandle({
         return n;
       }),
     );
-  }
+  };
 
   return !primitveDataTypes.includes(value.dataType) ? (
     <div className="method-call-node__variable">
-      <button onClick={onDelete} className="method-call-node__delete">X</button>
+      <button onClick={onDelete} className="method-call-node__delete">
+        X
+      </button>
       <div className="method-call-node__variable-name">{name} =</div>
       <Handle
         type="source"
@@ -124,6 +126,10 @@ function MethodCallNode({ id, data }: NodeProps<MethodCall>) {
 
   const localVariablesEdges = edges.filter((e) => e.source == id);
 
+  const handleReturn = () => {
+    setNodes((nds) => nds.filter((n) => n.id != id));
+  };
+
   const handleDeclareLocaleVariable = () => {
     const name = window.prompt("Name for the new local variable?");
     if (name != null) {
@@ -152,7 +158,9 @@ function MethodCallNode({ id, data }: NodeProps<MethodCall>) {
   return (
     <>
       <div className={`method-call-node__header`}>
-        <div className="method-call-node__name">{data.index}: {data.name}()</div>
+        <div className="method-call-node__name">
+          {data.index}: {data.name}()
+        </div>
         <div className="spacer-10"></div>
       </div>
       <div className={`method-call-node__body`}>
@@ -162,7 +170,8 @@ function MethodCallNode({ id, data }: NodeProps<MethodCall>) {
             isFinal={false}
             isConnectable={true}
             isConnected={
-              localVariablesEdges.find((e) => e.sourceHandle == name)?.target != null
+              localVariablesEdges.find((e) => e.sourceHandle == name)?.target !=
+              null
             }
             nodeId={id}
             name={name}
@@ -170,9 +179,17 @@ function MethodCallNode({ id, data }: NodeProps<MethodCall>) {
           />
         ))}
 
-        <button onClick={handleDeclareLocaleVariable}>
-          Declare Local Variable
-        </button>
+        <div className="method-call-node__buttons">
+          <button
+            className="method-call-node__declare"
+            onClick={handleDeclareLocaleVariable}
+          >
+            Declare Local Variable
+          </button>
+          <button className="method-call-node__return" onClick={handleReturn}>
+            Return
+          </button>
+        </div>
       </div>
     </>
   );

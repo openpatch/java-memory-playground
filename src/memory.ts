@@ -79,7 +79,7 @@ export const initialMemory: Memory = {
   options: {
     hideSidebar: false,
     hideCallMethod: false,
-    hideDeclareGlobalVariable: false,
+    hideDeclareGlobalVariable: true,
   },
   viewport: {
     x: 0,
