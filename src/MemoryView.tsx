@@ -21,7 +21,7 @@ import { shallow } from "zustand/shallow";
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 import ObjectNode from "./ObjectNode";
 import VariableNode from "./VariableNode";
-import { useCallback, useState, DragEvent, useRef, useEffect } from "react";
+import { useCallback, useState, DragEvent, useRef } from "react";
 import { Sidebar } from "./Sidebar";
 import {
   Attribute,
