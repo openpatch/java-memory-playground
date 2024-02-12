@@ -374,11 +374,11 @@ export const MemoryView = () => {
             setNodes((nds) =>
               nds.map((n) => {
                 if (n.id == lastMethodCall.id) {
-                  lastMethodCall.data.localVariables[name] = {
+                  (n.data as any).localVariables[name] = {
                     dataType: "Object",
                     value: newNode.id
                   }
-                  return lastMethodCall;
+                  return n;
                 }
                 return n;
               }).concat(newNode),
