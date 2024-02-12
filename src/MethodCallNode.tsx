@@ -21,7 +21,7 @@ function LocalVariableHandle({
   isConnected: boolean;
   isConnectable: boolean;
 }) {
-  const { setNodes } = useReactFlow();
+  const { setNodes, setEdges } = useReactFlow();
 
   const onChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     let value: any = e.target.value;
@@ -68,6 +68,7 @@ function LocalVariableHandle({
         return n;
       }),
     );
+    setEdges(eds => eds.filter(e => !(e.source == nodeId && e.sourceHandle == name)))
   };
 
   return !primitveDataTypes.includes(value.dataType) ? (
