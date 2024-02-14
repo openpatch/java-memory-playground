@@ -201,7 +201,17 @@ export const MemoryView = () => {
           target: id,
         };
         setNodes((nds) => nds.concat(newNode));
-        setEdges((eds) => eds.concat(newEdge));
+        setEdges((eds) =>
+          eds
+            .filter(
+              (e) =>
+                !(
+                  e.source == connectingNode.current?.nodeId &&
+                  e.sourceHandle == connectingNode.current?.handleId
+                ),
+            )
+            .concat(newEdge),
+        );
       }
       connectingNode.current = null;
     },
