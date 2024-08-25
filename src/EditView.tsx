@@ -1,20 +1,17 @@
 import CodeMirror from "@uiw/react-codemirror";
+import { langs } from "@uiw/codemirror-extensions-langs";
 import { shallow } from "zustand/shallow";
 import useStore, { RFState } from "./store";
 import { useCallback, useState } from "react";
-import { json } from "@codemirror/lang-json";
 
 const selector = (state: RFState) => ({
   updateMemory: state.updateMemory,
   memory: state.memory,
-  setRoute: state.setRoute
+  setRoute: state.setRoute,
 });
 
 export const EditView = () => {
-  const { memory, updateMemory, setRoute } = useStore(
-    selector,
-    shallow
-  );
+  const { memory, updateMemory, setRoute } = useStore(selector, shallow);
 
   const [data, setData] = useState(JSON.stringify(memory, null, 2));
 
@@ -32,7 +29,12 @@ export const EditView = () => {
 
   return (
     <div>
-      <CodeMirror height="90vh" value={data} onChange={onChange} extensions={[json()]} />
+      <CodeMirror
+        height="90vh"
+        value={data}
+        onChange={onChange}
+        extensions={[langs.json()]}
+      />
       <div className="button-group">
         <button onClick={onSave}>Save</button>
         <button onClick={onView}>View</button>
