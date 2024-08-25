@@ -18,13 +18,15 @@ export const Sidebar = ({ memory }: { memory: Memory }) => {
           new {name}
         </div>
       ))}
-      <div
-        className="sidebar-class"
-        onDragStart={(e) => onDragStart(e, "Array")}
-        draggable
-      >
-        new Array
-      </div>
+      {!memory.options.hideNewArray && (
+        <div
+          className="sidebar-class"
+          onDragStart={(e) => onDragStart(e, "Array")}
+          draggable
+        >
+          new Array
+        </div>
+      )}
       {!memory.options.hideDeclareGlobalVariable && (
         <div
           className="sidebar-variable"

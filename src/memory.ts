@@ -67,6 +67,7 @@ export type Memory = {
     hideSidebar?: boolean;
     hideCallMethod?: boolean;
     hideDeclareGlobalVariable?: boolean;
+    hideNewArray?: boolean;
     createNewOnEdgeDrop?: boolean;
   };
   klasses: Record<string, Klass>;
@@ -80,6 +81,7 @@ export const initialMemory: Memory = {
     hideSidebar: false,
     hideCallMethod: false,
     hideDeclareGlobalVariable: true,
+    hideNewArray: false,
   },
   viewport: {
     x: 0,
