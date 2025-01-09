@@ -19,18 +19,26 @@ export type DataType =
   | "Array"
   | string;
 
+interface KlassAttributes {
+  [key: string]: DataType;
+}
+
 export type Klass = {
-  attributes: Record<string, DataType>;
+  attributes: KlassAttributes;
 };
 
 export type Attribute = {
   dataType: DataType;
-  value: string | number | boolean | null;
+  value?: string | number | boolean;
 };
+
+interface ObjAttributes {
+  [key: string]: Attribute;
+}
 
 export type Obj = {
   klass: string;
-  attributes: Record<string, Attribute>;
+  attributes: ObjAttributes;
   position: {
     x: number;
     y: number;
@@ -47,15 +55,35 @@ export type Variable = {
   };
 };
 
+interface localVariables {
+  [key: string]: Attribute;
+}
+
 export type MethodCall = {
-  name: String;
+  name: string;
   index: number;
-  localVariables: Record<string, Attribute>;
+  localVariables: localVariables;
   position: {
     x: number;
     y: number;
   };
 };
+
+interface Klasses {
+  [key: string]: Klass;
+}
+
+interface Objs {
+  [key: string]: Obj;
+}
+
+interface Variables {
+  [key: string]: Variable;
+}
+
+interface MethodCalls {
+  [key: number]: MethodCall;
+}
 
 export type Memory = {
   viewport: {
@@ -70,10 +98,10 @@ export type Memory = {
     hideNewArray?: boolean;
     createNewOnEdgeDrop?: boolean;
   };
-  klasses: Record<string, Klass>;
-  objects: Record<string, Obj>;
-  variables: Record<string, Variable>;
-  methodCalls: Record<number, MethodCall>;
+  klasses: Klasses;
+  objects: Objs;
+  variables: Variables;
+  methodCalls: MethodCalls;
 };
 
 export const initialMemory: Memory = {
@@ -98,18 +126,16 @@ export const initialMemory: Memory = {
         },
         tmp1: {
           dataType: "List",
-          value: null,
         },
         tmp2: {
           dataType: "List",
-          value: null,
         },
       },
       index: 0,
       position: {
         x: 0,
-        y: 0
-      }
+        y: 0,
+      },
     },
   },
   variables: {},
@@ -157,7 +183,6 @@ export const initialMemory: Memory = {
       attributes: {
         next: {
           dataType: "Node",
-          value: null,
         },
         content: {
           dataType: "Message",
@@ -174,11 +199,9 @@ export const initialMemory: Memory = {
       attributes: {
         next: {
           dataType: "Node",
-          value: null,
         },
         content: {
           dataType: "Message",
-          value: null,
         },
       },
       position: {

@@ -1,8 +1,11 @@
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { Statistics, ViewUpdate } from "@uiw/react-codemirror";
 import { langs } from "@uiw/codemirror-extensions-langs";
 import { shallow } from "zustand/shallow";
 import useStore, { RFState } from "./store";
 import { useCallback, useState } from "react";
+import { jsonSchema } from "codemirror-json-schema";
+
+import memorySchema from "../schemas/memory.schema.json";
 
 const selector = (state: RFState) => ({
   updateMemory: state.updateMemory,
@@ -33,7 +36,7 @@ export const EditView = () => {
         height="90vh"
         value={data}
         onChange={onChange}
-        extensions={[langs.json()]}
+        extensions={[langs.json(), jsonSchema(memorySchema as any)]}
       />
       <div className="button-group">
         <button onClick={onSave}>Save</button>

@@ -1,8 +1,11 @@
 import {
   BaseEdge,
+  Edge,
   EdgeProps,
   getSmoothStepPath,
-} from 'reactflow';
+} from '@xyflow/react';
+
+export type ReferenceEdge = Edge<{}, "reference">
 
 export default function ReferenceEdge({
   sourceX,

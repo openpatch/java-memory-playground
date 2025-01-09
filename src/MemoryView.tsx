@@ -1,4 +1,5 @@
-import ReactFlow, {
+import {
+  ReactFlow,
   Controls,
   Background,
   Panel,
@@ -7,27 +8,22 @@ import ReactFlow, {
   addEdge,
   ReactFlowProvider,
   ReactFlowInstance,
-  Node,
-  Edge,
   OnConnectStart,
   OnConnectEnd,
   OnConnect,
   OnConnectStartParams,
   MarkerType,
-} from "reactflow";
+} from "@xyflow/react";
 import { toPng } from "html-to-image";
 import useStore, { RFState } from "./store";
 import { shallow } from "zustand/shallow";
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
-import ObjectNode from "./ObjectNode";
+import ObjectNode, { ObjectNodeType } from "./ObjectNode";
 import VariableNode from "./VariableNode";
 import { useCallback, useState, DragEvent, useRef } from "react";
 import { Sidebar } from "./Sidebar";
 import {
   Attribute,
-  MethodCall,
-  Obj,
-  Variable,
   numericDataTypes,
 } from "./memory";
 import {
@@ -35,8 +31,11 @@ import {
   isConnectedToMethodCall,
   isConnectedToVariable,
 } from "./utils";
-import MethodCallNode from "./MethodCallNode";
+import MethodCallNode, {
+  isMethodCallNode,
+} from "./MethodCallNode";
 import ReferenceEdge from "./ReferenceEdge";
+import { CustomEdgeType, CustomNodeType } from "./types";
 
 const selector = (state: RFState) => ({
   selectedNodeId: state.selectedNodeId,
@@ -56,11 +55,11 @@ const edgeTypes = {
 };
 
 const createAttributesForObject = (
-  attributes: Record<string, string>,
+  attributes: Record<string, string>
 ): Record<string, Attribute> => {
   const objAttributes: Record<string, Attribute> = {};
   Object.entries(attributes).forEach(([name, dataType]) => {
-    let value = null;
+    let value = undefined;
     if (dataType == "boolean") {
       value = false;
     } else if (numericDataTypes.includes(dataType)) {
@@ -107,16 +106,14 @@ export const MemoryView = () => {
   const { memory, updateMemory, setRoute } = useStore(selector, shallow);
   const { edges: initialEdges, nodes: initialNodes } = getEdgesAndNodes(memory);
   const [reactFlowInstance, setReactFlowInstance] =
-    useState<ReactFlowInstance | null>(null);
+    useState<ReactFlowInstance<CustomNodeType, CustomEdgeType> | null>(null);
   const connectingNode = useRef<OnConnectStartParams | null>(null);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const nodeIds: string[] = nodes.map((n) => n.id);
 
-  const methodCalls = nodes.filter(
-    (n): n is Node<MethodCall> => n.type === "method-call",
-  );
+  const methodCalls = nodes.filter(isMethodCallNode);
   let previousMethodCall = methodCalls[0];
   let lastMethodCall = methodCalls[0];
   methodCalls.forEach((methodCall) => {
@@ -137,12 +134,12 @@ export const MemoryView = () => {
               !(
                 e.source === params.source &&
                 e.sourceHandle == params.sourceHandle
-              ),
-          ),
-        ),
+              )
+          )
+        )
       );
     },
-    [setEdges],
+    [setEdges]
   );
 
   const onConnectStart = useCallback<OnConnectStart>((_, params) => {
@@ -168,11 +165,11 @@ export const MemoryView = () => {
       if (!connectingNode.current || !memory.options.createNewOnEdgeDrop)
         return;
       const targetIsPane = (event.target as HTMLElement).classList.contains(
-        "react-flow__pane",
+        "react-flow__pane"
       );
 
       if (targetIsPane && node?.type == "object" && reactFlowInstance != null) {
-        const objNode: Node<Obj> = node as any;
+        const objNode: ObjectNodeType = node as any;
         const objKlass = memory.klasses[objNode.data["klass"]];
         if (!objKlass) return;
         const klassName =
@@ -184,7 +181,7 @@ export const MemoryView = () => {
         });
         const id = getId();
 
-        const newNode: Node<Obj> = {
+        const newNode: CustomNodeType = {
           id,
           type: "object",
           position,
@@ -194,7 +191,7 @@ export const MemoryView = () => {
             position,
           },
         };
-        const newEdge: Edge = {
+        const newEdge: CustomEdgeType = {
           id: getId(),
           source: connectingNode.current.nodeId || "",
           sourceHandle: connectingNode.current.handleId,
@@ -208,14 +205,14 @@ export const MemoryView = () => {
                 !(
                   e.source == connectingNode.current?.nodeId &&
                   e.sourceHandle == connectingNode.current?.handleId
-                ),
+                )
             )
-            .concat(newEdge),
+            .concat(newEdge)
         );
       }
       connectingNode.current = null;
     },
-    [nodes, memory],
+    [nodes, memory]
   );
 
   const onGC = () => {
@@ -224,8 +221,8 @@ export const MemoryView = () => {
         (n) =>
           n.type != "object" ||
           isConnectedToVariable(n.id, nodes, edges) ||
-          isConnectedToMethodCall(n.id, nodes, edges),
-      ),
+          isConnectedToMethodCall(n.id, nodes, edges)
+      )
     );
   };
 
@@ -278,7 +275,7 @@ export const MemoryView = () => {
       if (reactFlowInstance == null) return;
 
       const type = event.dataTransfer.getData(
-        "application/java-memory-playground",
+        "application/java-memory-playground"
       );
 
       // check if the dropped element is valid
@@ -302,7 +299,7 @@ export const MemoryView = () => {
           const index = reactFlowInstance
             .getNodes()
             .filter((n) => n.type === "method-call").length;
-          const newNode: Node<MethodCall> = {
+          const newNode: CustomNodeType = {
             id: getId(),
             type: "method-call",
             position,
@@ -313,7 +310,7 @@ export const MemoryView = () => {
               localVariables: {
                 this: {
                   dataType: "object",
-                  value: null,
+                  value: undefined,
                 },
               },
             },
@@ -339,12 +336,12 @@ export const MemoryView = () => {
           for (let i = 0; i < Number.parseInt(length); i++) {
             objAttributes[`[${i}]`] = {
               dataType: "Object",
-              value: null,
+              value: undefined,
             };
           }
         }
         if (name != null) {
-          const newNode: Node<Obj> = {
+          const newNode: CustomNodeType = {
             id: getId(),
             type: "object",
             position,
@@ -356,7 +353,7 @@ export const MemoryView = () => {
           };
 
           if (lastMethodCall === undefined) {
-            const newVar: Node<Variable> = {
+            const newVar: CustomNodeType = {
               id: getId(),
               type: "variable",
               position: {
@@ -374,7 +371,7 @@ export const MemoryView = () => {
               },
             };
             setNodes((nds) => nds.concat(newNode, newVar));
-            const newEdge: Edge = {
+            const newEdge: CustomEdgeType = {
               id: getId(),
               source: newVar.id,
               target: newNode.id,
@@ -382,18 +379,20 @@ export const MemoryView = () => {
             setEdges((egs) => egs.concat(newEdge));
           } else {
             setNodes((nds) =>
-              nds.map((n) => {
-                if (n.id == lastMethodCall.id) {
-                  (n.data as any).localVariables[name] = {
-                    dataType: "Object",
-                    value: newNode.id
+              nds
+                .map((n) => {
+                  if (n.id == lastMethodCall.id) {
+                    (n.data as any).localVariables[name] = {
+                      dataType: "Object",
+                      value: newNode.id,
+                    };
+                    return n;
                   }
                   return n;
-                }
-                return n;
-              }).concat(newNode),
+                })
+                .concat(newNode)
             );
-            const newEdge: Edge = {
+            const newEdge: CustomEdgeType = {
               id: getId(),
               source: lastMethodCall.id,
               sourceHandle: name,
@@ -406,7 +405,7 @@ export const MemoryView = () => {
         const name = window.prompt("Name for the new global variable?");
 
         if (name != null) {
-          const newNode: Node<Variable> = {
+          const newNode: CustomNodeType = {
             id: getId(),
             type: "variable",
             position,
@@ -416,7 +415,7 @@ export const MemoryView = () => {
         }
       }
     },
-    [reactFlowInstance],
+    [reactFlowInstance]
   );
 
   return (

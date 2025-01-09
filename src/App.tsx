@@ -1,5 +1,5 @@
 import "./App.css"
-import 'reactflow/dist/style.css';
+import '@xyflow/react/dist/style.css';
 import useStore, { RFState } from './store';
 import { shallow } from 'zustand/shallow';
 import { MemoryView } from "./MemoryView";

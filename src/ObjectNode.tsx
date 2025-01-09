@@ -2,13 +2,15 @@ import { ChangeEventHandler } from "react";
 import {
   Handle,
   NodeProps,
+  Node,
   Position,
   useEdges,
   useNodes,
   useReactFlow,
-} from "reactflow";
+} from "@xyflow/react";
 import { Attribute, Obj, numericDataTypes, primitveDataTypes } from "./memory";
 import { isConnectedToMethodCall, isConnectedToVariable } from "./utils";
+import { CustomEdgeType, CustomNodeType } from "./types";
 
 function AttributeHandle({
   name,
@@ -24,7 +26,7 @@ function AttributeHandle({
   isConnected: boolean;
   isConnectable: boolean;
 }) {
-  const { setNodes } = useReactFlow();
+  const { setNodes } = useReactFlow<CustomNodeType, CustomEdgeType>();
 
   const onChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     let value: any = e.target.value;
@@ -33,7 +35,7 @@ function AttributeHandle({
     }
     setNodes((nds) =>
       nds.map((n) => {
-        if (n.id == nodeId) {
+        if (n.id == nodeId && n.type === "object") {
           return {
             ...n,
             data: {
@@ -49,7 +51,7 @@ function AttributeHandle({
           };
         }
         return n;
-      }),
+      })
     );
   };
 
@@ -100,10 +102,18 @@ function AttributeHandle({
   );
 }
 
-function ObjectNode({ id, data }: NodeProps<Obj>) {
+export type ObjectNodeType = Node<Obj, "object">;
+
+export function isObjectNode(node: CustomNodeType): node is ObjectNodeType {
+  return node.type === "object";
+}
+
+function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
   const nodes = useNodes();
   const edges = useEdges();
-  const gc = !isConnectedToVariable(id, nodes, edges) && !isConnectedToMethodCall(id, nodes, edges);
+  const gc =
+    !isConnectedToVariable(id, nodes, edges) &&
+    !isConnectedToMethodCall(id, nodes, edges);
 
   const attributeEdges = edges.filter((e) => e.source == id);
   return (

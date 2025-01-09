@@ -1,16 +1,16 @@
-import { Edge, Node } from "reactflow";
 import { Memory, MethodCall, Obj, Variable, primitveDataTypes } from "./memory";
+import { CustomEdgeType, CustomNodeType } from "./types";
 
 export type EdgeData = {};
 
 export const getEdgesAndNodes = (
   memory: Memory,
 ): {
-  edges: Edge<EdgeData>[];
-  nodes: Node<Obj | Variable | MethodCall>[];
+  edges: CustomEdgeType[];
+  nodes: CustomNodeType[];
 } => {
-  const nodes: Node<Obj | Variable | MethodCall>[] = [];
-  const edges: Edge<EdgeData>[] = [];
+  const nodes: CustomNodeType[] = [];
+  const edges: CustomEdgeType[] = [];
 
   Object.entries(memory.variables).forEach(([id, data]) => {
     nodes.push({
@@ -29,7 +29,7 @@ export const getEdgesAndNodes = (
     }
   });
 
-  Object.entries(memory.methodCalls || {}).forEach(([id, data]) => {
+  Object.entries(memory.methodCalls).forEach(([id, data]) => {
     nodes.push({
       id,
       type: "method-call",
@@ -37,7 +37,9 @@ export const getEdgesAndNodes = (
       position: data.position,
     });
 
-    Object.entries(data.localVariables).forEach(([name, value]) => {
+    const methodCallData = data as MethodCall;
+
+    Object.entries(methodCallData.localVariables).forEach(([name, value]) => {
       if (!primitveDataTypes.includes(value.dataType) && value.value != null) {
         edges.push({
           id: `method-call-${id}+${name}`,
@@ -78,8 +80,8 @@ export const getEdgesAndNodes = (
 };
 
 export const getMemory = (
-  edges: Edge<EdgeData>[],
-  nodes: Node<Obj | Variable | MethodCall>[],
+  edges: CustomEdgeType[],
+  nodes: CustomNodeType[],
 ): Partial<Memory> => {
   const variables: Memory["variables"] = {};
   const objects: Memory["objects"] = {};
@@ -98,7 +100,7 @@ export const getMemory = (
           );
           obj.attributes[name] = {
             dataType: value.dataType,
-            value: e?.target || null,
+            value: e?.target,
           };
         }
       });
@@ -115,7 +117,7 @@ export const getMemory = (
           );
           methodCall.localVariables[name] = {
             dataType: value.dataType,
-            value: e?.target || null,
+            value: e?.target,
           };
         }
       });

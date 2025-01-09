@@ -1,0 +1,254 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "KlassAttributes": {
+            "additionalProperties": {
+                "type": "string"
+            },
+            "type": "object"
+        },
+        "Klasses": {
+            "additionalProperties": {
+                "properties": {
+                    "attributes": {
+                        "$ref": "#/definitions/KlassAttributes"
+                    }
+                },
+                "required": [
+                    "attributes"
+                ],
+                "type": "object"
+            },
+            "type": "object"
+        },
+        "ObjAttributes": {
+            "additionalProperties": {
+                "properties": {
+                    "dataType": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": [
+                            "string",
+                            "number",
+                            "boolean"
+                        ]
+                    }
+                },
+                "required": [
+                    "dataType"
+                ],
+                "type": "object"
+            },
+            "type": "object"
+        },
+        "Objs": {
+            "additionalProperties": {
+                "properties": {
+                    "attributes": {
+                        "$ref": "#/definitions/ObjAttributes"
+                    },
+                    "klass": {
+                        "type": "string"
+                    },
+                    "position": {
+                        "properties": {
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "x",
+                            "y"
+                        ],
+                        "type": "object"
+                    }
+                },
+                "required": [
+                    "attributes",
+                    "klass",
+                    "position"
+                ],
+                "type": "object"
+            },
+            "type": "object"
+        },
+        "Variables": {
+            "additionalProperties": {
+                "properties": {
+                    "dataType": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "additionalProperties": false,
+                        "patternProperties": {
+                            "^[0-9]+$": {
+                                "type": "string"
+                            }
+                        },
+                        "properties": {
+                            "length": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "length"
+                        ],
+                        "type": "object"
+                    },
+                    "position": {
+                        "properties": {
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "x",
+                            "y"
+                        ],
+                        "type": "object"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "dataType",
+                    "name",
+                    "position",
+                    "value"
+                ],
+                "type": "object"
+            },
+            "type": "object"
+        },
+        "localVariables": {
+            "additionalProperties": {
+                "properties": {
+                    "dataType": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": [
+                            "string",
+                            "number",
+                            "boolean"
+                        ]
+                    }
+                },
+                "required": [
+                    "dataType"
+                ],
+                "type": "object"
+            },
+            "type": "object"
+        }
+    },
+    "properties": {
+        "klasses": {
+            "$ref": "#/definitions/Klasses"
+        },
+        "methodCalls": {
+            "additionalProperties": false,
+            "patternProperties": {
+                "^[0-9]+$": {
+                    "properties": {
+                        "index": {
+                            "type": "number"
+                        },
+                        "localVariables": {
+                            "$ref": "#/definitions/localVariables"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "position": {
+                            "properties": {
+                                "x": {
+                                    "type": "number"
+                                },
+                                "y": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": [
+                                "x",
+                                "y"
+                            ],
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "index",
+                        "localVariables",
+                        "name",
+                        "position"
+                    ],
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
+        "objects": {
+            "$ref": "#/definitions/Objs"
+        },
+        "options": {
+            "properties": {
+                "createNewOnEdgeDrop": {
+                    "type": "boolean"
+                },
+                "hideCallMethod": {
+                    "type": "boolean"
+                },
+                "hideDeclareGlobalVariable": {
+                    "type": "boolean"
+                },
+                "hideNewArray": {
+                    "type": "boolean"
+                },
+                "hideSidebar": {
+                    "type": "boolean"
+                }
+            },
+            "type": "object"
+        },
+        "variables": {
+            "$ref": "#/definitions/Variables"
+        },
+        "viewport": {
+            "properties": {
+                "x": {
+                    "type": "number"
+                },
+                "y": {
+                    "type": "number"
+                },
+                "zoom": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "x",
+                "y",
+                "zoom"
+            ],
+            "type": "object"
+        }
+    },
+    "required": [
+        "klasses",
+        "methodCalls",
+        "objects",
+        "options",
+        "variables",
+        "viewport"
+    ],
+    "type": "object"
+}
+

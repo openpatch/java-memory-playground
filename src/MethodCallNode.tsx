@@ -1,11 +1,19 @@
 import { ChangeEventHandler } from "react";
-import { Handle, NodeProps, Position, useEdges, useReactFlow } from "reactflow";
+import {
+  Node,
+  Handle,
+  NodeProps,
+  Position,
+  useEdges,
+  useReactFlow,
+} from "@xyflow/react";
 import {
   Attribute,
   MethodCall,
   numericDataTypes,
   primitveDataTypes,
 } from "./memory";
+import { CustomEdgeType, CustomNodeType } from "./types";
 
 function LocalVariableHandle({
   name,
@@ -21,7 +29,7 @@ function LocalVariableHandle({
   isConnected: boolean;
   isConnectable: boolean;
 }) {
-  const { setNodes, setEdges } = useReactFlow();
+  const { setNodes, setEdges } = useReactFlow<CustomNodeType, CustomEdgeType>();
 
   const onChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     let value: any = e.target.value;
@@ -30,7 +38,7 @@ function LocalVariableHandle({
     }
     setNodes((nds) =>
       nds.map((n) => {
-        if (n.id == nodeId) {
+        if (n.id == nodeId && n.type === "method-call") {
           return {
             ...n,
             data: {
@@ -46,14 +54,14 @@ function LocalVariableHandle({
           };
         }
         return n;
-      }),
+      })
     );
   };
 
   const onDelete = () => {
     setNodes((nds) =>
       nds.map((n) => {
-        if (n.id == nodeId) {
+        if (n.id == nodeId && n.type === "method-call") {
           delete n.data.localVariables[name];
           return {
             ...n,
@@ -66,9 +74,11 @@ function LocalVariableHandle({
           };
         }
         return n;
-      }),
+      })
     );
-    setEdges(eds => eds.filter(e => !(e.source == nodeId && e.sourceHandle == name)))
+    setEdges((eds) =>
+      eds.filter((e) => !(e.source == nodeId && e.sourceHandle == name))
+    );
   };
 
   return !primitveDataTypes.includes(value.dataType) ? (
@@ -121,9 +131,15 @@ function LocalVariableHandle({
   );
 }
 
-function MethodCallNode({ id, data }: NodeProps<MethodCall>) {
-  const { setNodes } = useReactFlow();
-  const edges = useEdges();
+export type MethodCallNodeType = Node<MethodCall, "method-call">;
+
+export function isMethodCallNode(node: Node): node is MethodCallNodeType {
+  return node.type === "method-call";
+}
+
+function MethodCallNode({ id, data }: NodeProps<MethodCallNodeType>) {
+  const { setNodes } = useReactFlow<CustomNodeType, CustomEdgeType>();
+  const edges = useEdges<CustomEdgeType>();
 
   const localVariablesEdges = edges.filter((e) => e.source == id);
 
@@ -136,7 +152,7 @@ function MethodCallNode({ id, data }: NodeProps<MethodCall>) {
     if (name != null) {
       setNodes((nds) =>
         nds.map((n) => {
-          if (n.id == id) {
+          if (n.id == id && n.type === "method-call") {
             return {
               ...n,
               data: {
@@ -144,14 +160,14 @@ function MethodCallNode({ id, data }: NodeProps<MethodCall>) {
                 localVariables: {
                   ...n.data.localVariables,
                   [name]: {
-                    value: null,
+                    dataType: "object",
                   },
                 },
               },
             };
           }
           return n;
-        }),
+        })
       );
     }
   };

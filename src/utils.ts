@@ -1,4 +1,4 @@
-import { Node, Edge, getIncomers } from "reactflow";
+import { Node, Edge, getIncomers } from "@xyflow/react";
 
 export const isConnectedToVariable = (
   nodeId: string,
