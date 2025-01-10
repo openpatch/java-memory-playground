@@ -1,4 +1,4 @@
-import CodeMirror, { Statistics, ViewUpdate } from "@uiw/react-codemirror";
+import CodeMirror from "@uiw/react-codemirror";
 import { langs } from "@uiw/codemirror-extensions-langs";
 import { shallow } from "zustand/shallow";
 import useStore, { RFState } from "./store";
