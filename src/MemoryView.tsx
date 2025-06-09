@@ -415,7 +415,7 @@ export const MemoryView = () => {
         }
       }
     },
-    [reactFlowInstance]
+    [reactFlowInstance, lastMethodCall]
   );
 
   return (
