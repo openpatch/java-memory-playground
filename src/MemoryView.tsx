@@ -335,7 +335,7 @@ export const MemoryView = () => {
           };
           for (let i = 0; i < Number.parseInt(length); i++) {
             objAttributes[`[${i}]`] = {
-              dataType: "Object",
+              dataType: type,
               value: undefined,
             };
           }
@@ -383,7 +383,7 @@ export const MemoryView = () => {
                 .map((n) => {
                   if (n.id == lastMethodCall.id) {
                     (n.data as any).localVariables[name] = {
-                      dataType: "Object",
+                      dataType: newNode.data.klass || "Object",
                       value: newNode.id,
                     };
                     return n;
