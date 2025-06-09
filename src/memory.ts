@@ -92,6 +92,7 @@ export type Memory = {
     zoom: number;
   };
   options: {
+    disableGarbageCollector?: boolean;
     hideSidebar?: boolean;
     hideCallMethod?: boolean;
     hideDeclareGlobalVariable?: boolean;

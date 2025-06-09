@@ -11,6 +11,8 @@ import {
 import { Attribute, Obj, numericDataTypes, primitveDataTypes } from "./memory";
 import { isConnectedToMethodCall, isConnectedToVariable } from "./utils";
 import { CustomEdgeType, CustomNodeType } from "./types";
+import useStore, { RFState } from "./store";
+import { shallow } from "zustand/shallow";
 
 function AttributeHandle({
   name,
@@ -108,10 +110,15 @@ export function isObjectNode(node: CustomNodeType): node is ObjectNodeType {
   return node.type === "object";
 }
 
+const selector = (state: RFState) => ({
+  ...state.memory.options,
+});
+
 function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
+  const { disableGarbageCollector } = useStore(selector, shallow);
   const nodes = useNodes();
   const edges = useEdges();
-  const gc =
+  const gc = !disableGarbageCollector &&
     !isConnectedToVariable(id, nodes, edges) &&
     !isConnectedToMethodCall(id, nodes, edges);
 

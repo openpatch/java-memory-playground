@@ -426,7 +426,7 @@ export const MemoryView = () => {
           className="memory"
           nodes={nodes.map((n) => {
             n.className = "";
-            n.deletable = false;
+            n.deletable = memory.options.disableGarbageCollector;
             if (
               previousMethodCall !== undefined &&
               isConnectedTo(n.id, previousMethodCall.id, nodes, edges)
@@ -498,13 +498,13 @@ export const MemoryView = () => {
               <button onClick={onEdit}>Edit</button>
             </div>
           </Panel>
-          <Panel position="bottom-right">
+          {!memory.options.disableGarbageCollector && <Panel position="bottom-right">
             <div className="button-group">
               <button className="button-gc" onClick={onGC}>
                 Run Garbage Collector
               </button>
             </div>
-          </Panel>
+          </Panel>}
           <Controls />
           <Background />
         </ReactFlow>
