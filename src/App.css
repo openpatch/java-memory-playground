@@ -13,7 +13,6 @@ button {
   color: grey;
   cursor: pointer;
   border: 0;
-  flex: 1;
   border-radius: 10px;
   padding: 8px;
 }
@@ -91,11 +90,11 @@ input {
 }
 
 .react-flow__edge.selected .react-flow__edge-path {
-  stroke: red!important;
+  stroke: red !important;
 }
 
 .react-flow__node.selected {
-  outline: 2px solid red!important;
+  outline: 2px solid red !important;
 }
 
 .react-flow__edge.previous-method-call .react-flow__edge-path {
@@ -150,6 +149,7 @@ input {
 .react-flow__node-object .react-flow__handle-left {
   transform: translate(-8px, 0);
 }
+
 .react-flow__node-method-call .react-flow__handle-right,
 .react-flow__node-object .react-flow__handle-right {
   transform: translate(8px, 0);

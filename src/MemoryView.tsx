@@ -181,13 +181,38 @@ export const MemoryView = () => {
         });
         const id = getId();
 
+        // Handle Array type specially
+        let objAttributes: Record<string, Attribute>;
+        if (klassName === "Array") {
+          const length = window.prompt(`Length of the array?`);
+          if (length == null) return;
+          const tempAttributes: Record<string, Attribute> = {
+            length: {
+              dataType: "int",
+              value: Number.parseInt(length),
+            },
+          };
+          for (let i = 0; i < Number.parseInt(length); i++) {
+            tempAttributes[`[${i}]`] = {
+              dataType: klassName,
+              value: undefined,
+            };
+          }
+          objAttributes = tempAttributes;
+        } else if (klass) {
+          objAttributes = createAttributesForObject(klass.attributes);
+        } else {
+          // Unknown klass type, cannot create object
+          return;
+        }
+
         const newNode: CustomNodeType = {
           id,
           type: "object",
           position,
           data: {
             klass: klassName,
-            attributes: createAttributesForObject(klass.attributes),
+            attributes: objAttributes,
             position,
           },
         };
@@ -212,7 +237,7 @@ export const MemoryView = () => {
       }
       connectingNode.current = null;
     },
-    [nodes, memory]
+    [nodes, memory, reactFlowInstance, setNodes, setEdges]
   );
 
   const onGC = () => {
@@ -226,9 +251,9 @@ export const MemoryView = () => {
     );
   };
 
-  const onEdit = () => {
+  const onConfig = () => {
     onSaveURL();
-    setRoute("edit");
+    setRoute("config");
   };
 
   const onSaveURL = () => {
@@ -495,7 +520,7 @@ export const MemoryView = () => {
             <div className="button-group">
               <button onClick={onSaveURL}>Save (URL)</button>
               <button onClick={onDownloadPng}>Download (PNG)</button>
-              <button onClick={onEdit}>Edit</button>
+              <button onClick={onConfig}>Config</button>
             </div>
           </Panel>
           {!memory.options.disableGarbageCollector && <Panel position="bottom-right">
