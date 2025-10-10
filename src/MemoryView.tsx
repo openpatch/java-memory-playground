@@ -226,11 +226,6 @@ export const MemoryView = () => {
     );
   };
 
-  const onEdit = () => {
-    onSaveURL();
-    setRoute("edit");
-  };
-
   const onConfig = () => {
     onSaveURL();
     setRoute("config");
@@ -501,7 +496,6 @@ export const MemoryView = () => {
               <button onClick={onSaveURL}>Save (URL)</button>
               <button onClick={onDownloadPng}>Download (PNG)</button>
               <button onClick={onConfig}>Config</button>
-              <button onClick={onEdit}>Edit JSON</button>
             </div>
           </Panel>
           {!memory.options.disableGarbageCollector && <Panel position="bottom-right">

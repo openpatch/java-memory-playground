@@ -3,7 +3,6 @@ import '@xyflow/react/dist/style.css';
 import useStore, { RFState } from './store';
 import { shallow } from 'zustand/shallow';
 import { MemoryView } from "./MemoryView";
-import { EditView } from "./EditView";
 import { ConfigView } from "./ConfigView";
 
 const selector = (state: RFState) => ({
@@ -17,10 +16,9 @@ function App() {
   );
 
   return (
-    <div style={{ width: "100dvw", height: "100dvh" }}>
+    <div style={{ height: "100dvh" }}>
       {route === "view" &&
-      <MemoryView />}
-      {route === "edit" && <EditView />}
+        <MemoryView />}
       {route === "config" && <ConfigView />}
     </div>
   );
