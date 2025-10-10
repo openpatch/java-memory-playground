@@ -453,7 +453,7 @@ export const MemoryView = () => {
   const onPaneClick = useCallback(
     (event: any) => {
       if (!placementMode || !reactFlowInstance) return;
-
+      
       const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
@@ -538,7 +538,7 @@ export const MemoryView = () => {
           onInit={setReactFlowInstance}
           onDrop={onDrop}
           onDragOver={onDragOver}
-          onPaneClick={onPaneClick}
+          {...(placementMode && { onPaneClick })}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           proOptions={{
