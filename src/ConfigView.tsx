@@ -158,90 +158,81 @@ export const ConfigView = () => {
 
   return (
     <div style={{ 
-      padding: "32px", 
+      padding: "24px", 
       maxWidth: "1200px", 
       margin: "0 auto",
       minHeight: "100vh",
-      backgroundColor: "#f8f9fa"
+      backgroundColor: "#fafafa"
     }}>
       <div style={{
         backgroundColor: "white",
-        borderRadius: "16px",
-        padding: "32px",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        marginBottom: "24px"
+        borderRadius: "8px",
+        padding: "24px",
+        border: "1px solid #e5e7eb",
+        marginBottom: "16px"
       }}>
         <h1 style={{ 
-          margin: "0 0 24px 0", 
-          color: "#1a202c",
-          fontSize: "32px",
-          fontWeight: "700"
+          margin: "0 0 16px 0", 
+          color: "#111827",
+          fontSize: "24px",
+          fontWeight: "600"
         }}>Configuration</h1>
 
-        <div className="button-group" style={{ gap: "12px", padding: "0" }}>
+        <div style={{ display: "flex", gap: "8px" }}>
           <button 
             onClick={onSave}
             style={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              backgroundColor: "#111827",
               color: "white",
-              padding: "12px 24px",
-              fontSize: "16px",
-              fontWeight: "600",
+              padding: "8px 16px",
+              fontSize: "14px",
+              fontWeight: "500",
               border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              boxShadow: "0 2px 4px rgba(102, 126, 234, 0.3)"
+              borderRadius: "6px",
+              cursor: "pointer"
             }}
-          >💾 Save</button>
+          >Save</button>
           <button 
             onClick={onView}
             style={{
-              background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-              color: "white",
-              padding: "12px 24px",
-              fontSize: "16px",
-              fontWeight: "600",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              boxShadow: "0 2px 4px rgba(79, 172, 254, 0.3)"
+              backgroundColor: "white",
+              color: "#111827",
+              padding: "8px 16px",
+              fontSize: "14px",
+              fontWeight: "500",
+              border: "1px solid #d1d5db",
+              borderRadius: "6px",
+              cursor: "pointer"
             }}
-          >👁️ View</button>
+          >View</button>
         </div>
       </div>
 
       <div style={{
         backgroundColor: "white",
-        borderRadius: "16px",
-        padding: "32px",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        marginBottom: "24px"
+        borderRadius: "8px",
+        padding: "24px",
+        border: "1px solid #e5e7eb",
+        marginBottom: "16px"
       }}>
         <h2 style={{ 
-          margin: "0 0 20px 0", 
-          color: "#2d3748",
-          fontSize: "24px",
-          fontWeight: "600",
-          borderBottom: "3px solid #667eea",
-          paddingBottom: "12px"
-        }}>⚙️ Options</h2>
+          margin: "0 0 16px 0", 
+          color: "#111827",
+          fontSize: "18px",
+          fontWeight: "600"
+        }}>Options</h2>
         <div style={{ 
           display: "grid", 
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "16px" 
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: "12px" 
         }}>
           <label style={{ 
             display: "flex", 
             alignItems: "center", 
-            gap: "12px",
-            padding: "12px 16px",
-            backgroundColor: "#f7fafc",
-            borderRadius: "8px",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            border: "2px solid transparent"
+            gap: "8px",
+            fontSize: "14px",
+            color: "#374151",
+            cursor: "pointer"
           }}>
             <input
               type="checkbox"
@@ -250,46 +241,40 @@ export const ConfigView = () => {
                 handleOptionChange("disableGarbageCollector", e.target.checked)
               }
               style={{
-                width: "20px",
-                height: "20px",
+                width: "16px",
+                height: "16px",
                 cursor: "pointer"
               }}
             />
-            <span style={{ fontSize: "16px", color: "#2d3748" }}>Disable Garbage Collector</span>
+            Disable Garbage Collector
           </label>
           <label style={{ 
             display: "flex", 
             alignItems: "center", 
-            gap: "12px",
-            padding: "12px 16px",
-            backgroundColor: "#f7fafc",
-            borderRadius: "8px",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            border: "2px solid transparent"
+            gap: "8px",
+            fontSize: "14px",
+            color: "#374151",
+            cursor: "pointer"
           }}>
             <input
               type="checkbox"
               checked={options.hideSidebar || false}
               onChange={(e) => handleOptionChange("hideSidebar", e.target.checked)}
               style={{
-                width: "20px",
-                height: "20px",
+                width: "16px",
+                height: "16px",
                 cursor: "pointer"
               }}
             />
-            <span style={{ fontSize: "16px", color: "#2d3748" }}>Hide Sidebar</span>
+            Hide Sidebar
           </label>
           <label style={{ 
             display: "flex", 
             alignItems: "center", 
-            gap: "12px",
-            padding: "12px 16px",
-            backgroundColor: "#f7fafc",
-            borderRadius: "8px",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            border: "2px solid transparent"
+            gap: "8px",
+            fontSize: "14px",
+            color: "#374151",
+            cursor: "pointer"
           }}>
             <input
               type="checkbox"
@@ -298,23 +283,20 @@ export const ConfigView = () => {
                 handleOptionChange("hideCallMethod", e.target.checked)
               }
               style={{
-                width: "20px",
-                height: "20px",
+                width: "16px",
+                height: "16px",
                 cursor: "pointer"
               }}
             />
-            <span style={{ fontSize: "16px", color: "#2d3748" }}>Hide Call Method</span>
+            Hide Call Method
           </label>
           <label style={{ 
             display: "flex", 
             alignItems: "center", 
-            gap: "12px",
-            padding: "12px 16px",
-            backgroundColor: "#f7fafc",
-            borderRadius: "8px",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            border: "2px solid transparent"
+            gap: "8px",
+            fontSize: "14px",
+            color: "#374151",
+            cursor: "pointer"
           }}>
             <input
               type="checkbox"
@@ -323,23 +305,20 @@ export const ConfigView = () => {
                 handleOptionChange("hideDeclareGlobalVariable", e.target.checked)
               }
               style={{
-                width: "20px",
-                height: "20px",
+                width: "16px",
+                height: "16px",
                 cursor: "pointer"
               }}
             />
-            <span style={{ fontSize: "16px", color: "#2d3748" }}>Hide Declare Global Variable</span>
+            Hide Declare Global Variable
           </label>
           <label style={{ 
             display: "flex", 
             alignItems: "center", 
-            gap: "12px",
-            padding: "12px 16px",
-            backgroundColor: "#f7fafc",
-            borderRadius: "8px",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            border: "2px solid transparent"
+            gap: "8px",
+            fontSize: "14px",
+            color: "#374151",
+            cursor: "pointer"
           }}>
             <input
               type="checkbox"
@@ -348,23 +327,20 @@ export const ConfigView = () => {
                 handleOptionChange("hideNewArray", e.target.checked)
               }
               style={{
-                width: "20px",
-                height: "20px",
+                width: "16px",
+                height: "16px",
                 cursor: "pointer"
               }}
             />
-            <span style={{ fontSize: "16px", color: "#2d3748" }}>Hide New Array</span>
+            Hide New Array
           </label>
           <label style={{ 
             display: "flex", 
             alignItems: "center", 
-            gap: "12px",
-            padding: "12px 16px",
-            backgroundColor: "#f7fafc",
-            borderRadius: "8px",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            border: "2px solid transparent"
+            gap: "8px",
+            fontSize: "14px",
+            color: "#374151",
+            cursor: "pointer"
           }}>
             <input
               type="checkbox"
@@ -373,66 +349,60 @@ export const ConfigView = () => {
                 handleOptionChange("createNewOnEdgeDrop", e.target.checked)
               }
               style={{
-                width: "20px",
-                height: "20px",
+                width: "16px",
+                height: "16px",
                 cursor: "pointer"
               }}
             />
-            <span style={{ fontSize: "16px", color: "#2d3748" }}>Create New On Edge Drop</span>
+            Create New On Edge Drop
           </label>
         </div>
       </div>
 
       <div style={{
         backgroundColor: "white",
-        borderRadius: "16px",
-        padding: "32px",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+        borderRadius: "8px",
+        padding: "24px",
+        border: "1px solid #e5e7eb"
       }}>
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "24px",
+            marginBottom: "16px",
           }}
         >
           <h2 style={{ 
             margin: "0", 
-            color: "#2d3748",
-            fontSize: "24px",
-            fontWeight: "600",
-            borderBottom: "3px solid #48bb78",
-            paddingBottom: "12px"
-          }}>📦 Classes</h2>
+            color: "#111827",
+            fontSize: "18px",
+            fontWeight: "600"
+          }}>Classes</h2>
           <button 
             onClick={handleAddKlass}
             style={{
-              background: "linear-gradient(135deg, #48bb78 0%, #38a169 100%)",
+              backgroundColor: "#111827",
               color: "white",
-              padding: "10px 20px",
-              fontSize: "15px",
-              fontWeight: "600",
+              padding: "8px 16px",
+              fontSize: "14px",
+              fontWeight: "500",
               border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              boxShadow: "0 2px 4px rgba(72, 187, 120, 0.3)"
+              borderRadius: "6px",
+              cursor: "pointer"
             }}
-          >➕ Add Class</button>
+          >Add Class</button>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {Object.entries(klasses).map(([klassName, klass]) => (
             <div
               key={klassName}
               style={{
-                border: "2px solid #e2e8f0",
-                borderRadius: "12px",
-                padding: "24px",
-                backgroundColor: "#ffffff",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-                transition: "all 0.3s ease"
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
+                padding: "16px",
+                backgroundColor: "#fafafa"
               }}
             >
               <div
@@ -440,62 +410,49 @@ export const ConfigView = () => {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: "16px",
-                  paddingBottom: "16px",
-                  borderBottom: "2px solid #edf2f7"
+                  marginBottom: "12px",
+                  paddingBottom: "12px",
+                  borderBottom: "1px solid #e5e7eb"
                 }}
               >
                 <h3 style={{ 
                   margin: 0,
-                  fontSize: "20px",
+                  fontSize: "16px",
                   fontWeight: "600",
-                  color: "#2d3748",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px"
+                  color: "#111827"
                 }}>
-                  <span style={{
-                    backgroundColor: "#667eea",
-                    color: "white",
-                    padding: "4px 12px",
-                    borderRadius: "6px",
-                    fontSize: "16px"
-                  }}>{klassName}</span>
+                  {klassName}
                 </h3>
-                <div style={{ display: "flex", gap: "10px" }}>
+                <div style={{ display: "flex", gap: "8px" }}>
                   <button 
                     onClick={() => handleAddAttribute(klassName)}
                     style={{
-                      background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-                      color: "white",
-                      padding: "8px 16px",
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      border: "none",
+                      backgroundColor: "white",
+                      color: "#111827",
+                      padding: "6px 12px",
+                      fontSize: "13px",
+                      fontWeight: "500",
+                      border: "1px solid #d1d5db",
                       borderRadius: "6px",
-                      cursor: "pointer",
-                      transition: "all 0.3s ease",
-                      boxShadow: "0 2px 4px rgba(79, 172, 254, 0.3)"
+                      cursor: "pointer"
                     }}
                   >
-                    ➕ Add Attribute
+                    Add Attribute
                   </button>
                   <button 
                     onClick={() => handleRemoveKlass(klassName)}
                     style={{
-                      background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                      color: "white",
-                      padding: "8px 16px",
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      border: "none",
+                      backgroundColor: "white",
+                      color: "#dc2626",
+                      padding: "6px 12px",
+                      fontSize: "13px",
+                      fontWeight: "500",
+                      border: "1px solid #fecaca",
                       borderRadius: "6px",
-                      cursor: "pointer",
-                      transition: "all 0.3s ease",
-                      boxShadow: "0 2px 4px rgba(245, 87, 108, 0.3)"
+                      cursor: "pointer"
                     }}
                   >
-                    🗑️ Delete Class
+                    Delete
                   </button>
                 </div>
               </div>
@@ -503,55 +460,55 @@ export const ConfigView = () => {
               <div>
                 {Object.keys(klass.attributes).length === 0 ? (
                   <p style={{ 
-                    color: "#a0aec0", 
+                    color: "#6b7280", 
                     fontStyle: "italic",
                     textAlign: "center",
-                    padding: "20px",
-                    backgroundColor: "#f7fafc",
-                    borderRadius: "8px",
-                    margin: 0
+                    padding: "16px",
+                    margin: 0,
+                    fontSize: "14px"
                   }}>
-                    No attributes defined yet
+                    No attributes defined
                   </p>
                 ) : (
                   <table
                     style={{
                       width: "100%",
-                      borderCollapse: "separate",
-                      borderSpacing: 0,
-                      backgroundColor: "#f7fafc",
-                      borderRadius: "8px",
-                      overflow: "hidden"
+                      borderCollapse: "collapse",
+                      backgroundColor: "white",
+                      borderRadius: "6px",
+                      overflow: "hidden",
+                      border: "1px solid #e5e7eb"
                     }}
                   >
                     <thead>
                       <tr style={{ 
-                        backgroundColor: "#edf2f7"
+                        backgroundColor: "#f9fafb",
+                        borderBottom: "1px solid #e5e7eb"
                       }}>
                         <th style={{ 
-                          padding: "12px 16px", 
+                          padding: "10px 12px", 
                           textAlign: "left",
                           fontWeight: "600",
-                          color: "#2d3748",
-                          fontSize: "14px"
+                          color: "#374151",
+                          fontSize: "13px"
                         }}>
                           Attribute Name
                         </th>
                         <th style={{ 
-                          padding: "12px 16px", 
+                          padding: "10px 12px", 
                           textAlign: "left",
                           fontWeight: "600",
-                          color: "#2d3748",
-                          fontSize: "14px"
+                          color: "#374151",
+                          fontSize: "13px"
                         }}>
                           Data Type
                         </th>
                         <th style={{ 
-                          padding: "12px 16px", 
+                          padding: "10px 12px", 
                           textAlign: "right",
                           fontWeight: "600",
-                          color: "#2d3748",
-                          fontSize: "14px"
+                          color: "#374151",
+                          fontSize: "13px"
                         }}>
                           Actions
                         </th>
@@ -563,24 +520,22 @@ export const ConfigView = () => {
                           <tr
                             key={attrName}
                             style={{ 
-                              borderBottom: "1px solid #e2e8f0",
-                              backgroundColor: "white",
-                              transition: "background-color 0.2s ease"
+                              borderBottom: "1px solid #e5e7eb"
                             }}
                           >
                             <td style={{ 
-                              padding: "12px 16px",
-                              color: "#4a5568",
-                              fontWeight: "500"
+                              padding: "10px 12px",
+                              color: "#111827",
+                              fontSize: "14px"
                             }}>{attrName}</td>
                             <td style={{ 
-                              padding: "12px 16px",
-                              color: "#667eea",
-                              fontWeight: "600"
+                              padding: "10px 12px",
+                              color: "#6b7280",
+                              fontSize: "14px"
                             }}>{dataType}</td>
                             <td
                               style={{
-                                padding: "12px 16px",
+                                padding: "10px 12px",
                                 textAlign: "right",
                               }}
                             >
@@ -594,38 +549,34 @@ export const ConfigView = () => {
                                 }
                                 style={{ 
                                   marginRight: "8px",
-                                  background: "linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)",
-                                  color: "#2d3748",
-                                  padding: "6px 12px",
-                                  fontSize: "13px",
-                                  fontWeight: "600",
-                                  border: "none",
-                                  borderRadius: "6px",
-                                  cursor: "pointer",
-                                  transition: "all 0.3s ease",
-                                  boxShadow: "0 2px 4px rgba(253, 203, 110, 0.3)"
+                                  backgroundColor: "white",
+                                  color: "#111827",
+                                  padding: "4px 10px",
+                                  fontSize: "12px",
+                                  fontWeight: "500",
+                                  border: "1px solid #d1d5db",
+                                  borderRadius: "4px",
+                                  cursor: "pointer"
                                 }}
                               >
-                                ✏️ Edit
+                                Edit
                               </button>
                               <button
                                 onClick={() =>
                                   handleRemoveAttribute(klassName, attrName)
                                 }
                                 style={{
-                                  background: "linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)",
-                                  color: "white",
-                                  padding: "6px 12px",
-                                  fontSize: "13px",
-                                  fontWeight: "600",
-                                  border: "none",
-                                  borderRadius: "6px",
-                                  cursor: "pointer",
-                                  transition: "all 0.3s ease",
-                                  boxShadow: "0 2px 4px rgba(255, 107, 107, 0.3)"
+                                  backgroundColor: "white",
+                                  color: "#dc2626",
+                                  padding: "4px 10px",
+                                  fontSize: "12px",
+                                  fontWeight: "500",
+                                  border: "1px solid #fecaca",
+                                  borderRadius: "4px",
+                                  cursor: "pointer"
                                 }}
                               >
-                                🗑️ Delete
+                                Delete
                               </button>
                             </td>
                           </tr>
@@ -649,53 +600,42 @@ export const ConfigView = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 1000,
-            backdropFilter: "blur(4px)"
+            zIndex: 1000
           }}
           onClick={handleCancelAddAttribute}
         >
           <div
             style={{
               backgroundColor: "white",
-              padding: "32px",
-              borderRadius: "16px",
-              minWidth: "480px",
+              padding: "24px",
+              borderRadius: "8px",
+              minWidth: "400px",
               maxWidth: "90vw",
-              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-              animation: "slideIn 0.3s ease"
+              border: "1px solid #e5e7eb"
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 style={{
-              margin: "0 0 24px 0",
-              fontSize: "24px",
-              fontWeight: "700",
-              color: "#1a202c",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px"
+              margin: "0 0 16px 0",
+              fontSize: "18px",
+              fontWeight: "600",
+              color: "#111827"
             }}>
-              ➕ Add Attribute to 
-              <span style={{
-                color: "#667eea",
-                backgroundColor: "#eef2ff",
-                padding: "4px 12px",
-                borderRadius: "6px"
-              }}>{addingAttribute}</span>
+              Add Attribute to {addingAttribute}
             </h3>
-            <div style={{ marginTop: "20px" }}>
+            <div style={{ marginBottom: "16px" }}>
               <label style={{ 
                 display: "block", 
-                marginBottom: "8px",
+                marginBottom: "6px",
                 fontSize: "14px",
-                fontWeight: "600",
-                color: "#4a5568"
+                fontWeight: "500",
+                color: "#374151"
               }}>
-                Attribute Name:
+                Attribute Name
               </label>
               <input
                 type="text"
@@ -703,45 +643,39 @@ export const ConfigView = () => {
                 onChange={(e) => setNewAttrName(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  border: "2px solid #e2e8f0",
-                  fontSize: "16px",
-                  transition: "border-color 0.2s ease",
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid #d1d5db",
+                  fontSize: "14px",
                   boxSizing: "border-box"
                 }}
                 placeholder="Enter attribute name"
                 autoFocus
-                onFocus={(e) => e.target.style.borderColor = "#667eea"}
-                onBlur={(e) => e.target.style.borderColor = "#e2e8f0"}
               />
             </div>
-            <div style={{ marginTop: "20px" }}>
+            <div style={{ marginBottom: "20px" }}>
               <label style={{ 
                 display: "block", 
-                marginBottom: "8px",
+                marginBottom: "6px",
                 fontSize: "14px",
-                fontWeight: "600",
-                color: "#4a5568"
+                fontWeight: "500",
+                color: "#374151"
               }}>
-                Data Type:
+                Data Type
               </label>
               <select
                 value={newAttrType}
                 onChange={(e) => setNewAttrType(e.target.value as DataType)}
                 style={{
                   width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  border: "2px solid #e2e8f0",
-                  fontSize: "16px",
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid #d1d5db",
+                  fontSize: "14px",
                   backgroundColor: "white",
                   cursor: "pointer",
-                  transition: "border-color 0.2s ease",
                   boxSizing: "border-box"
                 }}
-                onFocus={(e) => e.target.style.borderColor = "#667eea"}
-                onBlur={(e) => e.target.style.borderColor = "#e2e8f0"}
               >
                 {availableDataTypes.map((type) => (
                   <option key={type} value={type}>
@@ -752,41 +686,37 @@ export const ConfigView = () => {
             </div>
             <div
               style={{ 
-                marginTop: "28px", 
                 display: "flex", 
-                gap: "12px",
+                gap: "8px",
                 justifyContent: "flex-end"
               }}
             >
               <button 
                 onClick={handleCancelAddAttribute}
                 style={{
-                  background: "#e2e8f0",
-                  color: "#4a5568",
-                  padding: "10px 24px",
-                  fontSize: "15px",
-                  fontWeight: "600",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease"
+                  backgroundColor: "white",
+                  color: "#374151",
+                  padding: "8px 16px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  cursor: "pointer"
                 }}
               >Cancel</button>
               <button 
                 onClick={handleConfirmAddAttribute}
                 style={{
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  backgroundColor: "#111827",
                   color: "white",
-                  padding: "10px 24px",
-                  fontSize: "15px",
-                  fontWeight: "600",
+                  padding: "8px 16px",
+                  fontSize: "14px",
+                  fontWeight: "500",
                   border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  boxShadow: "0 4px 6px rgba(102, 126, 234, 0.3)"
+                  borderRadius: "6px",
+                  cursor: "pointer"
                 }}
-              >Add Attribute</button>
+              >Add</button>
             </div>
           </div>
         </div>
@@ -801,70 +731,56 @@ export const ConfigView = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 1000,
-            backdropFilter: "blur(4px)"
+            zIndex: 1000
           }}
           onClick={handleCancelEditAttribute}
         >
           <div
             style={{
               backgroundColor: "white",
-              padding: "32px",
-              borderRadius: "16px",
-              minWidth: "480px",
+              padding: "24px",
+              borderRadius: "8px",
+              minWidth: "400px",
               maxWidth: "90vw",
-              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-              animation: "slideIn 0.3s ease"
+              border: "1px solid #e5e7eb"
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 style={{
-              margin: "0 0 24px 0",
-              fontSize: "24px",
-              fontWeight: "700",
-              color: "#1a202c",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px"
+              margin: "0 0 16px 0",
+              fontSize: "18px",
+              fontWeight: "600",
+              color: "#111827"
             }}>
-              ✏️ Edit Attribute: 
-              <span style={{
-                color: "#667eea",
-                backgroundColor: "#eef2ff",
-                padding: "4px 12px",
-                borderRadius: "6px"
-              }}>{editingAttribute.attrName}</span>
+              Edit Attribute: {editingAttribute.attrName}
             </h3>
-            <div style={{ marginTop: "20px" }}>
+            <div style={{ marginBottom: "20px" }}>
               <label style={{ 
                 display: "block", 
-                marginBottom: "8px",
+                marginBottom: "6px",
                 fontSize: "14px",
-                fontWeight: "600",
-                color: "#4a5568"
+                fontWeight: "500",
+                color: "#374151"
               }}>
-                Data Type:
+                Data Type
               </label>
               <select
                 value={newAttrType}
                 onChange={(e) => setNewAttrType(e.target.value as DataType)}
                 style={{
                   width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  border: "2px solid #e2e8f0",
-                  fontSize: "16px",
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid #d1d5db",
+                  fontSize: "14px",
                   backgroundColor: "white",
                   cursor: "pointer",
-                  transition: "border-color 0.2s ease",
                   boxSizing: "border-box"
                 }}
-                onFocus={(e) => e.target.style.borderColor = "#667eea"}
-                onBlur={(e) => e.target.style.borderColor = "#e2e8f0"}
               >
                 {availableDataTypes.map((type) => (
                   <option key={type} value={type}>
@@ -875,41 +791,37 @@ export const ConfigView = () => {
             </div>
             <div
               style={{ 
-                marginTop: "28px", 
                 display: "flex", 
-                gap: "12px",
+                gap: "8px",
                 justifyContent: "flex-end"
               }}
             >
               <button 
                 onClick={handleCancelEditAttribute}
                 style={{
-                  background: "#e2e8f0",
-                  color: "#4a5568",
-                  padding: "10px 24px",
-                  fontSize: "15px",
-                  fontWeight: "600",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease"
+                  backgroundColor: "white",
+                  color: "#374151",
+                  padding: "8px 16px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  cursor: "pointer"
                 }}
               >Cancel</button>
               <button 
                 onClick={handleConfirmEditAttribute}
                 style={{
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  backgroundColor: "#111827",
                   color: "white",
-                  padding: "10px 24px",
-                  fontSize: "15px",
-                  fontWeight: "600",
+                  padding: "8px 16px",
+                  fontSize: "14px",
+                  fontWeight: "500",
                   border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  boxShadow: "0 4px 6px rgba(102, 126, 234, 0.3)"
+                  borderRadius: "6px",
+                  cursor: "pointer"
                 }}
-              >Save Changes</button>
+              >Save</button>
             </div>
           </div>
         </div>
