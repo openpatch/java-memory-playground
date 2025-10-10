@@ -1,7 +1,7 @@
 import { shallow } from "zustand/shallow";
 import useStore, { RFState } from "./store";
 import { useCallback, useState } from "react";
-import { DataType } from "./memory";
+import { DataType, primitveDataTypes } from "./memory";
 
 const selector = (state: RFState) => ({
   updateMemory: state.updateMemory,
@@ -14,6 +14,21 @@ export const ConfigView = () => {
 
   const [klasses, setKlasses] = useState(memory.klasses);
   const [options, setOptions] = useState(memory.options);
+  const [addingAttribute, setAddingAttribute] = useState<string | null>(null);
+  const [editingAttribute, setEditingAttribute] = useState<{
+    klassName: string;
+    attrName: string;
+    currentDataType: DataType;
+  } | null>(null);
+  const [newAttrName, setNewAttrName] = useState("");
+  const [newAttrType, setNewAttrType] = useState<DataType>("String");
+
+  // Get available data types: primitives + Array + defined classes
+  const availableDataTypes = [
+    ...primitveDataTypes,
+    "Array",
+    ...Object.keys(klasses),
+  ];
 
   const onSave = useCallback(() => {
     updateMemory({
@@ -25,10 +40,6 @@ export const ConfigView = () => {
 
   const onView = useCallback(() => {
     setRoute("view");
-  }, [setRoute]);
-
-  const onEdit = useCallback(() => {
-    setRoute("edit");
   }, [setRoute]);
 
   const handleOptionChange = useCallback(
@@ -64,24 +75,33 @@ export const ConfigView = () => {
   }, []);
 
   const handleAddAttribute = useCallback((klassName: string) => {
-    const attrName = window.prompt("Enter attribute name:");
-    if (attrName && attrName.trim()) {
-      const dataType = window.prompt(
-        `Enter data type for "${attrName}" (e.g., String, int, boolean, or custom class name):`
-      );
-      if (dataType && dataType.trim()) {
-        setKlasses((prev) => ({
-          ...prev,
-          [klassName]: {
-            ...prev[klassName],
-            attributes: {
-              ...prev[klassName].attributes,
-              [attrName.trim()]: dataType.trim() as DataType,
-            },
+    setAddingAttribute(klassName);
+    setNewAttrName("");
+    setNewAttrType("String");
+  }, []);
+
+  const handleConfirmAddAttribute = useCallback(() => {
+    if (addingAttribute && newAttrName.trim()) {
+      setKlasses((prev) => ({
+        ...prev,
+        [addingAttribute]: {
+          ...prev[addingAttribute],
+          attributes: {
+            ...prev[addingAttribute].attributes,
+            [newAttrName.trim()]: newAttrType,
           },
-        }));
-      }
+        },
+      }));
+      setAddingAttribute(null);
+      setNewAttrName("");
+      setNewAttrType("String");
     }
+  }, [addingAttribute, newAttrName, newAttrType]);
+
+  const handleCancelAddAttribute = useCallback(() => {
+    setAddingAttribute(null);
+    setNewAttrName("");
+    setNewAttrType("String");
   }, []);
 
   const handleRemoveAttribute = useCallback(
@@ -108,25 +128,33 @@ export const ConfigView = () => {
 
   const handleEditAttribute = useCallback(
     (klassName: string, attrName: string, currentDataType: DataType) => {
-      const newDataType = window.prompt(
-        `Edit data type for "${attrName}" (current: ${currentDataType}):`,
-        currentDataType
-      );
-      if (newDataType && newDataType.trim()) {
-        setKlasses((prev) => ({
-          ...prev,
-          [klassName]: {
-            ...prev[klassName],
-            attributes: {
-              ...prev[klassName].attributes,
-              [attrName]: newDataType.trim() as DataType,
-            },
-          },
-        }));
-      }
+      setEditingAttribute({ klassName, attrName, currentDataType });
+      setNewAttrType(currentDataType);
     },
     []
   );
+
+  const handleConfirmEditAttribute = useCallback(() => {
+    if (editingAttribute) {
+      setKlasses((prev) => ({
+        ...prev,
+        [editingAttribute.klassName]: {
+          ...prev[editingAttribute.klassName],
+          attributes: {
+            ...prev[editingAttribute.klassName].attributes,
+            [editingAttribute.attrName]: newAttrType,
+          },
+        },
+      }));
+      setEditingAttribute(null);
+      setNewAttrType("String");
+    }
+  }, [editingAttribute, newAttrType]);
+
+  const handleCancelEditAttribute = useCallback(() => {
+    setEditingAttribute(null);
+    setNewAttrType("String");
+  }, []);
 
   return (
     <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -135,7 +163,6 @@ export const ConfigView = () => {
       <div className="button-group">
         <button onClick={onSave}>Save</button>
         <button onClick={onView}>View</button>
-        <button onClick={onEdit}>Edit JSON</button>
       </div>
 
       <div style={{ marginTop: "20px" }}>
@@ -317,6 +344,144 @@ export const ConfigView = () => {
           ))}
         </div>
       </div>
+
+      {/* Add Attribute Modal */}
+      {addingAttribute && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={handleCancelAddAttribute}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "8px",
+              minWidth: "400px",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Add Attribute to {addingAttribute}</h3>
+            <div style={{ marginTop: "15px" }}>
+              <label style={{ display: "block", marginBottom: "5px" }}>
+                Attribute Name:
+              </label>
+              <input
+                type="text"
+                value={newAttrName}
+                onChange={(e) => setNewAttrName(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+                placeholder="Enter attribute name"
+                autoFocus
+              />
+            </div>
+            <div style={{ marginTop: "15px" }}>
+              <label style={{ display: "block", marginBottom: "5px" }}>
+                Data Type:
+              </label>
+              <select
+                value={newAttrType}
+                onChange={(e) => setNewAttrType(e.target.value as DataType)}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+              >
+                {availableDataTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div
+              className="button-group"
+              style={{ marginTop: "20px", display: "flex", gap: "8px" }}
+            >
+              <button onClick={handleConfirmAddAttribute}>Add</button>
+              <button onClick={handleCancelAddAttribute}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Attribute Modal */}
+      {editingAttribute && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={handleCancelEditAttribute}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "8px",
+              minWidth: "400px",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>
+              Edit Attribute: {editingAttribute.attrName}
+            </h3>
+            <div style={{ marginTop: "15px" }}>
+              <label style={{ display: "block", marginBottom: "5px" }}>
+                Data Type:
+              </label>
+              <select
+                value={newAttrType}
+                onChange={(e) => setNewAttrType(e.target.value as DataType)}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+              >
+                {availableDataTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div
+              className="button-group"
+              style={{ marginTop: "20px", display: "flex", gap: "8px" }}
+            >
+              <button onClick={handleConfirmEditAttribute}>Save</button>
+              <button onClick={handleCancelEditAttribute}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
