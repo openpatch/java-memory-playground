@@ -538,7 +538,7 @@ export const MemoryView = () => {
           onInit={setReactFlowInstance}
           onDrop={onDrop}
           onDragOver={onDragOver}
-          {...(placementMode && { onPaneClick })}
+          onPaneClick={placementMode ? onPaneClick : undefined}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           proOptions={{
