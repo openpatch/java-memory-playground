@@ -108,6 +108,7 @@ export const MemoryView = () => {
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance<CustomNodeType, CustomEdgeType> | null>(null);
   const connectingNode = useRef<OnConnectStartParams | null>(null);
+  const [placementMode, setPlacementMode] = useState<string | null>(null);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -316,9 +317,17 @@ export const MemoryView = () => {
         y: event.clientY,
       });
 
-      const k = memory.klasses[type];
+      createNodeAtPosition(type, position);
+    },
+    [reactFlowInstance, lastMethodCall]
+  );
 
-      if (type == "method-call") {
+  const createNodeAtPosition = (type: string, position: { x: number; y: number }) => {
+    if (!reactFlowInstance) return;
+    
+    const k = memory.klasses[type];
+
+    if (type == "method-call") {
         const name = window.prompt(`Name of the method?`);
         if (name != null) {
           const index = reactFlowInstance
@@ -439,13 +448,36 @@ export const MemoryView = () => {
           setNodes((nds) => nds.concat(newNode));
         }
       }
+  };
+
+  const onPaneClick = useCallback(
+    (event: any) => {
+      if (!placementMode || !reactFlowInstance) return;
+
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      createNodeAtPosition(placementMode, position);
+      setPlacementMode(null);
     },
-    [reactFlowInstance, lastMethodCall]
+    [placementMode, reactFlowInstance, lastMethodCall]
   );
+
+  const onTouchItemSelect = useCallback((nodeType: string) => {
+    setPlacementMode(nodeType);
+  }, []);
 
   return (
     <div className="memory-view">
-      {!memory.options.hideSidebar && <Sidebar memory={memory} />}
+      {!memory.options.hideSidebar && <Sidebar memory={memory} onTouchItemSelect={onTouchItemSelect} />}
+      {placementMode && (
+        <div className="placement-mode-indicator">
+          Tap on canvas to place: {placementMode === "method-call" ? "Method Call" : placementMode === "variable" ? "Global Variable" : `new ${placementMode}`}
+          <button onClick={() => setPlacementMode(null)} className="cancel-placement">Cancel</button>
+        </div>
+      )}
       <ReactFlowProvider>
         <ReactFlow
           className="memory"
@@ -506,6 +538,7 @@ export const MemoryView = () => {
           onInit={setReactFlowInstance}
           onDrop={onDrop}
           onDragOver={onDragOver}
+          onPaneClick={onPaneClick}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           proOptions={{
