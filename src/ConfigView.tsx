@@ -40,10 +40,47 @@ export const ConfigView = () => {
   }, [klasses, options, memory.klasses, memory.options]);
 
   const onSave = useCallback(() => {
+    // Update existing objects to match new class definitions
+    const updatedObjects = { ...memory.objects };
+    
+    Object.entries(updatedObjects).forEach(([objId, obj]) => {
+      const klassDefinition = klasses[obj.klass];
+      
+      // Skip if class doesn't exist (e.g., Array) or object class is not in klasses
+      if (!klassDefinition) return;
+      
+      const updatedAttributes = { ...obj.attributes };
+      const klassAttributeNames = Object.keys(klassDefinition.attributes);
+      const currentAttributeNames = Object.keys(updatedAttributes);
+      
+      // Add new attributes from class definition
+      klassAttributeNames.forEach((attrName) => {
+        if (!updatedAttributes[attrName]) {
+          updatedAttributes[attrName] = {
+            dataType: klassDefinition.attributes[attrName],
+            value: undefined,
+          };
+        }
+      });
+      
+      // Remove attributes that are no longer in class definition
+      currentAttributeNames.forEach((attrName) => {
+        if (!klassAttributeNames.includes(attrName)) {
+          delete updatedAttributes[attrName];
+        }
+      });
+      
+      updatedObjects[objId] = {
+        ...obj,
+        attributes: updatedAttributes,
+      };
+    });
+    
     updateMemory({
       ...memory,
       klasses,
       options,
+      objects: updatedObjects,
     });
     setHasUnsavedChanges(false);
     setShowSaveSuccess(true);
