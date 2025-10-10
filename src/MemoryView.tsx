@@ -181,13 +181,38 @@ export const MemoryView = () => {
         });
         const id = getId();
 
+        // Handle Array type specially
+        let objAttributes: Record<string, Attribute>;
+        if (klassName === "Array") {
+          const length = window.prompt(`Length of the array?`);
+          if (length == null) return;
+          const tempAttributes: Record<string, Attribute> = {
+            length: {
+              dataType: "int",
+              value: Number.parseInt(length),
+            },
+          };
+          for (let i = 0; i < Number.parseInt(length); i++) {
+            tempAttributes[`[${i}]`] = {
+              dataType: klassName,
+              value: undefined,
+            };
+          }
+          objAttributes = tempAttributes;
+        } else if (klass) {
+          objAttributes = createAttributesForObject(klass.attributes);
+        } else {
+          // Unknown klass type, cannot create object
+          return;
+        }
+
         const newNode: CustomNodeType = {
           id,
           type: "object",
           position,
           data: {
             klass: klassName,
-            attributes: createAttributesForObject(klass.attributes),
+            attributes: objAttributes,
             position,
           },
         };
