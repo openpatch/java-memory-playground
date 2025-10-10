@@ -30,6 +30,10 @@ export const EditView = () => {
     setRoute("view");
   }, []);
 
+  const onConfig = useCallback(() => {
+    setRoute("config");
+  }, []);
+
   return (
     <div>
       <CodeMirror
@@ -41,6 +45,7 @@ export const EditView = () => {
       <div className="button-group">
         <button onClick={onSave}>Save</button>
         <button onClick={onView}>View</button>
+        <button onClick={onConfig}>Config</button>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import useStore, { RFState } from './store';
 import { shallow } from 'zustand/shallow';
 import { MemoryView } from "./MemoryView";
 import { EditView } from "./EditView";
+import { ConfigView } from "./ConfigView";
 
 const selector = (state: RFState) => ({
   route: state.route
@@ -20,6 +21,7 @@ function App() {
       {route === "view" &&
       <MemoryView />}
       {route === "edit" && <EditView />}
+      {route === "config" && <ConfigView />}
     </div>
   );
 }

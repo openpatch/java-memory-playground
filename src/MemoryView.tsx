@@ -231,6 +231,11 @@ export const MemoryView = () => {
     setRoute("edit");
   };
 
+  const onConfig = () => {
+    onSaveURL();
+    setRoute("config");
+  };
+
   const onSaveURL = () => {
     if (reactFlowInstance) {
       updateMemory({
@@ -495,7 +500,8 @@ export const MemoryView = () => {
             <div className="button-group">
               <button onClick={onSaveURL}>Save (URL)</button>
               <button onClick={onDownloadPng}>Download (PNG)</button>
-              <button onClick={onEdit}>Edit</button>
+              <button onClick={onConfig}>Config</button>
+              <button onClick={onEdit}>Edit JSON</button>
             </div>
           </Panel>
           {!memory.options.disableGarbageCollector && <Panel position="bottom-right">
