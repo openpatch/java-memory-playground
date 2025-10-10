@@ -237,7 +237,7 @@ export const MemoryView = () => {
       }
       connectingNode.current = null;
     },
-    [nodes, memory]
+    [nodes, memory, reactFlowInstance, setNodes, setEdges]
   );
 
   const onGC = () => {
