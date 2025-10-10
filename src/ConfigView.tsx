@@ -1,6 +1,6 @@
 import { shallow } from "zustand/shallow";
 import useStore, { RFState } from "./store";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { DataType, primitveDataTypes } from "./memory";
 
 const selector = (state: RFState) => ({
@@ -22,6 +22,8 @@ export const ConfigView = () => {
   } | null>(null);
   const [newAttrName, setNewAttrName] = useState("");
   const [newAttrType, setNewAttrType] = useState<DataType>("String");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
 
   // Get available data types: primitives + Array + defined classes
   const availableDataTypes = [
@@ -30,17 +32,33 @@ export const ConfigView = () => {
     ...Object.keys(klasses),
   ];
 
+  // Track changes
+  useEffect(() => {
+    const klassesChanged = JSON.stringify(klasses) !== JSON.stringify(memory.klasses);
+    const optionsChanged = JSON.stringify(options) !== JSON.stringify(memory.options);
+    setHasUnsavedChanges(klassesChanged || optionsChanged);
+  }, [klasses, options, memory.klasses, memory.options]);
+
   const onSave = useCallback(() => {
     updateMemory({
       ...memory,
       klasses,
       options,
     });
+    setHasUnsavedChanges(false);
+    setShowSaveSuccess(true);
+    setTimeout(() => setShowSaveSuccess(false), 2000);
   }, [memory, klasses, options, updateMemory]);
 
   const onView = useCallback(() => {
-    setRoute("view");
-  }, [setRoute]);
+    if (hasUnsavedChanges) {
+      if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
+        setRoute("view");
+      }
+    } else {
+      setRoute("view");
+    }
+  }, [setRoute, hasUnsavedChanges]);
 
   const handleOptionChange = useCallback(
     (key: string, value: boolean) => {
@@ -178,11 +196,11 @@ export const ConfigView = () => {
           fontWeight: "600"
         }}>Configuration</h1>
 
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <button 
             onClick={onSave}
             style={{
-              backgroundColor: "#111827",
+              backgroundColor: hasUnsavedChanges ? "#111827" : "#6b7280",
               color: "white",
               padding: "8px 16px",
               fontSize: "14px",
@@ -191,7 +209,7 @@ export const ConfigView = () => {
               borderRadius: "6px",
               cursor: "pointer"
             }}
-          >Save</button>
+          >{hasUnsavedChanges ? "Save" : "Saved"}</button>
           <button 
             onClick={onView}
             style={{
@@ -205,6 +223,15 @@ export const ConfigView = () => {
               cursor: "pointer"
             }}
           >View</button>
+          {showSaveSuccess && (
+            <span style={{ 
+              color: "#10b981", 
+              fontSize: "14px",
+              fontWeight: "500"
+            }}>
+              ✓ Changes saved successfully
+            </span>
+          )}
         </div>
       </div>
 
