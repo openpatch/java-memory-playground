@@ -20,11 +20,13 @@ import { shallow } from "zustand/shallow";
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 import ObjectNode, { ObjectNodeType } from "./ObjectNode";
 import VariableNode from "./VariableNode";
-import { useCallback, useState, DragEvent, useRef } from "react";
+import { useCallback, useState, DragEvent, useRef, useMemo } from "react";
 import { Sidebar } from "./Sidebar";
 import {
   Attribute,
   numericDataTypes,
+  DataType,
+  primitveDataTypes,
 } from "./memory";
 import {
   isConnectedTo,
@@ -36,6 +38,8 @@ import MethodCallNode, {
 } from "./MethodCallNode";
 import ReferenceEdge from "./ReferenceEdge";
 import { CustomEdgeType, CustomNodeType } from "./types";
+import { ArrayCreationDialog } from "./ArrayCreationDialog";
+import { SimpleInputDialog } from "./SimpleInputDialog";
 
 const selector = (state: RFState) => ({
   selectedNodeId: state.selectedNodeId,
@@ -43,12 +47,6 @@ const selector = (state: RFState) => ({
   memory: state.memory,
   setRoute: state.setRoute,
 });
-
-const nodeTypes = {
-  object: ObjectNode,
-  variable: VariableNode,
-  "method-call": MethodCallNode,
-};
 
 const edgeTypes = {
   reference: ReferenceEdge,
@@ -113,6 +111,25 @@ export const MemoryView = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const nodeIds: string[] = nodes.map((n) => n.id);
 
+  // Array creation dialog state
+  const [showArrayDialog, setShowArrayDialog] = useState(false);
+  const [arrayDialogCallback, setArrayDialogCallback] = useState<
+    ((name: string, length: number, elementType: DataType) => void) | null
+  >(null);
+
+  // Simple input dialog state
+  const [showInputDialog, setShowInputDialog] = useState(false);
+  const [inputDialogConfig, setInputDialogConfig] = useState<{
+    title: string;
+    label: string;
+    placeholder?: string;
+    onConfirm: (value: string) => void;
+  } | null>(null);
+
+  // Local variable declaration dialog state
+  const [showLocalVarDialog, setShowLocalVarDialog] = useState(false);
+  const [localVarDialogNodeId, setLocalVarDialogNodeId] = useState<string | null>(null);
+
   const methodCalls = nodes.filter(isMethodCallNode);
   let previousMethodCall = methodCalls[0];
   let lastMethodCall = methodCalls[0];
@@ -159,6 +176,74 @@ export const MemoryView = () => {
     return ma;
   };
 
+  // Helper function to show array creation dialog
+  const showArrayCreationDialog = (
+    callback: (name: string, length: number, elementType: DataType) => void
+  ) => {
+    setArrayDialogCallback(() => callback);
+    setShowArrayDialog(true);
+  };
+
+  // Helper function to show input dialog
+  const showSimpleInputDialog = (
+    title: string,
+    label: string,
+    onConfirm: (value: string) => void,
+    placeholder?: string
+  ) => {
+    setInputDialogConfig({ title, label, placeholder, onConfirm });
+    setShowInputDialog(true);
+  };
+
+  // Get available types for arrays: primitives + defined classes
+  const getAvailableTypes = (): DataType[] => {
+    return [...primitveDataTypes, ...Object.keys(memory.klasses)];
+  };
+
+  // Handler for declaring local variables
+  const handleDeclareLocalVariable = (nodeId: string) => {
+    setLocalVarDialogNodeId(nodeId);
+    setShowLocalVarDialog(true);
+  };
+
+  const handleLocalVarDialogConfirm = (name: string) => {
+    if (localVarDialogNodeId) {
+      setNodes((nds) =>
+        nds.map((n) => {
+          if (n.id === localVarDialogNodeId && n.type === "method-call") {
+            return {
+              ...n,
+              data: {
+                ...n.data,
+                localVariables: {
+                  ...n.data.localVariables,
+                  [name]: {
+                    dataType: "object",
+                  },
+                },
+              },
+            };
+          }
+          return n;
+        })
+      );
+    }
+    setShowLocalVarDialog(false);
+    setLocalVarDialogNodeId(null);
+  };
+
+  // Create nodeTypes with access to handleDeclareLocalVariable
+  const nodeTypes = useMemo(
+    () => ({
+      object: ObjectNode,
+      variable: VariableNode,
+      "method-call": (props: any) => (
+        <MethodCallNode {...props} onDeclareVariable={handleDeclareLocalVariable} />
+      ),
+    }),
+    [handleDeclareLocalVariable]
+  );
+
   const onConnectEnd = useCallback<OnConnectEnd>(
     (event, connectionState) => {
       if (!connectingNode.current || !memory.options.createNewOnEdgeDrop)
@@ -168,10 +253,22 @@ export const MemoryView = () => {
 
         if (node?.type == "object" && reactFlowInstance != null) {
           const objNode: ObjectNodeType = node as any;
-          const objKlass = memory.klasses[objNode.data["klass"]];
-          if (!objKlass) return;
-          const klassName =
-            objKlass.attributes[connectingNode.current.handleId || ""];
+          
+          // Special handling for Array elements
+          let klassName: string;
+          if (objNode.data.klass === "Array") {
+            // For array elements, get the dataType from the specific element
+            const handleId = connectingNode.current.handleId || "";
+            const elementAttribute = objNode.data.attributes[handleId];
+            if (!elementAttribute) return;
+            klassName = elementAttribute.dataType;
+          } else {
+            // For regular objects, look up the type from the class definition
+            const objKlass = memory.klasses[objNode.data["klass"]];
+            if (!objKlass) return;
+            klassName = objKlass.attributes[connectingNode.current.handleId || ""];
+          }
+          
           const klass = memory.klasses[klassName];
 
           const { clientX, clientY } =
@@ -187,21 +284,60 @@ export const MemoryView = () => {
           // Handle Array type specially
           let objAttributes: Record<string, Attribute>;
           if (klassName === "Array") {
-            const length = window.prompt(`Length of the array?`);
-            if (length == null) return;
-            const tempAttributes: Record<string, Attribute> = {
-              length: {
-                dataType: "int",
-                value: Number.parseInt(length),
-              },
-            };
-            for (let i = 0; i < Number.parseInt(length); i++) {
-              tempAttributes[`[${i}]`] = {
-                dataType: klassName,
-                value: undefined,
+            // Show dialog for array creation
+            showArrayCreationDialog((_name, length, elementType) => {
+              const tempAttributes: Record<string, Attribute> = {
+                length: {
+                  dataType: "int",
+                  value: length,
+                },
               };
-            }
-            objAttributes = tempAttributes;
+              for (let i = 0; i < length; i++) {
+                let value = undefined;
+                if (elementType === "boolean") {
+                  value = false;
+                } else if (numericDataTypes.includes(elementType)) {
+                  value = 0;
+                } else if (elementType === "String") {
+                  value = "";
+                }
+                tempAttributes[`[${i}]`] = {
+                  dataType: elementType,
+                  value: value,
+                };
+              }
+              
+              const newNode: CustomNodeType = {
+                id,
+                type: "object",
+                position,
+                data: {
+                  klass: klassName,
+                  attributes: tempAttributes,
+                  position,
+                  arrayElementType: elementType,
+                },
+              };
+              const newEdge: CustomEdgeType = {
+                id: getId(),
+                source: connectingNode.current!.nodeId || "",
+                sourceHandle: connectingNode.current!.handleId,
+                target: id,
+              };
+              setNodes((nds) => nds.concat(newNode));
+              setEdges((eds) =>
+                eds
+                  .filter(
+                    (e) =>
+                      !(
+                        e.source == connectingNode.current?.nodeId &&
+                        e.sourceHandle == connectingNode.current?.handleId
+                      )
+                  )
+                  .concat(newEdge)
+              );
+            });
+            return;
           } else if (klass) {
             objAttributes = createAttributesForObject(klass.attributes);
           } else {
@@ -331,20 +467,22 @@ export const MemoryView = () => {
     const k = memory.klasses[type];
 
     if (type == "method-call") {
-      const name = window.prompt(`Name of the method?`);
-      if (name != null) {
-        const index = reactFlowInstance
-          .getNodes()
-          .filter((n) => n.type === "method-call").length;
-        const newNode: CustomNodeType = {
-          id: getId(),
-          type: "method-call",
-          position,
-          data: {
-            index,
-            name,
+      showSimpleInputDialog(
+        "Create Method Call",
+        "Method Name",
+        (name) => {
+          const index = reactFlowInstance
+            .getNodes()
+            .filter((n) => n.type === "method-call").length;
+          const newNode: CustomNodeType = {
+            id: getId(),
+            type: "method-call",
             position,
-            localVariables: {
+            data: {
+              index,
+              name,
+              position,
+              localVariables: {
               this: {
                 dataType: "object",
                 value: undefined,
@@ -353,41 +491,117 @@ export const MemoryView = () => {
           },
         };
         setNodes((nds) => nds.concat(newNode));
-        return;
-      }
+        },
+        "Enter method name"
+      );
+      return;
     }
 
     if (type != "variable") {
-      const name = window.prompt(`Name for the new ${type}?`);
-      let objAttributes = createAttributesForObject(k?.attributes || {});
-
       if (type == "Array") {
-        const length = window.prompt(`Length of the ${name} array?`);
-        if (length == null) return;
-        objAttributes = {
-          length: {
-            dataType: "int",
-            value: Number.parseInt(length),
-          },
-        };
-        for (let i = 0; i < Number.parseInt(length); i++) {
-          objAttributes[`[${i}]`] = {
-            dataType: type,
-            value: undefined,
+        // Show dialog for array creation
+        showArrayCreationDialog((name, length, elementType) => {
+          const objAttributes: Record<string, Attribute> = {
+            length: {
+              dataType: "int",
+              value: length,
+            },
           };
-        }
-      }
-      if (name != null) {
-        const newNode: CustomNodeType = {
-          id: getId(),
-          type: "object",
-          position,
-          data: {
-            klass: type,
-            attributes: objAttributes,
+          for (let i = 0; i < length; i++) {
+            let value = undefined;
+            if (elementType === "boolean") {
+              value = false;
+            } else if (numericDataTypes.includes(elementType)) {
+              value = 0;
+            } else if (elementType === "String") {
+              value = "";
+            }
+            objAttributes[`[${i}]`] = {
+              dataType: elementType,
+              value: value,
+            };
+          }
+
+          const newNode: CustomNodeType = {
+            id: getId(),
+            type: "object",
             position,
-          },
-        };
+            data: {
+              klass: type,
+              attributes: objAttributes,
+              position,
+              arrayElementType: elementType,
+            },
+          };
+
+          if (lastMethodCall === undefined) {
+            const newVar: CustomNodeType = {
+              id: getId(),
+              type: "variable",
+              position: {
+                x: position.x - 100,
+                y: position.y,
+              },
+              data: {
+                name,
+                value: newNode.id,
+                position: {
+                  x: position.x - 100,
+                  y: position.y,
+                },
+                dataType: type,
+              },
+            };
+            setNodes((nds) => nds.concat(newNode, newVar));
+            const newEdge: CustomEdgeType = {
+              id: getId(),
+              source: newVar.id,
+              target: newNode.id,
+            };
+            setEdges((egs) => egs.concat(newEdge));
+          } else {
+            setNodes((nds) =>
+              nds
+                .map((n) => {
+                  if (n.id == lastMethodCall.id) {
+                    (n.data as any).localVariables[name] = {
+                      dataType: newNode.data.klass || "Object",
+                      value: newNode.id,
+                    };
+                    return n;
+                  }
+                  return n;
+                })
+                .concat(newNode)
+            );
+            const newEdge: CustomEdgeType = {
+              id: getId(),
+              source: lastMethodCall.id,
+              sourceHandle: name,
+              target: newNode.id,
+            };
+            setEdges((egs) => egs.concat(newEdge));
+          }
+        });
+        return;
+      }
+
+      showSimpleInputDialog(
+        `Create ${type}`,
+        "Object Name",
+        (name) => {
+          let objAttributes = createAttributesForObject(k?.attributes || {});
+
+          const newNode: CustomNodeType = {
+            id: getId(),
+            type: "object",
+            position,
+            data: {
+              klass: type,
+              attributes: objAttributes,
+              position,
+            },
+          };
 
         if (lastMethodCall === undefined) {
           const newVar: CustomNodeType = {
@@ -437,19 +651,24 @@ export const MemoryView = () => {
           };
           setEdges((egs) => egs.concat(newEdge));
         }
-      }
+        },
+        `Enter name for ${type}`
+      );
     } else if (type == "variable") {
-      const name = window.prompt("Name for the new global variable?");
-
-      if (name != null) {
-        const newNode: CustomNodeType = {
-          id: getId(),
-          type: "variable",
-          position,
-          data: { name, value: null, position, dataType: "List" },
-        };
-        setNodes((nds) => nds.concat(newNode));
-      }
+      showSimpleInputDialog(
+        "Create Global Variable",
+        "Variable Name",
+        (name) => {
+          const newNode: CustomNodeType = {
+            id: getId(),
+            type: "variable",
+            position,
+            data: { name, value: null, position, dataType: "List" },
+          };
+          setNodes((nds) => nds.concat(newNode));
+        },
+        "Enter variable name"
+      );
     }
   };
 
@@ -570,6 +789,48 @@ export const MemoryView = () => {
           <Background />
         </ReactFlow>
       </ReactFlowProvider>
+      {showArrayDialog && arrayDialogCallback && (
+        <ArrayCreationDialog
+          onConfirm={(name, length, elementType) => {
+            arrayDialogCallback(name, length, elementType);
+            setShowArrayDialog(false);
+            setArrayDialogCallback(null);
+          }}
+          onCancel={() => {
+            setShowArrayDialog(false);
+            setArrayDialogCallback(null);
+          }}
+          availableTypes={getAvailableTypes()}
+        />
+      )}
+      {showInputDialog && inputDialogConfig && (
+        <SimpleInputDialog
+          title={inputDialogConfig.title}
+          label={inputDialogConfig.label}
+          placeholder={inputDialogConfig.placeholder}
+          onConfirm={(value) => {
+            inputDialogConfig.onConfirm(value);
+            setShowInputDialog(false);
+            setInputDialogConfig(null);
+          }}
+          onCancel={() => {
+            setShowInputDialog(false);
+            setInputDialogConfig(null);
+          }}
+        />
+      )}
+      {showLocalVarDialog && (
+        <SimpleInputDialog
+          title="Declare Local Variable"
+          label="Variable Name"
+          placeholder="Enter variable name"
+          onConfirm={handleLocalVarDialogConfirm}
+          onCancel={() => {
+            setShowLocalVarDialog(false);
+            setLocalVarDialogNodeId(null);
+          }}
+        />
+      )}
     </div>
   );
 };

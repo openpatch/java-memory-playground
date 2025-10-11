@@ -137,7 +137,11 @@ export function isMethodCallNode(node: Node): node is MethodCallNodeType {
   return node.type === "method-call";
 }
 
-function MethodCallNode({ id, data }: NodeProps<MethodCallNodeType>) {
+function MethodCallNode({ 
+  id, 
+  data,
+  onDeclareVariable,
+}: NodeProps<MethodCallNodeType> & { onDeclareVariable?: (nodeId: string) => void }) {
   const { setNodes } = useReactFlow<CustomNodeType, CustomEdgeType>();
   const edges = useEdges<CustomEdgeType>();
 
@@ -148,27 +152,8 @@ function MethodCallNode({ id, data }: NodeProps<MethodCallNodeType>) {
   };
 
   const handleDeclareLocaleVariable = () => {
-    const name = window.prompt("Name for the new local variable?");
-    if (name != null) {
-      setNodes((nds) =>
-        nds.map((n) => {
-          if (n.id == id && n.type === "method-call") {
-            return {
-              ...n,
-              data: {
-                ...n.data,
-                localVariables: {
-                  ...n.data.localVariables,
-                  [name]: {
-                    dataType: "object",
-                  },
-                },
-              },
-            };
-          }
-          return n;
-        })
-      );
+    if (onDeclareVariable) {
+      onDeclareVariable(id);
     }
   };
 
