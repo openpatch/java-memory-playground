@@ -39,6 +39,7 @@ import MethodCallNode, {
 import ReferenceEdge from "./ReferenceEdge";
 import { CustomEdgeType, CustomNodeType } from "./types";
 import { ArrayCreationDialog } from "./ArrayCreationDialog";
+import { SimpleInputDialog } from "./SimpleInputDialog";
 
 const selector = (state: RFState) => ({
   selectedNodeId: state.selectedNodeId,
@@ -122,6 +123,15 @@ export const MemoryView = () => {
     ((name: string, length: number, elementType: DataType) => void) | null
   >(null);
 
+  // Simple input dialog state
+  const [showInputDialog, setShowInputDialog] = useState(false);
+  const [inputDialogConfig, setInputDialogConfig] = useState<{
+    title: string;
+    label: string;
+    placeholder?: string;
+    onConfirm: (value: string) => void;
+  } | null>(null);
+
   const methodCalls = nodes.filter(isMethodCallNode);
   let previousMethodCall = methodCalls[0];
   let lastMethodCall = methodCalls[0];
@@ -174,6 +184,17 @@ export const MemoryView = () => {
   ) => {
     setArrayDialogCallback(() => callback);
     setShowArrayDialog(true);
+  };
+
+  // Helper function to show input dialog
+  const showSimpleInputDialog = (
+    title: string,
+    label: string,
+    onConfirm: (value: string) => void,
+    placeholder?: string
+  ) => {
+    setInputDialogConfig({ title, label, placeholder, onConfirm });
+    setShowInputDialog(true);
   };
 
   // Get available types for arrays: primitives + defined classes
@@ -404,20 +425,22 @@ export const MemoryView = () => {
     const k = memory.klasses[type];
 
     if (type == "method-call") {
-      const name = window.prompt(`Name of the method?`);
-      if (name != null) {
-        const index = reactFlowInstance
-          .getNodes()
-          .filter((n) => n.type === "method-call").length;
-        const newNode: CustomNodeType = {
-          id: getId(),
-          type: "method-call",
-          position,
-          data: {
-            index,
-            name,
+      showSimpleInputDialog(
+        "Create Method Call",
+        "Method Name",
+        (name) => {
+          const index = reactFlowInstance
+            .getNodes()
+            .filter((n) => n.type === "method-call").length;
+          const newNode: CustomNodeType = {
+            id: getId(),
+            type: "method-call",
             position,
-            localVariables: {
+            data: {
+              index,
+              name,
+              position,
+              localVariables: {
               this: {
                 dataType: "object",
                 value: undefined,
@@ -426,8 +449,10 @@ export const MemoryView = () => {
           },
         };
         setNodes((nds) => nds.concat(newNode));
-        return;
-      }
+        },
+        "Enter method name"
+      );
+      return;
     }
 
     if (type != "variable") {
@@ -519,20 +544,22 @@ export const MemoryView = () => {
         return;
       }
 
-      const name = window.prompt(`Name for the new ${type}?`);
-      let objAttributes = createAttributesForObject(k?.attributes || {});
+      showSimpleInputDialog(
+        `Create ${type}`,
+        "Object Name",
+        (name) => {
+          let objAttributes = createAttributesForObject(k?.attributes || {});
 
-      if (name != null) {
-        const newNode: CustomNodeType = {
-          id: getId(),
-          type: "object",
-          position,
-          data: {
-            klass: type,
-            attributes: objAttributes,
+          const newNode: CustomNodeType = {
+            id: getId(),
+            type: "object",
             position,
-          },
-        };
+            data: {
+              klass: type,
+              attributes: objAttributes,
+              position,
+            },
+          };
 
         if (lastMethodCall === undefined) {
           const newVar: CustomNodeType = {
@@ -582,19 +609,24 @@ export const MemoryView = () => {
           };
           setEdges((egs) => egs.concat(newEdge));
         }
-      }
+        },
+        `Enter name for ${type}`
+      );
     } else if (type == "variable") {
-      const name = window.prompt("Name for the new global variable?");
-
-      if (name != null) {
-        const newNode: CustomNodeType = {
-          id: getId(),
-          type: "variable",
-          position,
-          data: { name, value: null, position, dataType: "List" },
-        };
-        setNodes((nds) => nds.concat(newNode));
-      }
+      showSimpleInputDialog(
+        "Create Global Variable",
+        "Variable Name",
+        (name) => {
+          const newNode: CustomNodeType = {
+            id: getId(),
+            type: "variable",
+            position,
+            data: { name, value: null, position, dataType: "List" },
+          };
+          setNodes((nds) => nds.concat(newNode));
+        },
+        "Enter variable name"
+      );
     }
   };
 
@@ -727,6 +759,22 @@ export const MemoryView = () => {
             setArrayDialogCallback(null);
           }}
           availableTypes={getAvailableTypes()}
+        />
+      )}
+      {showInputDialog && inputDialogConfig && (
+        <SimpleInputDialog
+          title={inputDialogConfig.title}
+          label={inputDialogConfig.label}
+          placeholder={inputDialogConfig.placeholder}
+          onConfirm={(value) => {
+            inputDialogConfig.onConfirm(value);
+            setShowInputDialog(false);
+            setInputDialogConfig(null);
+          }}
+          onCancel={() => {
+            setShowInputDialog(false);
+            setInputDialogConfig(null);
+          }}
         />
       )}
     </div>

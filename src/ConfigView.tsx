@@ -2,6 +2,7 @@ import { shallow } from "zustand/shallow";
 import useStore, { RFState } from "./store";
 import { useCallback, useState, useEffect } from "react";
 import { DataType, primitveDataTypes } from "./memory";
+import { SimpleInputDialog } from "./SimpleInputDialog";
 
 const selector = (state: RFState) => ({
   updateMemory: state.updateMemory,
@@ -24,6 +25,7 @@ export const ConfigView = () => {
   const [newAttrType, setNewAttrType] = useState<DataType>("String");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [showAddClassDialog, setShowAddClassDialog] = useState(false);
 
   // Get available data types: primitives + Array + defined classes
   const availableDataTypes = [
@@ -108,15 +110,17 @@ export const ConfigView = () => {
   );
 
   const handleAddKlass = useCallback(() => {
-    const name = window.prompt("Enter class name:");
-    if (name && name.trim()) {
-      setKlasses((prev) => ({
-        ...prev,
-        [name.trim()]: {
-          attributes: {},
-        },
-      }));
-    }
+    setShowAddClassDialog(true);
+  }, []);
+
+  const handleAddKlassConfirm = useCallback((name: string) => {
+    setKlasses((prev) => ({
+      ...prev,
+      [name]: {
+        attributes: {},
+      },
+    }));
+    setShowAddClassDialog(false);
   }, []);
 
   const handleRemoveKlass = useCallback((name: string) => {
@@ -887,6 +891,17 @@ export const ConfigView = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add Class Dialog */}
+      {showAddClassDialog && (
+        <SimpleInputDialog
+          title="Add Class"
+          label="Class Name"
+          placeholder="Enter class name"
+          onConfirm={handleAddKlassConfirm}
+          onCancel={() => setShowAddClassDialog(false)}
+        />
       )}
     </div>
   );
