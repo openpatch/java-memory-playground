@@ -190,10 +190,22 @@ export const MemoryView = () => {
 
         if (node?.type == "object" && reactFlowInstance != null) {
           const objNode: ObjectNodeType = node as any;
-          const objKlass = memory.klasses[objNode.data["klass"]];
-          if (!objKlass) return;
-          const klassName =
-            objKlass.attributes[connectingNode.current.handleId || ""];
+          
+          // Special handling for Array elements
+          let klassName: string;
+          if (objNode.data.klass === "Array") {
+            // For array elements, get the dataType from the specific element
+            const handleId = connectingNode.current.handleId || "";
+            const elementAttribute = objNode.data.attributes[handleId];
+            if (!elementAttribute) return;
+            klassName = elementAttribute.dataType;
+          } else {
+            // For regular objects, look up the type from the class definition
+            const objKlass = memory.klasses[objNode.data["klass"]];
+            if (!objKlass) return;
+            klassName = objKlass.attributes[connectingNode.current.handleId || ""];
+          }
+          
           const klass = memory.klasses[klassName];
 
           const { clientX, clientY } =
