@@ -6,13 +6,12 @@ import {
   useNodesState,
   useEdgesState,
   addEdge,
-  ReactFlowProvider,
-  ReactFlowInstance,
   OnConnectStart,
   OnConnectEnd,
   OnConnect,
   OnConnectStartParams,
   MarkerType,
+  useReactFlow,
 } from "@xyflow/react";
 import { toPng } from "html-to-image";
 import useStore, { RFState } from "./store";
@@ -102,9 +101,8 @@ const getRanMemoryAdress = (size: number): string => {
 
 export const MemoryView = () => {
   const { memory, updateMemory, setRoute } = useStore(selector, shallow);
+  const { screenToFlowPosition } = useReactFlow();
   const { edges: initialEdges, nodes: initialNodes } = getEdgesAndNodes(memory);
-  const [reactFlowInstance, setReactFlowInstance] =
-    useState<ReactFlowInstance<CustomNodeType, CustomEdgeType> | null>(null);
   const connectingNode = useRef<OnConnectStartParams | null>(null);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -130,15 +128,21 @@ export const MemoryView = () => {
   const [showLocalVarDialog, setShowLocalVarDialog] = useState(false);
   const [localVarDialogNodeId, setLocalVarDialogNodeId] = useState<string | null>(null);
 
-  const methodCalls = nodes.filter(isMethodCallNode);
-  let previousMethodCall = methodCalls[0];
-  let lastMethodCall = methodCalls[0];
-  methodCalls.forEach((methodCall) => {
-    if (lastMethodCall.data.index < methodCall.data.index) {
-      previousMethodCall = lastMethodCall;
-      lastMethodCall = methodCall;
+  const { previousMethodCall, lastMethodCall } = useMemo(() => {
+    const methodCalls = nodes.filter(isMethodCallNode);
+    if (methodCalls.length === 0) {
+      return { previousMethodCall: undefined, lastMethodCall: undefined };
     }
-  });
+    let prev = methodCalls[0];
+    let last = methodCalls[0];
+    methodCalls.forEach((methodCall) => {
+      if (last.data.index < methodCall.data.index) {
+        prev = last;
+        last = methodCall;
+      }
+    });
+    return { previousMethodCall: prev, lastMethodCall: last };
+  }, [nodes]);
 
   const onConnect = useCallback<OnConnect>(
     (params) => {
@@ -201,10 +205,10 @@ export const MemoryView = () => {
   };
 
   // Handler for declaring local variables
-  const handleDeclareLocalVariable = (nodeId: string) => {
+  const handleDeclareLocalVariable = useCallback((nodeId: string) => {
     setLocalVarDialogNodeId(nodeId);
     setShowLocalVarDialog(true);
-  };
+  }, [setShowLocalVarDialog, showLocalVarDialog]);
 
   const handleLocalVarDialogConfirm = (name: string) => {
     if (localVarDialogNodeId) {
@@ -251,9 +255,9 @@ export const MemoryView = () => {
       if (!connectionState.isValid) {
         const node = nodes.find((n) => n.id == connectingNode.current?.nodeId);
 
-        if (node?.type == "object" && reactFlowInstance != null) {
+        if (node?.type == "object") {
           const objNode: ObjectNodeType = node as any;
-          
+
           // Special handling for Array elements
           let klassName: string;
           if (objNode.data.klass === "Array") {
@@ -268,13 +272,13 @@ export const MemoryView = () => {
             if (!objKlass) return;
             klassName = objKlass.attributes[connectingNode.current.handleId || ""];
           }
-          
+
           const klass = memory.klasses[klassName];
 
           const { clientX, clientY } =
             'changedTouches' in event ? event.changedTouches[0] : event;
 
-          const position = reactFlowInstance.screenToFlowPosition({
+          const position = screenToFlowPosition({
             x: clientX,
             y: clientY,
           });
@@ -306,7 +310,7 @@ export const MemoryView = () => {
                   value: value,
                 };
               }
-              
+
               const newNode: CustomNodeType = {
                 id,
                 type: "object",
@@ -377,7 +381,7 @@ export const MemoryView = () => {
       }
       connectingNode.current = null;
     },
-    [nodes, memory, reactFlowInstance, setNodes, setEdges]
+    [nodes, memory, setNodes, setEdges]
   );
 
   const onGC = () => {
@@ -397,12 +401,10 @@ export const MemoryView = () => {
   };
 
   const onSaveURL = () => {
-    if (reactFlowInstance) {
-      updateMemory({
-        ...memory,
-        ...getMemory(edges, nodes),
-      });
-    }
+    updateMemory({
+      ...memory,
+      ...getMemory(edges, nodes),
+    });
   };
 
   const onDownloadPng = () => {
@@ -428,42 +430,7 @@ export const MemoryView = () => {
     });
   };
 
-  const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }, []);
-
-  const onDrop = useCallback(
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-
-      if (reactFlowInstance == null) return;
-
-      const type = event.dataTransfer.getData(
-        "application/java-memory-playground"
-      );
-
-      // check if the dropped element is valid
-      if (typeof type === "undefined" || !type) {
-        return;
-      }
-
-      // reactFlowInstance.project was renamed to reactFlowInstance.screenToFlowPosition
-      // and you don't need to subtract the reactFlowBounds.left/top anymore
-      // details: https://reactflow.dev/whats-new/2023-11-10
-      const position = reactFlowInstance.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
-
-      createNodeAtPosition(type, position);
-    },
-    [reactFlowInstance, lastMethodCall]
-  );
-
   const createNodeAtPosition = (type: string, position: { x: number; y: number }) => {
-    if (!reactFlowInstance) return;
-
     const k = memory.klasses[type];
 
     if (type == "method-call") {
@@ -471,9 +438,7 @@ export const MemoryView = () => {
         "Create Method Call",
         "Method Name",
         (name) => {
-          const index = reactFlowInstance
-            .getNodes()
-            .filter((n) => n.type === "method-call").length;
+          const index = nodes.filter((n) => n.type === "method-call").length;
           const newNode: CustomNodeType = {
             id: getId(),
             type: "method-call",
@@ -483,14 +448,14 @@ export const MemoryView = () => {
               name,
               position,
               localVariables: {
-              this: {
-                dataType: "object",
-                value: undefined,
+                this: {
+                  dataType: "object",
+                  value: undefined,
+                },
               },
             },
-          },
-        };
-        setNodes((nds) => nds.concat(newNode));
+          };
+          setNodes((nds) => nds.concat(newNode));
         },
         "Enter method name"
       );
@@ -603,54 +568,54 @@ export const MemoryView = () => {
             },
           };
 
-        if (lastMethodCall === undefined) {
-          const newVar: CustomNodeType = {
-            id: getId(),
-            type: "variable",
-            position: {
-              x: position.x - 100,
-              y: position.y,
-            },
-            data: {
-              name,
-              value: newNode.id,
+          if (lastMethodCall === undefined) {
+            const newVar: CustomNodeType = {
+              id: getId(),
+              type: "variable",
               position: {
                 x: position.x - 100,
                 y: position.y,
               },
-              dataType: type,
-            },
-          };
-          setNodes((nds) => nds.concat(newNode, newVar));
-          const newEdge: CustomEdgeType = {
-            id: getId(),
-            source: newVar.id,
-            target: newNode.id,
-          };
-          setEdges((egs) => egs.concat(newEdge));
-        } else {
-          setNodes((nds) =>
-            nds
-              .map((n) => {
-                if (n.id == lastMethodCall.id) {
-                  (n.data as any).localVariables[name] = {
-                    dataType: newNode.data.klass || "Object",
-                    value: newNode.id,
-                  };
+              data: {
+                name,
+                value: newNode.id,
+                position: {
+                  x: position.x - 100,
+                  y: position.y,
+                },
+                dataType: type,
+              },
+            };
+            setNodes((nds) => nds.concat(newNode, newVar));
+            const newEdge: CustomEdgeType = {
+              id: getId(),
+              source: newVar.id,
+              target: newNode.id,
+            };
+            setEdges((egs) => egs.concat(newEdge));
+          } else {
+            setNodes((nds) =>
+              nds
+                .map((n) => {
+                  if (n.id == lastMethodCall.id) {
+                    (n.data as any).localVariables[name] = {
+                      dataType: newNode.data.klass || "Object",
+                      value: newNode.id,
+                    };
+                    return n;
+                  }
                   return n;
-                }
-                return n;
-              })
-              .concat(newNode)
-          );
-          const newEdge: CustomEdgeType = {
-            id: getId(),
-            source: lastMethodCall.id,
-            sourceHandle: name,
-            target: newNode.id,
-          };
-          setEdges((egs) => egs.concat(newEdge));
-        }
+                })
+                .concat(newNode)
+            );
+            const newEdge: CustomEdgeType = {
+              id: getId(),
+              source: lastMethodCall.id,
+              sourceHandle: name,
+              target: newNode.id,
+            };
+            setEdges((egs) => egs.concat(newEdge));
+          }
         },
         `Enter name for ${type}`
       );
@@ -674,121 +639,96 @@ export const MemoryView = () => {
 
   const onNodeDrop = useCallback(
     (nodeType: string, offsetX: number, offsetY: number) => {
-      if (!reactFlowInstance) return;
-
-      const flow = document.querySelector('.react-flow');
-      const flowRect = flow?.getBoundingClientRect();
-
-      const isInFlow =
-        flowRect &&
-        offsetX >= flowRect.left &&
-        offsetX <= flowRect.right &&
-        offsetY >= flowRect.top &&
-        offsetY <= flowRect.bottom;
-
-      if (isInFlow) {
-        const position = reactFlowInstance.screenToFlowPosition({
-          x: offsetX,
-          y: offsetY,
-        });
-
-        createNodeAtPosition(nodeType, position);
-      }
+      createNodeAtPosition(nodeType, { x: offsetX, y: offsetY });
     },
-    [reactFlowInstance, lastMethodCall]
-  );
+    [createNodeAtPosition]);
 
   return (
     <div className="memory-view">
       {!memory.options.hideSidebar && <Sidebar memory={memory} onNodeDrop={onNodeDrop} />}
-      <ReactFlowProvider>
-        <ReactFlow
-          className="memory"
-          nodes={nodes.map((n) => {
-            n.className = "";
-            n.deletable = memory.options.disableGarbageCollector;
-            if (
-              previousMethodCall !== undefined &&
-              isConnectedTo(n.id, previousMethodCall.id, nodes, edges)
-            ) {
-              n.className = "previous-method-call";
-            }
-            if (n.id === previousMethodCall?.id) {
-              n.className = "previous-method-call";
-            }
-            if (
-              (lastMethodCall !== undefined &&
-                isConnectedTo(n.id, lastMethodCall.id, nodes, edges)) ||
-              isConnectedToVariable(n.id, nodes, edges)
-            ) {
-              n.className = "last-method-call";
-            }
-            if (n.id === lastMethodCall?.id) {
-              n.className = "last-method-call";
-            }
-            if (n.type === "variable") {
-              n.deletable = true;
-            }
-            return n;
-          })}
-          edges={edges.map((e) => {
-            const node = nodes.find((n) => n.id == e.source);
-            e.className = "";
-            e.deletable = false;
-            if (node && node.className?.includes("previous-method-call")) {
-              e.className = "previous-method-call";
-            }
-            if (
-              (node && node.className?.includes("last-method-call")) ||
-              node?.type === "variable"
-            ) {
-              e.className = "last-method-call";
-              e.deletable = true;
-            }
-            return e;
-          })}
-          elevateEdgesOnSelect={true}
-          defaultEdgeOptions={{
-            type: "smoothstep",
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              color: "#778899",
-            },
-          }}
-          onConnect={onConnect}
-          onConnectStart={onConnectStart}
-          onConnectEnd={onConnectEnd}
-          onInit={setReactFlowInstance}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          proOptions={{
-            hideAttribution: true,
-          }}
-          fitView
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          minZoom={0.1}
-        >
-          <Panel position="top-right">
-            <div className="button-group">
-              <button onClick={onSaveURL}>Save (URL)</button>
-              <button onClick={onDownloadPng}>Download (PNG)</button>
-              <button onClick={onConfig}>Config</button>
-            </div>
-          </Panel>
-          {!memory.options.disableGarbageCollector && <Panel position="bottom-right">
-            <div className="button-group">
-              <button className="button-gc" onClick={onGC}>
-                Run Garbage Collector
-              </button>
-            </div>
-          </Panel>}
-          <Controls />
-          <Background />
-        </ReactFlow>
-      </ReactFlowProvider>
+      <ReactFlow
+        className="memory"
+        nodes={nodes.map((n) => {
+          n.className = "";
+          n.deletable = memory.options.disableGarbageCollector;
+          if (
+            previousMethodCall !== undefined &&
+            isConnectedTo(n.id, previousMethodCall.id, nodes, edges)
+          ) {
+            n.className = "previous-method-call";
+          }
+          if (n.id === previousMethodCall?.id) {
+            n.className = "previous-method-call";
+          }
+          if (
+            (lastMethodCall !== undefined &&
+              isConnectedTo(n.id, lastMethodCall.id, nodes, edges)) ||
+            isConnectedToVariable(n.id, nodes, edges)
+          ) {
+            n.className = "last-method-call";
+          }
+          if (n.id === lastMethodCall?.id) {
+            n.className = "last-method-call";
+          }
+          if (n.type === "variable") {
+            n.deletable = true;
+          }
+          return { ...n };
+        })}
+        edges={edges.map((e) => {
+          const node = nodes.find((n) => n.id == e.source);
+          e.className = "";
+          e.deletable = false;
+          if (node && node.className?.includes("previous-method-call")) {
+            e.className = "previous-method-call";
+          }
+          if (
+            (node && node.className?.includes("last-method-call")) ||
+            node?.type === "variable"
+          ) {
+            e.className = "last-method-call";
+            e.deletable = true;
+          }
+          return { ...e };
+        })}
+        elevateEdgesOnSelect={true}
+        defaultEdgeOptions={{
+          type: "smoothstep",
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: "#778899",
+          },
+        }}
+        onConnect={onConnect}
+        onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        proOptions={{
+          hideAttribution: true,
+        }}
+        fitView
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        minZoom={0.1}
+      >
+        <Panel position="top-right">
+          <div className="button-group">
+            <button onClick={onSaveURL}>Save (URL)</button>
+            <button onClick={onDownloadPng}>Download (PNG)</button>
+            <button onClick={onConfig}>Config</button>
+          </div>
+        </Panel>
+        {!memory.options.disableGarbageCollector && <Panel position="bottom-right">
+          <div className="button-group">
+            <button className="button-gc" onClick={onGC}>
+              Run Garbage Collector
+            </button>
+          </div>
+        </Panel>}
+        <Controls />
+        <Background />
+      </ReactFlow>
       {showArrayDialog && arrayDialogCallback && (
         <ArrayCreationDialog
           onConfirm={(name, length, elementType) => {
