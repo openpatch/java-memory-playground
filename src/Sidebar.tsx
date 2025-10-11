@@ -1,26 +1,37 @@
+import { useCallback, useState } from "react";
 import { Memory } from "./memory";
-import { useDraggable } from "@neodrag/react";
-import { useRef } from "react";
+import { useDnDPosition, useDnD, OnDropAction } from "./useDnD";
 
-interface DraggableNodeProps {
-  className: string;
-  children: React.ReactNode;
-  nodeType: string;
-  onDrop: (nodeType: string, offsetX: number, offsetY: number) => void;
+interface DragGhostProps {
+  type: string | null;
 }
 
-function DraggableNode({ className, children, nodeType, onDrop }: DraggableNodeProps) {
-  const draggableRef = useRef<HTMLDivElement>(null);
+// The DragGhost component is used to display a ghost node when dragging a node into the flow.
+export function DragGhost({ type }: DragGhostProps) {
+  const { position } = useDnDPosition();
 
-  useDraggable(draggableRef, {
-    onDragEnd: (data) => {
-      onDrop(nodeType, data.offsetX, data.offsetY);
-    },
-  });
+  if (!position) return null;
+
+  let className = "sidebar-class";
+  let label = "new " + type;
+
+  if (type === "method-call") {
+    className = "sidebar-method-call";
+    label = "Call Method";
+  } else if (type === "variable") {
+    className = "sidebar-variable";
+    label = "Declare Global Variable";
+  }
+
 
   return (
-    <div ref={draggableRef} className={className} style={{ cursor: 'grab' }}>
-      {children}
+    <div
+      className={`dndnode ghostnode ${className}`}
+      style={{
+        transform: `translate(${position.x}px, ${position.y}px) translate(-50%, -50%)`,
+      }}
+    >
+      {label}
     </div>
   );
 }
@@ -32,45 +43,67 @@ export const Sidebar = ({
   memory: Memory;
   onNodeDrop: (nodeType: string, offsetX: number, offsetY: number) => void;
 }) => {
+  const { onDragStart, isDragging } = useDnD();
+  // The type of the node that is being dragged.
+  const [type, setType] = useState<string | null>(null);
+
+  const makeOnDropAction = useCallback(
+    (type: string): OnDropAction => ({ position }) => {
+      onNodeDrop(type, position.x, position.y);
+    },
+    [onNodeDrop]
+  );
+
   return (
-    <div className="sidebar">
-      {Object.entries(memory.klasses).map(([name]) => (
-        <DraggableNode
-          key={name}
-          className="sidebar-class"
-          nodeType={name}
-          onDrop={onNodeDrop}
-        >
-          new {name}
-        </DraggableNode>
-      ))}
-      {!memory.options.hideNewArray && (
-        <DraggableNode
-          className="sidebar-class"
-          nodeType="Array"
-          onDrop={onNodeDrop}
-        >
-          new Array
-        </DraggableNode>
-      )}
-      {!memory.options.hideDeclareGlobalVariable && (
-        <DraggableNode
-          className="sidebar-variable"
-          nodeType="variable"
-          onDrop={onNodeDrop}
-        >
-          Declare Global Variable
-        </DraggableNode>
-      )}
-      {!memory.options.hideCallMethod && (
-        <DraggableNode
-          className="sidebar-method-call"
-          nodeType="method-call"
-          onDrop={onNodeDrop}
-        >
-          Call Method
-        </DraggableNode>
-      )}
-    </div>
+    <>
+      {isDragging && <DragGhost type={type} />}
+      <aside className="sidebar">
+        {Object.entries(memory.klasses).map(([name]) => (
+          <div
+            key={name}
+            className="dndnode sidebar-class"
+            onPointerDown={(event) => {
+              setType(name);
+              onDragStart(event, makeOnDropAction(name));
+            }}
+          >
+            new {name}
+          </div>
+        ))}
+        {!memory.options.hideNewArray && (
+          <div
+            className="dndnode sidebar-class"
+            onPointerDown={(event) => {
+              setType('Array');
+              onDragStart(event, makeOnDropAction('Array'));
+            }}
+          >
+            new Array
+          </div>
+        )}
+        {!memory.options.hideDeclareGlobalVariable && (
+          <div
+            className="sidebar-variable"
+            onPointerDown={(event) => {
+              setType('variable');
+              onDragStart(event, makeOnDropAction('variable'));
+            }}
+          >
+            Declare Global Variable
+          </div>
+        )}
+        {!memory.options.hideCallMethod && (
+          <div
+            className="sidebar-method-call"
+            onPointerDown={(event) => {
+              setType('method-call');
+              onDragStart(event, makeOnDropAction('method-call'));
+            }}
+          >
+            Call Method
+          </div>
+        )}
+      </aside>
+    </>
   );
 };

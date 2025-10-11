@@ -42,17 +42,17 @@ export const ConfigView = () => {
   const onSave = useCallback(() => {
     // Update existing objects to match new class definitions
     const updatedObjects = { ...memory.objects };
-    
+
     Object.entries(updatedObjects).forEach(([objId, obj]) => {
       const klassDefinition = klasses[obj.klass];
-      
+
       // Skip if class doesn't exist (e.g., Array) or object class is not in klasses
       if (!klassDefinition) return;
-      
+
       const updatedAttributes = { ...obj.attributes };
       const klassAttributeNames = Object.keys(klassDefinition.attributes);
       const currentAttributeNames = Object.keys(updatedAttributes);
-      
+
       // Add new attributes from class definition
       klassAttributeNames.forEach((attrName) => {
         if (!updatedAttributes[attrName]) {
@@ -62,20 +62,20 @@ export const ConfigView = () => {
           };
         }
       });
-      
+
       // Remove attributes that are no longer in class definition
       currentAttributeNames.forEach((attrName) => {
         if (!klassAttributeNames.includes(attrName)) {
           delete updatedAttributes[attrName];
         }
       });
-      
+
       updatedObjects[objId] = {
         ...obj,
         attributes: updatedAttributes,
       };
     });
-    
+
     updateMemory({
       ...memory,
       klasses,
@@ -212,12 +212,10 @@ export const ConfigView = () => {
   }, []);
 
   return (
-    <div style={{ 
-      padding: "24px", 
-      maxWidth: "1200px", 
+    <div style={{
+      padding: "24px",
+      maxWidth: "1200px",
       margin: "0 auto",
-      minHeight: "100vh",
-      backgroundColor: "#fafafa"
     }}>
       <div style={{
         backgroundColor: "white",
@@ -226,15 +224,15 @@ export const ConfigView = () => {
         border: "1px solid #e5e7eb",
         marginBottom: "16px"
       }}>
-        <h1 style={{ 
-          margin: "0 0 16px 0", 
+        <h1 style={{
+          margin: "0 0 16px 0",
           color: "#111827",
           fontSize: "24px",
           fontWeight: "600"
         }}>Configuration</h1>
 
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <button 
+          <button
             onClick={onSave}
             style={{
               backgroundColor: hasUnsavedChanges ? "#111827" : "#6b7280",
@@ -247,7 +245,7 @@ export const ConfigView = () => {
               cursor: "pointer"
             }}
           >{hasUnsavedChanges ? "Save" : "Saved"}</button>
-          <button 
+          <button
             onClick={onView}
             style={{
               backgroundColor: "white",
@@ -261,8 +259,8 @@ export const ConfigView = () => {
             }}
           >View</button>
           {showSaveSuccess && (
-            <span style={{ 
-              color: "#10b981", 
+            <span style={{
+              color: "#10b981",
               fontSize: "14px",
               fontWeight: "500"
             }}>
@@ -279,20 +277,20 @@ export const ConfigView = () => {
         border: "1px solid #e5e7eb",
         marginBottom: "16px"
       }}>
-        <h2 style={{ 
-          margin: "0 0 16px 0", 
+        <h2 style={{
+          margin: "0 0 16px 0",
           color: "#111827",
           fontSize: "18px",
           fontWeight: "600"
         }}>Options</h2>
-        <div style={{ 
-          display: "grid", 
+        <div style={{
+          display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "12px" 
+          gap: "12px"
         }}>
-          <label style={{ 
-            display: "flex", 
-            alignItems: "center", 
+          <label style={{
+            display: "flex",
+            alignItems: "center",
             gap: "8px",
             fontSize: "14px",
             color: "#374151",
@@ -312,9 +310,9 @@ export const ConfigView = () => {
             />
             Disable Garbage Collector
           </label>
-          <label style={{ 
-            display: "flex", 
-            alignItems: "center", 
+          <label style={{
+            display: "flex",
+            alignItems: "center",
             gap: "8px",
             fontSize: "14px",
             color: "#374151",
@@ -332,9 +330,9 @@ export const ConfigView = () => {
             />
             Hide Sidebar
           </label>
-          <label style={{ 
-            display: "flex", 
-            alignItems: "center", 
+          <label style={{
+            display: "flex",
+            alignItems: "center",
             gap: "8px",
             fontSize: "14px",
             color: "#374151",
@@ -354,9 +352,9 @@ export const ConfigView = () => {
             />
             Hide Call Method
           </label>
-          <label style={{ 
-            display: "flex", 
-            alignItems: "center", 
+          <label style={{
+            display: "flex",
+            alignItems: "center",
             gap: "8px",
             fontSize: "14px",
             color: "#374151",
@@ -376,9 +374,9 @@ export const ConfigView = () => {
             />
             Hide Declare Global Variable
           </label>
-          <label style={{ 
-            display: "flex", 
-            alignItems: "center", 
+          <label style={{
+            display: "flex",
+            alignItems: "center",
             gap: "8px",
             fontSize: "14px",
             color: "#374151",
@@ -398,9 +396,9 @@ export const ConfigView = () => {
             />
             Hide New Array
           </label>
-          <label style={{ 
-            display: "flex", 
-            alignItems: "center", 
+          <label style={{
+            display: "flex",
+            alignItems: "center",
             gap: "8px",
             fontSize: "14px",
             color: "#374151",
@@ -437,13 +435,13 @@ export const ConfigView = () => {
             marginBottom: "16px",
           }}
         >
-          <h2 style={{ 
-            margin: "0", 
+          <h2 style={{
+            margin: "0",
             color: "#111827",
             fontSize: "18px",
             fontWeight: "600"
           }}>Classes</h2>
-          <button 
+          <button
             onClick={handleAddKlass}
             style={{
               backgroundColor: "#111827",
@@ -479,7 +477,7 @@ export const ConfigView = () => {
                   borderBottom: "1px solid #e5e7eb"
                 }}
               >
-                <h3 style={{ 
+                <h3 style={{
                   margin: 0,
                   fontSize: "16px",
                   fontWeight: "600",
@@ -488,7 +486,7 @@ export const ConfigView = () => {
                   {klassName}
                 </h3>
                 <div style={{ display: "flex", gap: "8px" }}>
-                  <button 
+                  <button
                     onClick={() => handleAddAttribute(klassName)}
                     style={{
                       backgroundColor: "white",
@@ -503,7 +501,7 @@ export const ConfigView = () => {
                   >
                     Add Attribute
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleRemoveKlass(klassName)}
                     style={{
                       backgroundColor: "white",
@@ -523,8 +521,8 @@ export const ConfigView = () => {
 
               <div>
                 {Object.keys(klass.attributes).length === 0 ? (
-                  <p style={{ 
-                    color: "#6b7280", 
+                  <p style={{
+                    color: "#6b7280",
                     fontStyle: "italic",
                     textAlign: "center",
                     padding: "16px",
@@ -545,12 +543,12 @@ export const ConfigView = () => {
                     }}
                   >
                     <thead>
-                      <tr style={{ 
+                      <tr style={{
                         backgroundColor: "#f9fafb",
                         borderBottom: "1px solid #e5e7eb"
                       }}>
-                        <th style={{ 
-                          padding: "10px 12px", 
+                        <th style={{
+                          padding: "10px 12px",
                           textAlign: "left",
                           fontWeight: "600",
                           color: "#374151",
@@ -558,8 +556,8 @@ export const ConfigView = () => {
                         }}>
                           Attribute Name
                         </th>
-                        <th style={{ 
-                          padding: "10px 12px", 
+                        <th style={{
+                          padding: "10px 12px",
                           textAlign: "left",
                           fontWeight: "600",
                           color: "#374151",
@@ -567,8 +565,8 @@ export const ConfigView = () => {
                         }}>
                           Data Type
                         </th>
-                        <th style={{ 
-                          padding: "10px 12px", 
+                        <th style={{
+                          padding: "10px 12px",
                           textAlign: "right",
                           fontWeight: "600",
                           color: "#374151",
@@ -583,16 +581,16 @@ export const ConfigView = () => {
                         ([attrName, dataType]) => (
                           <tr
                             key={attrName}
-                            style={{ 
+                            style={{
                               borderBottom: "1px solid #e5e7eb"
                             }}
                           >
-                            <td style={{ 
+                            <td style={{
                               padding: "10px 12px",
                               color: "#111827",
                               fontSize: "14px"
                             }}>{attrName}</td>
-                            <td style={{ 
+                            <td style={{
                               padding: "10px 12px",
                               color: "#6b7280",
                               fontSize: "14px"
@@ -611,7 +609,7 @@ export const ConfigView = () => {
                                     dataType
                                   )
                                 }
-                                style={{ 
+                                style={{
                                   marginRight: "8px",
                                   backgroundColor: "white",
                                   color: "#111827",
@@ -692,8 +690,8 @@ export const ConfigView = () => {
               Add Attribute to {addingAttribute}
             </h3>
             <div style={{ marginBottom: "16px" }}>
-              <label style={{ 
-                display: "block", 
+              <label style={{
+                display: "block",
                 marginBottom: "6px",
                 fontSize: "14px",
                 fontWeight: "500",
@@ -718,8 +716,8 @@ export const ConfigView = () => {
               />
             </div>
             <div style={{ marginBottom: "20px" }}>
-              <label style={{ 
-                display: "block", 
+              <label style={{
+                display: "block",
                 marginBottom: "6px",
                 fontSize: "14px",
                 fontWeight: "500",
@@ -749,13 +747,13 @@ export const ConfigView = () => {
               </select>
             </div>
             <div
-              style={{ 
-                display: "flex", 
+              style={{
+                display: "flex",
                 gap: "8px",
                 justifyContent: "flex-end"
               }}
             >
-              <button 
+              <button
                 onClick={handleCancelAddAttribute}
                 style={{
                   backgroundColor: "white",
@@ -768,7 +766,7 @@ export const ConfigView = () => {
                   cursor: "pointer"
                 }}
               >Cancel</button>
-              <button 
+              <button
                 onClick={handleConfirmAddAttribute}
                 style={{
                   backgroundColor: "#111827",
@@ -823,8 +821,8 @@ export const ConfigView = () => {
               Edit Attribute: {editingAttribute.attrName}
             </h3>
             <div style={{ marginBottom: "20px" }}>
-              <label style={{ 
-                display: "block", 
+              <label style={{
+                display: "block",
                 marginBottom: "6px",
                 fontSize: "14px",
                 fontWeight: "500",
@@ -854,13 +852,13 @@ export const ConfigView = () => {
               </select>
             </div>
             <div
-              style={{ 
-                display: "flex", 
+              style={{
+                display: "flex",
                 gap: "8px",
                 justifyContent: "flex-end"
               }}
             >
-              <button 
+              <button
                 onClick={handleCancelEditAttribute}
                 style={{
                   backgroundColor: "white",
@@ -873,7 +871,7 @@ export const ConfigView = () => {
                   cursor: "pointer"
                 }}
               >Cancel</button>
-              <button 
+              <button
                 onClick={handleConfirmEditAttribute}
                 style={{
                   backgroundColor: "#111827",
