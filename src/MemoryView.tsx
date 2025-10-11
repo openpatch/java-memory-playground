@@ -160,80 +160,84 @@ export const MemoryView = () => {
   };
 
   const onConnectEnd = useCallback<OnConnectEnd>(
-    (event) => {
-      const node = nodes.find((n) => n.id == connectingNode.current?.nodeId);
+    (event, connectionState) => {
       if (!connectingNode.current || !memory.options.createNewOnEdgeDrop)
         return;
-      const targetIsPane = (event.target as HTMLElement).classList.contains(
-        "react-flow__pane"
-      );
+      if (!connectionState.isValid) {
+        const node = nodes.find((n) => n.id == connectingNode.current?.nodeId);
 
-      if (targetIsPane && node?.type == "object" && reactFlowInstance != null) {
-        const objNode: ObjectNodeType = node as any;
-        const objKlass = memory.klasses[objNode.data["klass"]];
-        if (!objKlass) return;
-        const klassName =
-          objKlass.attributes[connectingNode.current.handleId || ""];
-        const klass = memory.klasses[klassName];
-        const position = reactFlowInstance.screenToFlowPosition({
-          x: (event as any).clientX,
-          y: (event as any).clientY,
-        });
-        const id = getId();
+        if (node?.type == "object" && reactFlowInstance != null) {
+          const objNode: ObjectNodeType = node as any;
+          const objKlass = memory.klasses[objNode.data["klass"]];
+          if (!objKlass) return;
+          const klassName =
+            objKlass.attributes[connectingNode.current.handleId || ""];
+          const klass = memory.klasses[klassName];
 
-        // Handle Array type specially
-        let objAttributes: Record<string, Attribute>;
-        if (klassName === "Array") {
-          const length = window.prompt(`Length of the array?`);
-          if (length == null) return;
-          const tempAttributes: Record<string, Attribute> = {
-            length: {
-              dataType: "int",
-              value: Number.parseInt(length),
+          const { clientX, clientY } =
+            'changedTouches' in event ? event.changedTouches[0] : event;
+
+          const position = reactFlowInstance.screenToFlowPosition({
+            x: clientX,
+            y: clientY,
+          });
+
+          const id = getId();
+
+          // Handle Array type specially
+          let objAttributes: Record<string, Attribute>;
+          if (klassName === "Array") {
+            const length = window.prompt(`Length of the array?`);
+            if (length == null) return;
+            const tempAttributes: Record<string, Attribute> = {
+              length: {
+                dataType: "int",
+                value: Number.parseInt(length),
+              },
+            };
+            for (let i = 0; i < Number.parseInt(length); i++) {
+              tempAttributes[`[${i}]`] = {
+                dataType: klassName,
+                value: undefined,
+              };
+            }
+            objAttributes = tempAttributes;
+          } else if (klass) {
+            objAttributes = createAttributesForObject(klass.attributes);
+          } else {
+            // Unknown klass type, cannot create object
+            return;
+          }
+
+          const newNode: CustomNodeType = {
+            id,
+            type: "object",
+            position,
+            data: {
+              klass: klassName,
+              attributes: objAttributes,
+              position,
             },
           };
-          for (let i = 0; i < Number.parseInt(length); i++) {
-            tempAttributes[`[${i}]`] = {
-              dataType: klassName,
-              value: undefined,
-            };
-          }
-          objAttributes = tempAttributes;
-        } else if (klass) {
-          objAttributes = createAttributesForObject(klass.attributes);
-        } else {
-          // Unknown klass type, cannot create object
-          return;
+          const newEdge: CustomEdgeType = {
+            id: getId(),
+            source: connectingNode.current.nodeId || "",
+            sourceHandle: connectingNode.current.handleId,
+            target: id,
+          };
+          setNodes((nds) => nds.concat(newNode));
+          setEdges((eds) =>
+            eds
+              .filter(
+                (e) =>
+                  !(
+                    e.source == connectingNode.current?.nodeId &&
+                    e.sourceHandle == connectingNode.current?.handleId
+                  )
+              )
+              .concat(newEdge)
+          );
         }
-
-        const newNode: CustomNodeType = {
-          id,
-          type: "object",
-          position,
-          data: {
-            klass: klassName,
-            attributes: objAttributes,
-            position,
-          },
-        };
-        const newEdge: CustomEdgeType = {
-          id: getId(),
-          source: connectingNode.current.nodeId || "",
-          sourceHandle: connectingNode.current.handleId,
-          target: id,
-        };
-        setNodes((nds) => nds.concat(newNode));
-        setEdges((eds) =>
-          eds
-            .filter(
-              (e) =>
-                !(
-                  e.source == connectingNode.current?.nodeId &&
-                  e.sourceHandle == connectingNode.current?.handleId
-                )
-            )
-            .concat(newEdge)
-        );
       }
       connectingNode.current = null;
     },
@@ -316,128 +320,160 @@ export const MemoryView = () => {
         y: event.clientY,
       });
 
-      const k = memory.klasses[type];
+      createNodeAtPosition(type, position);
+    },
+    [reactFlowInstance, lastMethodCall]
+  );
 
-      if (type == "method-call") {
-        const name = window.prompt(`Name of the method?`);
-        if (name != null) {
-          const index = reactFlowInstance
-            .getNodes()
-            .filter((n) => n.type === "method-call").length;
-          const newNode: CustomNodeType = {
-            id: getId(),
-            type: "method-call",
+  const createNodeAtPosition = (type: string, position: { x: number; y: number }) => {
+    if (!reactFlowInstance) return;
+
+    const k = memory.klasses[type];
+
+    if (type == "method-call") {
+      const name = window.prompt(`Name of the method?`);
+      if (name != null) {
+        const index = reactFlowInstance
+          .getNodes()
+          .filter((n) => n.type === "method-call").length;
+        const newNode: CustomNodeType = {
+          id: getId(),
+          type: "method-call",
+          position,
+          data: {
+            index,
+            name,
             position,
-            data: {
-              index,
-              name,
-              position,
-              localVariables: {
-                this: {
-                  dataType: "object",
-                  value: undefined,
-                },
+            localVariables: {
+              this: {
+                dataType: "object",
+                value: undefined,
               },
             },
+          },
+        };
+        setNodes((nds) => nds.concat(newNode));
+        return;
+      }
+    }
+
+    if (type != "variable") {
+      const name = window.prompt(`Name for the new ${type}?`);
+      let objAttributes = createAttributesForObject(k?.attributes || {});
+
+      if (type == "Array") {
+        const length = window.prompt(`Length of the ${name} array?`);
+        if (length == null) return;
+        objAttributes = {
+          length: {
+            dataType: "int",
+            value: Number.parseInt(length),
+          },
+        };
+        for (let i = 0; i < Number.parseInt(length); i++) {
+          objAttributes[`[${i}]`] = {
+            dataType: type,
+            value: undefined,
           };
-          setNodes((nds) => nds.concat(newNode));
-          return;
         }
       }
-
-      if (type != "variable") {
-        const name = window.prompt(`Name for the new ${type}?`);
-        let objAttributes = createAttributesForObject(k?.attributes || {});
-
-        if (type == "Array") {
-          const length = window.prompt(`Length of the ${name} array?`);
-          if (length == null) return;
-          objAttributes = {
-            length: {
-              dataType: "int",
-              value: Number.parseInt(length),
-            },
-          };
-          for (let i = 0; i < Number.parseInt(length); i++) {
-            objAttributes[`[${i}]`] = {
-              dataType: type,
-              value: undefined,
-            };
-          }
-        }
-        if (name != null) {
-          const newNode: CustomNodeType = {
-            id: getId(),
-            type: "object",
+      if (name != null) {
+        const newNode: CustomNodeType = {
+          id: getId(),
+          type: "object",
+          position,
+          data: {
+            klass: type,
+            attributes: objAttributes,
             position,
-            data: {
-              klass: type,
-              attributes: objAttributes,
-              position,
-            },
-          };
+          },
+        };
 
-          if (lastMethodCall === undefined) {
-            const newVar: CustomNodeType = {
-              id: getId(),
-              type: "variable",
+        if (lastMethodCall === undefined) {
+          const newVar: CustomNodeType = {
+            id: getId(),
+            type: "variable",
+            position: {
+              x: position.x - 100,
+              y: position.y,
+            },
+            data: {
+              name,
+              value: newNode.id,
               position: {
                 x: position.x - 100,
                 y: position.y,
               },
-              data: {
-                name,
-                value: newNode.id,
-                position: {
-                  x: position.x - 100,
-                  y: position.y,
-                },
-                dataType: type,
-              },
-            };
-            setNodes((nds) => nds.concat(newNode, newVar));
-            const newEdge: CustomEdgeType = {
-              id: getId(),
-              source: newVar.id,
-              target: newNode.id,
-            };
-            setEdges((egs) => egs.concat(newEdge));
-          } else {
-            setNodes((nds) =>
-              nds
-                .map((n) => {
-                  if (n.id == lastMethodCall.id) {
-                    (n.data as any).localVariables[name] = {
-                      dataType: newNode.data.klass || "Object",
-                      value: newNode.id,
-                    };
-                    return n;
-                  }
-                  return n;
-                })
-                .concat(newNode)
-            );
-            const newEdge: CustomEdgeType = {
-              id: getId(),
-              source: lastMethodCall.id,
-              sourceHandle: name,
-              target: newNode.id,
-            };
-            setEdges((egs) => egs.concat(newEdge));
-          }
-        }
-      } else if (type == "variable") {
-        const name = window.prompt("Name for the new global variable?");
-
-        if (name != null) {
-          const newNode: CustomNodeType = {
-            id: getId(),
-            type: "variable",
-            position,
-            data: { name, value: null, position, dataType: "List" },
+              dataType: type,
+            },
           };
-          setNodes((nds) => nds.concat(newNode));
+          setNodes((nds) => nds.concat(newNode, newVar));
+          const newEdge: CustomEdgeType = {
+            id: getId(),
+            source: newVar.id,
+            target: newNode.id,
+          };
+          setEdges((egs) => egs.concat(newEdge));
+        } else {
+          setNodes((nds) =>
+            nds
+              .map((n) => {
+                if (n.id == lastMethodCall.id) {
+                  (n.data as any).localVariables[name] = {
+                    dataType: newNode.data.klass || "Object",
+                    value: newNode.id,
+                  };
+                  return n;
+                }
+                return n;
+              })
+              .concat(newNode)
+          );
+          const newEdge: CustomEdgeType = {
+            id: getId(),
+            source: lastMethodCall.id,
+            sourceHandle: name,
+            target: newNode.id,
+          };
+          setEdges((egs) => egs.concat(newEdge));
         }
+      }
+    } else if (type == "variable") {
+      const name = window.prompt("Name for the new global variable?");
+
+      if (name != null) {
+        const newNode: CustomNodeType = {
+          id: getId(),
+          type: "variable",
+          position,
+          data: { name, value: null, position, dataType: "List" },
+        };
+        setNodes((nds) => nds.concat(newNode));
+      }
+    }
+  };
+
+  const onNodeDrop = useCallback(
+    (nodeType: string, offsetX: number, offsetY: number) => {
+      if (!reactFlowInstance) return;
+
+      const flow = document.querySelector('.react-flow');
+      const flowRect = flow?.getBoundingClientRect();
+
+      const isInFlow =
+        flowRect &&
+        offsetX >= flowRect.left &&
+        offsetX <= flowRect.right &&
+        offsetY >= flowRect.top &&
+        offsetY <= flowRect.bottom;
+
+      if (isInFlow) {
+        const position = reactFlowInstance.screenToFlowPosition({
+          x: offsetX,
+          y: offsetY,
+        });
+
+        createNodeAtPosition(nodeType, position);
       }
     },
     [reactFlowInstance, lastMethodCall]
@@ -445,7 +481,7 @@ export const MemoryView = () => {
 
   return (
     <div className="memory-view">
-      {!memory.options.hideSidebar && <Sidebar memory={memory} />}
+      {!memory.options.hideSidebar && <Sidebar memory={memory} onNodeDrop={onNodeDrop} />}
       <ReactFlowProvider>
         <ReactFlow
           className="memory"

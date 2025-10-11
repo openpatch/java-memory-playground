@@ -10,16 +10,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@codemirror/lang-json": "^6.0.1",
-    "@codemirror/language": "^6.10.8",
-    "@codemirror/lint": "^6.8.4",
-    "@codemirror/state": "^6.5.0",
-    "@codemirror/view": "^6.36.2",
-    "@lezer/common": "^1.2.3",
-    "@uiw/codemirror-extensions-langs": "^4.23.0",
-    "@uiw/react-codemirror": "^4.23.0",
     "@xyflow/react": "^12.3.6",
-    "codemirror-json-schema": "^0.8.0",
     "html-to-image": "^1.11.11",
     "js-base64": "^3.7.7",
     "pako": "^2.1.0",

@@ -53,6 +53,7 @@ input {
   font-size: 14px;
   border: 1px solid #000;
   padding: 8px;
+  background: white;
   border-radius: 8px;
   text-align: center;
   cursor: grab;
@@ -262,4 +263,58 @@ path.react-flow__edge-path:hover {
 
 .cm-editor {
   font-size: 12px;
+}
+
+.placement-mode-indicator {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffd700;
+  color: #000;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.cancel-placement {
+  background: #ff4444;
+  color: white;
+  font-size: 14px;
+  padding: 6px 12px;
+}
+
+.cancel-placement:hover {
+  background: #cc0000;
+}
+
+.dndnode {
+  /* Prevent zoom or scroll when dragging nodes on mobile */
+  touch-action: none;
+}
+
+.ghostnode {
+  position: fixed;
+  pointer-events: none;
+  width: 100px;
+  z-index: 1000;
 }
