@@ -20,7 +20,7 @@ import { shallow } from "zustand/shallow";
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 import ObjectNode, { ObjectNodeType } from "./ObjectNode";
 import VariableNode from "./VariableNode";
-import { useCallback, useState, DragEvent, useRef } from "react";
+import { useCallback, useState, DragEvent, useRef, useMemo } from "react";
 import { Sidebar } from "./Sidebar";
 import {
   Attribute,
@@ -47,12 +47,6 @@ const selector = (state: RFState) => ({
   memory: state.memory,
   setRoute: state.setRoute,
 });
-
-const nodeTypes = {
-  object: ObjectNode,
-  variable: VariableNode,
-  "method-call": MethodCallNode,
-};
 
 const edgeTypes = {
   reference: ReferenceEdge,
@@ -132,6 +126,10 @@ export const MemoryView = () => {
     onConfirm: (value: string) => void;
   } | null>(null);
 
+  // Local variable declaration dialog state
+  const [showLocalVarDialog, setShowLocalVarDialog] = useState(false);
+  const [localVarDialogNodeId, setLocalVarDialogNodeId] = useState<string | null>(null);
+
   const methodCalls = nodes.filter(isMethodCallNode);
   let previousMethodCall = methodCalls[0];
   let lastMethodCall = methodCalls[0];
@@ -201,6 +199,50 @@ export const MemoryView = () => {
   const getAvailableTypes = (): DataType[] => {
     return [...primitveDataTypes, ...Object.keys(memory.klasses)];
   };
+
+  // Handler for declaring local variables
+  const handleDeclareLocalVariable = (nodeId: string) => {
+    setLocalVarDialogNodeId(nodeId);
+    setShowLocalVarDialog(true);
+  };
+
+  const handleLocalVarDialogConfirm = (name: string) => {
+    if (localVarDialogNodeId) {
+      setNodes((nds) =>
+        nds.map((n) => {
+          if (n.id === localVarDialogNodeId && n.type === "method-call") {
+            return {
+              ...n,
+              data: {
+                ...n.data,
+                localVariables: {
+                  ...n.data.localVariables,
+                  [name]: {
+                    dataType: "object",
+                  },
+                },
+              },
+            };
+          }
+          return n;
+        })
+      );
+    }
+    setShowLocalVarDialog(false);
+    setLocalVarDialogNodeId(null);
+  };
+
+  // Create nodeTypes with access to handleDeclareLocalVariable
+  const nodeTypes = useMemo(
+    () => ({
+      object: ObjectNode,
+      variable: VariableNode,
+      "method-call": (props: any) => (
+        <MethodCallNode {...props} onDeclareVariable={handleDeclareLocalVariable} />
+      ),
+    }),
+    [handleDeclareLocalVariable]
+  );
 
   const onConnectEnd = useCallback<OnConnectEnd>(
     (event, connectionState) => {
@@ -774,6 +816,18 @@ export const MemoryView = () => {
           onCancel={() => {
             setShowInputDialog(false);
             setInputDialogConfig(null);
+          }}
+        />
+      )}
+      {showLocalVarDialog && (
+        <SimpleInputDialog
+          title="Declare Local Variable"
+          label="Variable Name"
+          placeholder="Enter variable name"
+          onConfirm={handleLocalVarDialogConfirm}
+          onCancel={() => {
+            setShowLocalVarDialog(false);
+            setLocalVarDialogNodeId(null);
           }}
         />
       )}

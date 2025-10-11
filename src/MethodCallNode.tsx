@@ -1,4 +1,4 @@
-import { ChangeEventHandler, useState } from "react";
+import { ChangeEventHandler } from "react";
 import {
   Node,
   Handle,
@@ -14,7 +14,6 @@ import {
   primitveDataTypes,
 } from "./memory";
 import { CustomEdgeType, CustomNodeType } from "./types";
-import { SimpleInputDialog } from "./SimpleInputDialog";
 
 function LocalVariableHandle({
   name,
@@ -138,10 +137,13 @@ export function isMethodCallNode(node: Node): node is MethodCallNodeType {
   return node.type === "method-call";
 }
 
-function MethodCallNode({ id, data }: NodeProps<MethodCallNodeType>) {
+function MethodCallNode({ 
+  id, 
+  data,
+  onDeclareVariable,
+}: NodeProps<MethodCallNodeType> & { onDeclareVariable?: (nodeId: string) => void }) {
   const { setNodes } = useReactFlow<CustomNodeType, CustomEdgeType>();
   const edges = useEdges<CustomEdgeType>();
-  const [showVariableDialog, setShowVariableDialog] = useState(false);
 
   const localVariablesEdges = edges.filter((e) => e.source == id);
 
@@ -150,30 +152,9 @@ function MethodCallNode({ id, data }: NodeProps<MethodCallNodeType>) {
   };
 
   const handleDeclareLocaleVariable = () => {
-    setShowVariableDialog(true);
-  };
-
-  const handleVariableDialogConfirm = (name: string) => {
-    setNodes((nds) =>
-      nds.map((n) => {
-        if (n.id == id && n.type === "method-call") {
-          return {
-            ...n,
-            data: {
-              ...n.data,
-              localVariables: {
-                ...n.data.localVariables,
-                [name]: {
-                  dataType: "object",
-                },
-              },
-            },
-          };
-        }
-        return n;
-      })
-    );
-    setShowVariableDialog(false);
+    if (onDeclareVariable) {
+      onDeclareVariable(id);
+    }
   };
 
   return (
@@ -212,15 +193,6 @@ function MethodCallNode({ id, data }: NodeProps<MethodCallNodeType>) {
           </button>
         </div>
       </div>
-      {showVariableDialog && (
-        <SimpleInputDialog
-          title="Declare Local Variable"
-          label="Variable Name"
-          placeholder="Enter variable name"
-          onConfirm={handleVariableDialogConfirm}
-          onCancel={() => setShowVariableDialog(false)}
-        />
-      )}
     </>
   );
 }
