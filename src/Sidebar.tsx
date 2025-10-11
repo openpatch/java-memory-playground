@@ -1,74 +1,75 @@
 import { Memory } from "./memory";
-import { useEffect, useState } from "react";
+import { useDraggable } from "@neodrag/react";
+import { useRef } from "react";
+
+interface DraggableNodeProps {
+  className: string;
+  children: React.ReactNode;
+  nodeType: string;
+  onDrop: (nodeType: string, offsetX: number, offsetY: number) => void;
+}
+
+function DraggableNode({ className, children, nodeType, onDrop }: DraggableNodeProps) {
+  const draggableRef = useRef<HTMLDivElement>(null);
+
+  useDraggable(draggableRef, {
+    onDragEnd: (data) => {
+      onDrop(nodeType, data.offsetX, data.offsetY);
+    },
+  });
+
+  return (
+    <div ref={draggableRef} className={className} style={{ cursor: 'grab' }}>
+      {children}
+    </div>
+  );
+}
 
 export const Sidebar = ({
   memory,
-  onTouchItemSelect,
+  onNodeDrop,
 }: {
   memory: Memory;
-  onTouchItemSelect?: (nodeType: string) => void;
+  onNodeDrop: (nodeType: string, offsetX: number, offsetY: number) => void;
 }) => {
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
-
-  useEffect(() => {
-    // Detect touch device
-    const checkTouch = () => {
-      setIsTouchDevice(
-        "ontouchstart" in window ||
-          navigator.maxTouchPoints > 0 ||
-          (navigator as any).msMaxTouchPoints > 0
-      );
-    };
-    checkTouch();
-  }, []);
-
-  const onDragStart = (event: any, nodeType: string) => {
-    event.dataTransfer.setData("application/java-memory-playground", nodeType);
-    event.dataTransfer.effectAllowed = "move";
-  };
-
-  const onTouchStart = (nodeType: string) => {
-    if (onTouchItemSelect) {
-      onTouchItemSelect(nodeType);
-    }
-  };
-
-  const getItemProps = (nodeType: string) => {
-    if (isTouchDevice) {
-      return {
-        onTouchStart: (e: any) => {
-          e.preventDefault();
-          onTouchStart(nodeType);
-        },
-      };
-    }
-    return {
-      onDragStart: (e: any) => onDragStart(e, nodeType),
-      draggable: true,
-    };
-  };
-
   return (
     <div className="sidebar">
       {Object.entries(memory.klasses).map(([name]) => (
-        <div key={name} className="sidebar-class" {...getItemProps(name)}>
+        <DraggableNode
+          key={name}
+          className="sidebar-class"
+          nodeType={name}
+          onDrop={onNodeDrop}
+        >
           new {name}
-        </div>
+        </DraggableNode>
       ))}
       {!memory.options.hideNewArray && (
-        <div className="sidebar-class" {...getItemProps("Array")}>
+        <DraggableNode
+          className="sidebar-class"
+          nodeType="Array"
+          onDrop={onNodeDrop}
+        >
           new Array
-        </div>
+        </DraggableNode>
       )}
       {!memory.options.hideDeclareGlobalVariable && (
-        <div className="sidebar-variable" {...getItemProps("variable")}>
+        <DraggableNode
+          className="sidebar-variable"
+          nodeType="variable"
+          onDrop={onNodeDrop}
+        >
           Declare Global Variable
-        </div>
+        </DraggableNode>
       )}
       {!memory.options.hideCallMethod && (
-        <div className="sidebar-method-call" {...getItemProps("method-call")}>
+        <DraggableNode
+          className="sidebar-method-call"
+          nodeType="method-call"
+          onDrop={onNodeDrop}
+        >
           Call Method
-        </div>
+        </DraggableNode>
       )}
     </div>
   );

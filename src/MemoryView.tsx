@@ -108,7 +108,6 @@ export const MemoryView = () => {
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance<CustomNodeType, CustomEdgeType> | null>(null);
   const connectingNode = useRef<OnConnectStartParams | null>(null);
-  const [placementMode, setPlacementMode] = useState<string | null>(null);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -450,34 +449,23 @@ export const MemoryView = () => {
       }
   };
 
-  const onPaneClick = useCallback(
-    (event: any) => {
-      if (!placementMode || !reactFlowInstance) return;
+  const onNodeDrop = useCallback(
+    (nodeType: string, offsetX: number, offsetY: number) => {
+      if (!reactFlowInstance) return;
       
       const position = reactFlowInstance.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
+        x: offsetX,
+        y: offsetY,
       });
-
-      createNodeAtPosition(placementMode, position);
-      setPlacementMode(null);
+      
+      createNodeAtPosition(nodeType, position);
     },
-    [placementMode, reactFlowInstance, lastMethodCall]
+    [reactFlowInstance, lastMethodCall]
   );
-
-  const onTouchItemSelect = useCallback((nodeType: string) => {
-    setPlacementMode(nodeType);
-  }, []);
 
   return (
     <div className="memory-view">
-      {!memory.options.hideSidebar && <Sidebar memory={memory} onTouchItemSelect={onTouchItemSelect} />}
-      {placementMode && (
-        <div className="placement-mode-indicator">
-          Tap on canvas to place: {placementMode === "method-call" ? "Method Call" : placementMode === "variable" ? "Global Variable" : `new ${placementMode}`}
-          <button onClick={() => setPlacementMode(null)} className="cancel-placement">Cancel</button>
-        </div>
-      )}
+      {!memory.options.hideSidebar && <Sidebar memory={memory} onNodeDrop={onNodeDrop} />}
       <ReactFlowProvider>
         <ReactFlow
           className="memory"
@@ -538,7 +526,6 @@ export const MemoryView = () => {
           onInit={setReactFlowInstance}
           onDrop={onDrop}
           onDragOver={onDragOver}
-          onPaneClick={placementMode ? onPaneClick : undefined}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           proOptions={{
