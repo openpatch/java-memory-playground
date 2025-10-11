@@ -25,6 +25,8 @@ import { Sidebar } from "./Sidebar";
 import {
   Attribute,
   numericDataTypes,
+  DataType,
+  primitveDataTypes,
 } from "./memory";
 import {
   isConnectedTo,
@@ -36,6 +38,7 @@ import MethodCallNode, {
 } from "./MethodCallNode";
 import ReferenceEdge from "./ReferenceEdge";
 import { CustomEdgeType, CustomNodeType } from "./types";
+import { ArrayCreationDialog } from "./ArrayCreationDialog";
 
 const selector = (state: RFState) => ({
   selectedNodeId: state.selectedNodeId,
@@ -113,6 +116,12 @@ export const MemoryView = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const nodeIds: string[] = nodes.map((n) => n.id);
 
+  // Array creation dialog state
+  const [showArrayDialog, setShowArrayDialog] = useState(false);
+  const [arrayDialogCallback, setArrayDialogCallback] = useState<
+    ((name: string, length: number, elementType: DataType) => void) | null
+  >(null);
+
   const methodCalls = nodes.filter(isMethodCallNode);
   let previousMethodCall = methodCalls[0];
   let lastMethodCall = methodCalls[0];
@@ -159,6 +168,19 @@ export const MemoryView = () => {
     return ma;
   };
 
+  // Helper function to show array creation dialog
+  const showArrayCreationDialog = (
+    callback: (name: string, length: number, elementType: DataType) => void
+  ) => {
+    setArrayDialogCallback(() => callback);
+    setShowArrayDialog(true);
+  };
+
+  // Get available types for arrays: primitives + defined classes
+  const getAvailableTypes = (): DataType[] => {
+    return [...primitveDataTypes, ...Object.keys(memory.klasses)];
+  };
+
   const onConnectEnd = useCallback<OnConnectEnd>(
     (event, connectionState) => {
       if (!connectingNode.current || !memory.options.createNewOnEdgeDrop)
@@ -187,21 +209,51 @@ export const MemoryView = () => {
           // Handle Array type specially
           let objAttributes: Record<string, Attribute>;
           if (klassName === "Array") {
-            const length = window.prompt(`Length of the array?`);
-            if (length == null) return;
-            const tempAttributes: Record<string, Attribute> = {
-              length: {
-                dataType: "int",
-                value: Number.parseInt(length),
-              },
-            };
-            for (let i = 0; i < Number.parseInt(length); i++) {
-              tempAttributes[`[${i}]`] = {
-                dataType: klassName,
-                value: undefined,
+            // Show dialog for array creation
+            showArrayCreationDialog((_name, length, elementType) => {
+              const tempAttributes: Record<string, Attribute> = {
+                length: {
+                  dataType: "int",
+                  value: length,
+                },
               };
-            }
-            objAttributes = tempAttributes;
+              for (let i = 0; i < length; i++) {
+                tempAttributes[`[${i}]`] = {
+                  dataType: elementType,
+                  value: undefined,
+                };
+              }
+              
+              const newNode: CustomNodeType = {
+                id,
+                type: "object",
+                position,
+                data: {
+                  klass: klassName,
+                  attributes: tempAttributes,
+                  position,
+                },
+              };
+              const newEdge: CustomEdgeType = {
+                id: getId(),
+                source: connectingNode.current!.nodeId || "",
+                sourceHandle: connectingNode.current!.handleId,
+                target: id,
+              };
+              setNodes((nds) => nds.concat(newNode));
+              setEdges((eds) =>
+                eds
+                  .filter(
+                    (e) =>
+                      !(
+                        e.source == connectingNode.current?.nodeId &&
+                        e.sourceHandle == connectingNode.current?.handleId
+                      )
+                  )
+                  .concat(newEdge)
+              );
+            });
+            return;
           } else if (klass) {
             objAttributes = createAttributesForObject(klass.attributes);
           } else {
@@ -358,25 +410,88 @@ export const MemoryView = () => {
     }
 
     if (type != "variable") {
+      if (type == "Array") {
+        // Show dialog for array creation
+        showArrayCreationDialog((name, length, elementType) => {
+          const objAttributes: Record<string, Attribute> = {
+            length: {
+              dataType: "int",
+              value: length,
+            },
+          };
+          for (let i = 0; i < length; i++) {
+            objAttributes[`[${i}]`] = {
+              dataType: elementType,
+              value: undefined,
+            };
+          }
+
+          const newNode: CustomNodeType = {
+            id: getId(),
+            type: "object",
+            position,
+            data: {
+              klass: type,
+              attributes: objAttributes,
+              position,
+            },
+          };
+
+          if (lastMethodCall === undefined) {
+            const newVar: CustomNodeType = {
+              id: getId(),
+              type: "variable",
+              position: {
+                x: position.x - 100,
+                y: position.y,
+              },
+              data: {
+                name,
+                value: newNode.id,
+                position: {
+                  x: position.x - 100,
+                  y: position.y,
+                },
+                dataType: type,
+              },
+            };
+            setNodes((nds) => nds.concat(newNode, newVar));
+            const newEdge: CustomEdgeType = {
+              id: getId(),
+              source: newVar.id,
+              target: newNode.id,
+            };
+            setEdges((egs) => egs.concat(newEdge));
+          } else {
+            setNodes((nds) =>
+              nds
+                .map((n) => {
+                  if (n.id == lastMethodCall.id) {
+                    (n.data as any).localVariables[name] = {
+                      dataType: newNode.data.klass || "Object",
+                      value: newNode.id,
+                    };
+                    return n;
+                  }
+                  return n;
+                })
+                .concat(newNode)
+            );
+            const newEdge: CustomEdgeType = {
+              id: getId(),
+              source: lastMethodCall.id,
+              sourceHandle: name,
+              target: newNode.id,
+            };
+            setEdges((egs) => egs.concat(newEdge));
+          }
+        });
+        return;
+      }
+
       const name = window.prompt(`Name for the new ${type}?`);
       let objAttributes = createAttributesForObject(k?.attributes || {});
 
-      if (type == "Array") {
-        const length = window.prompt(`Length of the ${name} array?`);
-        if (length == null) return;
-        objAttributes = {
-          length: {
-            dataType: "int",
-            value: Number.parseInt(length),
-          },
-        };
-        for (let i = 0; i < Number.parseInt(length); i++) {
-          objAttributes[`[${i}]`] = {
-            dataType: type,
-            value: undefined,
-          };
-        }
-      }
       if (name != null) {
         const newNode: CustomNodeType = {
           id: getId(),
@@ -570,6 +685,20 @@ export const MemoryView = () => {
           <Background />
         </ReactFlow>
       </ReactFlowProvider>
+      {showArrayDialog && arrayDialogCallback && (
+        <ArrayCreationDialog
+          onConfirm={(name, length, elementType) => {
+            arrayDialogCallback(name, length, elementType);
+            setShowArrayDialog(false);
+            setArrayDialogCallback(null);
+          }}
+          onCancel={() => {
+            setShowArrayDialog(false);
+            setArrayDialogCallback(null);
+          }}
+          availableTypes={getAvailableTypes()}
+        />
+      )}
     </div>
   );
 };
