@@ -43,6 +43,7 @@ export type Obj = {
     x: number;
     y: number;
   };
+  arrayElementType?: DataType; // For arrays, stores the type of elements
 };
 
 export type Variable = {

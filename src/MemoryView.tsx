@@ -218,9 +218,17 @@ export const MemoryView = () => {
                 },
               };
               for (let i = 0; i < length; i++) {
+                let value = undefined;
+                if (elementType === "boolean") {
+                  value = false;
+                } else if (numericDataTypes.includes(elementType)) {
+                  value = 0;
+                } else if (elementType === "String") {
+                  value = "";
+                }
                 tempAttributes[`[${i}]`] = {
                   dataType: elementType,
-                  value: undefined,
+                  value: value,
                 };
               }
               
@@ -232,6 +240,7 @@ export const MemoryView = () => {
                   klass: klassName,
                   attributes: tempAttributes,
                   position,
+                  arrayElementType: elementType,
                 },
               };
               const newEdge: CustomEdgeType = {
@@ -420,9 +429,17 @@ export const MemoryView = () => {
             },
           };
           for (let i = 0; i < length; i++) {
+            let value = undefined;
+            if (elementType === "boolean") {
+              value = false;
+            } else if (numericDataTypes.includes(elementType)) {
+              value = 0;
+            } else if (elementType === "String") {
+              value = "";
+            }
             objAttributes[`[${i}]`] = {
               dataType: elementType,
-              value: undefined,
+              value: value,
             };
           }
 
@@ -434,6 +451,7 @@ export const MemoryView = () => {
               klass: type,
               attributes: objAttributes,
               position,
+              arrayElementType: elementType,
             },
           };
 

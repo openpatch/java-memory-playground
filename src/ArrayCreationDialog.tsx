@@ -47,6 +47,7 @@ export const ArrayCreationDialog = ({
           minWidth: "400px",
           maxWidth: "90vw",
           border: "1px solid #e5e7eb",
+          margin: "20px",
         }}
         onClick={(e) => e.stopPropagation()}
       >

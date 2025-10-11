@@ -123,6 +123,12 @@ function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
     !isConnectedToMethodCall(id, nodes, edges);
 
   const attributeEdges = edges.filter((e) => e.source == id);
+  
+  // For arrays, display the element type in the header
+  const displayName = data.klass === "Array" && data.arrayElementType
+    ? `:${data.arrayElementType}[]`
+    : `:${data.klass}`;
+  
   return (
     <>
       <div className={`object-node__header ${gc ? "gc" : ""}`}>
@@ -132,14 +138,14 @@ function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
           isConnectableStart={false}
           position={Position.Left}
         />
-        <div className="object-node__name">:{data.klass}</div>
+        <div className="object-node__name">{displayName}</div>
         <div className="spacer-10"></div>
       </div>
       <div className={`object-node__body ${gc ? "gc" : ""}`}>
         {Object.entries(data.attributes).map(([name, value]) => (
           <AttributeHandle
             key={`${id}+${name}`}
-            isFinal={data.klass === "Array"}
+            isFinal={false}
             isConnected={
               attributeEdges.find((e) => e.sourceHandle == name)?.target != null
             }
