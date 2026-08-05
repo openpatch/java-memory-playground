@@ -10,12 +10,9 @@
   -webkit-text-size-adjust: 100%;
 }
 
-html, body {
+html, body, #root {
   margin: 0;
   padding: 0;
-  background: white;
-}
-
-.memory {
+  height: 100%;
   background: white;
 }

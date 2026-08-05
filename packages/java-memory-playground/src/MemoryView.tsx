@@ -14,12 +14,13 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { toPng } from "html-to-image";
-import useStore, { RFState } from "./store";
+import useStore from "./storeContext";
+import { RFState } from "./store";
 import { shallow } from "zustand/shallow";
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 import ObjectNode, { ObjectNodeType } from "./ObjectNode";
 import VariableNode from "./VariableNode";
-import { useCallback, useState, DragEvent, useRef, useMemo } from "react";
+import { useCallback, useState, useRef, useMemo } from "react";
 import { Sidebar } from "./Sidebar";
 import {
   Attribute,
@@ -45,6 +46,7 @@ const selector = (state: RFState) => ({
   updateMemory: state.updateMemory,
   memory: state.memory,
   setRoute: state.setRoute,
+  persistence: state.persistence,
 });
 
 const edgeTypes = {
@@ -100,10 +102,16 @@ const getRanMemoryAdress = (size: number): string => {
 };
 
 export const MemoryView = () => {
-  const { memory, updateMemory, setRoute } = useStore(selector, shallow);
+  const { memory, updateMemory, setRoute, persistence } = useStore(
+    selector,
+    shallow
+  );
   const { screenToFlowPosition } = useReactFlow();
   const { edges: initialEdges, nodes: initialNodes } = getEdgesAndNodes(memory);
   const connectingNode = useRef<OnConnectStartParams | null>(null);
+  // Scoped to this instance so that exporting works when a page embeds more
+  // than one playground.
+  const flowRef = useRef<HTMLDivElement>(null);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -208,7 +216,9 @@ export const MemoryView = () => {
   const handleDeclareLocalVariable = useCallback((nodeId: string) => {
     setLocalVarDialogNodeId(nodeId);
     setShowLocalVarDialog(true);
-  }, [setShowLocalVarDialog, showLocalVarDialog]);
+    // No dependencies: a stable identity keeps `nodeTypes` stable, which stops
+    // React Flow from remounting every node whenever the dialog toggles.
+  }, []);
 
   const handleLocalVarDialogConfirm = (name: string) => {
     if (localVarDialogNodeId) {
@@ -408,7 +418,8 @@ export const MemoryView = () => {
   };
 
   const onDownloadPng = () => {
-    toPng(document.querySelector(".memory") as any, {
+    if (!flowRef.current) return;
+    toPng(flowRef.current, {
       filter: (node) => {
         // we don't want to add the minimap and the controls to the image
         if (
@@ -628,7 +639,7 @@ export const MemoryView = () => {
             id: getId(),
             type: "variable",
             position,
-            data: { name, value: null, position, dataType: "List" },
+            data: { name, value: null, position, dataType: "Object" },
           };
           setNodes((nds) => nds.concat(newNode));
         },
@@ -647,6 +658,7 @@ export const MemoryView = () => {
     <div className="memory-view">
       {!memory.options.hideSidebar && <Sidebar memory={memory} onNodeDrop={onNodeDrop} />}
       <ReactFlow
+        ref={flowRef}
         className="memory"
         nodes={nodes.map((n) => {
           n.className = "";
@@ -714,7 +726,9 @@ export const MemoryView = () => {
       >
         <Panel position="top-right">
           <div className="button-group">
-            <button onClick={onSaveURL}>Save (URL)</button>
+            <button onClick={onSaveURL}>
+              {persistence ? "Save (URL)" : "Save"}
+            </button>
             <button onClick={onDownloadPng}>Download (PNG)</button>
             <button onClick={onConfig}>Config</button>
           </div>

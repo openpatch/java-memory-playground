@@ -1,0 +1,50 @@
+{
+  "name": "@openpatch/java-memory-playground-web-component",
+  "version": "0.1.0",
+  "author": "Mike Barkmin",
+  "description": "Java Memory Playground as a framework agnostic web component.",
+  "homepage": "https://github.com/openpatch/java-memory-playground#readme",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.umd.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.umd.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openpatch/java-memory-playground.git",
+    "directory": "packages/web-component"
+  },
+  "bugs": {
+    "url": "https://github.com/openpatch/java-memory-playground/issues"
+  },
+  "scripts": {
+    "version": "pnpm build",
+    "lint": "tsc --noEmit",
+    "build": "vite build",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@openpatch/java-memory-playground": "workspace:*",
+    "@r2wc/react-to-web-component": "^2.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0"
+  }
+}

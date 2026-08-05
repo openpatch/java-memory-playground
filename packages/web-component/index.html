@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Java Memory Playground Web Component</title>
+  <link rel="stylesheet" href="./dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    java-memory-playground {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+</head>
+
+<body>
+  <java-memory-playground id="playground"></java-memory-playground>
+
+  <script src="./dist/index.umd.js"></script>
+  <script>
+    const playground = document.getElementById('playground');
+
+    const initialMemory = {
+      options: {
+        hideSidebar: false,
+        hideCallMethod: false,
+        hideDeclareGlobalVariable: true
+      },
+      klasses: {
+        Node: {
+          attributes: { next: "Node", content: "Message" }
+        },
+        Message: {
+          attributes: { username: "String", text: "String", isRead: "boolean" }
+        }
+      },
+      objects: {
+        "@33": {
+          klass: "Node",
+          attributes: {
+            next: { dataType: "Node" },
+            content: { dataType: "Message", value: "@55" }
+          },
+          position: { x: 400, y: 100 }
+        },
+        "@55": {
+          klass: "Message",
+          attributes: {
+            username: { dataType: "String", value: '"mike"' },
+            text: { dataType: "String", value: '"Hello World!"' },
+            isRead: { dataType: "boolean", value: true }
+          },
+          position: { x: 400, y: 250 }
+        }
+      },
+      variables: {},
+      methodCalls: {
+        1: {
+          name: "App.main",
+          index: 0,
+          localVariables: { head: { dataType: "Node", value: "@33" } },
+          position: { x: 0, y: 0 }
+        }
+      }
+    };
+
+    playground.setAttribute('memory', JSON.stringify(initialMemory));
+
+    // Fires when the user presses Save.
+    playground.addEventListener('change', (event) => {
+      console.log('Memory changed:', event.detail);
+    });
+  </script>
+</body>
+
+</html>

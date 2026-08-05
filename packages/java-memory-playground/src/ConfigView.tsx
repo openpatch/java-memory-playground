@@ -1,5 +1,6 @@
 import { shallow } from "zustand/shallow";
-import useStore, { RFState } from "./store";
+import useStore from "./storeContext";
+import { RFState } from "./store";
 import { useCallback, useState, useEffect } from "react";
 import { DataType, primitveDataTypes } from "./memory";
 import { SimpleInputDialog } from "./SimpleInputDialog";

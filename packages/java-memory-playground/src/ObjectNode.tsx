@@ -11,7 +11,8 @@ import {
 import { Attribute, Obj, numericDataTypes, primitveDataTypes } from "./memory";
 import { isConnectedToMethodCall, isConnectedToVariable } from "./utils";
 import { CustomEdgeType, CustomNodeType } from "./types";
-import useStore, { RFState } from "./store";
+import useStore from "./storeContext";
+import { RFState } from "./store";
 import { shallow } from "zustand/shallow";
 
 function AttributeHandle({

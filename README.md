@@ -37,12 +37,35 @@ For educators, the Java Memory Playground is perfect for teaching memory concept
 
 No setup or installation required for students - they just open the link and start learning!
 
+## Embedding
+
+Besides the hosted app, the playground ships as two packages:
+
+- **React component** — integrate it into your own React app
+  (see [packages/java-memory-playground](packages/java-memory-playground))
+- **Web component** — use it in any page, no framework required
+  (see [packages/web-component](packages/web-component))
+
+```html
+<java-memory-playground id="playground"></java-memory-playground>
+
+<script src="path/to/index.umd.js"></script>
+<script>
+  const playground = document.getElementById("playground");
+  playground.setAttribute("memory", JSON.stringify(diagram));
+  playground.addEventListener("change", (e) => console.log(e.detail));
+</script>
+```
+
+An embedded playground never touches the URL of its host page, and several of
+them can share a page.
+
 ## For Developers
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- npm
+- Node.js (v22 or higher)
+- pnpm (v8 or higher)
 
 ### Installation
 
@@ -51,47 +74,51 @@ Clone the repository and install dependencies:
 ```sh
 git clone https://github.com/openpatch/java-memory-playground.git
 cd java-memory-playground
-npm install
+pnpm install
 ```
 
 ### Development
 
-Start the development server with hot reload:
+Start the standalone app with hot reload:
 
 ```sh
-npm run dev
+pnpm build          # the app consumes the built package
+pnpm --filter web dev
 ```
 
 The application will be available at `http://localhost:5173` (or another port if 5173 is in use).
 
-### Building
-
-Build the project for production:
+### Building and testing
 
 ```sh
-npm run build
-```
-
-The build output will be in the `dist` directory.
-
-### Testing
-
-Run the test suite:
-
-```sh
-npm test
+pnpm build   # build every package and the app
+pnpm test    # run the test suites
+pnpm lint    # type-check every package
 ```
 
 ### Project Structure
 
-- `src/` - Source code
-  - `MemoryView.tsx` - Main canvas for creating memory diagrams
-  - `ConfigView.tsx` - Configuration view for defining classes and options
-  - `store.ts` - State management with URL persistence
-  - `serde.ts` - Serialization/deserialization for URL encoding
-  - `memory.ts` - Type definitions for memory objects
-- `public/` - Static assets
-- `dist/` - Build output (generated)
+This is a pnpm workspace.
+
+- `packages/java-memory-playground/` - the React component library
+  - `MemoryPlayground.tsx` - the embeddable entry point (props, change events)
+  - `MemoryView.tsx` - main canvas for creating memory diagrams
+  - `ConfigView.tsx` - configuration view for defining classes and options
+  - `store.ts` - per-instance state, with opt-in URL persistence
+  - `storeContext.tsx` - scopes a store to one playground instance
+  - `serde.ts` - serialization/deserialization for URL encoding
+  - `memory.ts` - type definitions for memory objects
+- `packages/web-component/` - `<java-memory-playground>` custom element (UMD bundle)
+- `platforms/web/` - the standalone app served at jmp.openpatch.org
+
+### Releasing
+
+Versioning and changelogs are handled by [changesets](https://github.com/changesets/changesets).
+Add one describing your change:
+
+```sh
+pnpm changeset
+```
 
 ### Technologies
 
@@ -101,6 +128,7 @@ npm test
 - **@xyflow/react** - Flow diagram rendering
 - **Zustand** - State management
 - **Pako** - Compression for URL encoding
+- **@r2wc/react-to-web-component** - React to custom element bridge
 
 ## License
 

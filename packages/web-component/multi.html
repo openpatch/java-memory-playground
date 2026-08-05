@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Two playgrounds on one page</title>
+  <link rel="stylesheet" href="./dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    java-memory-playground {
+      display: block;
+      width: 100vw;
+      height: 50vh;
+      border-bottom: 2px solid #333;
+    }
+  </style>
+</head>
+
+<body>
+  <java-memory-playground id="a"></java-memory-playground>
+  <java-memory-playground id="b"></java-memory-playground>
+
+  <script src="./dist/index.umd.js"></script>
+  <script>
+    const a = document.getElementById('a');
+    const b = document.getElementById('b');
+
+    a.setAttribute('memory', JSON.stringify({
+      options: { hideSidebar: true },
+      klasses: { Node: { attributes: { next: "Node" } } },
+      objects: {
+        "@aa": { klass: "Node", attributes: { next: { dataType: "Node" } }, position: { x: 300, y: 60 } }
+      },
+      variables: {},
+      methodCalls: { 1: { name: "A.first", index: 0, localVariables: {}, position: { x: 0, y: 0 } } }
+    }));
+
+    b.setAttribute('memory', JSON.stringify({
+      options: { hideSidebar: true },
+      klasses: {},
+      objects: {},
+      variables: {},
+      methodCalls: { 1: { name: "B.second", index: 0, localVariables: {}, position: { x: 0, y: 0 } } }
+    }));
+
+    window.__changes = [];
+    a.addEventListener('change', (e) => window.__changes.push({ from: 'a', detail: e.detail }));
+    b.addEventListener('change', (e) => window.__changes.push({ from: 'b', detail: e.detail }));
+  </script>
+</body>
+
+</html>

@@ -1,5 +1,12 @@
-#root {
+/* The playground is embeddable, so element selectors are scoped to the
+   container instead of leaking `button`/`input` styles into the host page. */
+.java-memory-playground {
   font-size: 24px;
+  line-height: 1.2;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  height: 100%;
+  background: white;
+  color: #222;
 }
 
 .button-group {
@@ -8,20 +15,21 @@
   padding: 8px;
 }
 
-button {
+.java-memory-playground button {
   background: whitesmoke;
   color: grey;
   cursor: pointer;
   border: 0;
   border-radius: 10px;
   padding: 8px;
+  font-family: inherit;
 }
 
-button:hover {
+.java-memory-playground button:hover {
   background: lightgrey;
 }
 
-input {
+.java-memory-playground input {
   display: inline-block;
   border-width: 1px;
   margin-left: 4px;
@@ -30,6 +38,11 @@ input {
   border-color: grey;
   width: 80px;
   padding: 4px;
+  font-family: inherit;
+}
+
+.memory {
+  background: white;
 }
 
 .memory-view {
