@@ -7,13 +7,14 @@ export { MemoryView } from "./MemoryView";
 export { ConfigView } from "./ConfigView";
 export { KeyboardShortcuts, defaultKeyBindings } from "./KeyboardShortcuts";
 export { InlineString } from "./InlineString";
+export { StepBar } from "./StepBar";
 
 export {
   createMemoryStore,
   setPersistence,
   isPersistenceEnabled,
 } from "./store";
-export type { RFState, Route, MemoryStore } from "./store";
+export type { RFState, Route, MemoryStore, StoreStep } from "./store";
 export {
   useStore,
   useMemoryStore,
@@ -42,6 +43,7 @@ export {
 } from "./memory";
 export type {
   Memory,
+  Step,
   Obj,
   Variable,
   MethodCall,

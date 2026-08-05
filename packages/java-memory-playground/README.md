@@ -55,6 +55,8 @@ export function Example() {
 | `language`    | `string`                     | `"en"`, `"de"`, or `"auto"` to follow the browser. Defaults to the browser language.          |
 | `persistence` | `boolean`                    | Mirror the diagram into `location.hash`. Defaults to the value set through `setPersistence`.  |
 | `keyBindings` | `Partial<KeyBindings>`       | Overrides for the default keyboard shortcuts.                                                 |
+| `step`        | `number`                     | The step to show, zero based. Set it to drive the diagram from the page around it.             |
+| `onStepChange`| `(step: number) => void`     | Called whenever the shown step changes.                                                       |
 | `onChange`    | `(memory: Memory) => void`   | Called when the user presses **Save**.                                                        |
 
 Every `MemoryPlayground` creates its own store, so several playgrounds can live
@@ -69,6 +71,26 @@ back, and when persistence is on the URL keeps up on its own.
 
 **Save** is therefore a commit, not a rescue: it is what fires `onChange`, which
 is how a host learns the user considers the diagram finished.
+
+## Steps
+
+A diagram is a sequence of steps, which is what lets it show the stack doing the
+thing that makes it a stack: a frame pushed on a call, popped on a return, and an
+object turning into garbage the moment the last reference to it is overwritten.
+
+A trace is authored by duplication — build a step, press **Add step**, and change
+what the next line did. Node positions are shared across the whole diagram, so
+dragging something moves it everywhere and the picture does not jump while
+stepping through.
+
+```tsx
+// Driving the diagram from the prose around it.
+<MemoryPlayground step={step} onStepChange={setStep} />
+```
+
+A diagram with one step is just a picture, and is still saved in the shape it
+always had, so a link to a single diagram stays readable by older versions. Set
+`hideSteps` to hide the bar entirely.
 
 ## Strings
 

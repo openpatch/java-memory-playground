@@ -16,6 +16,15 @@ export interface Translations {
   callMethod: string;
   declareGlobalVariable: string;
 
+  // Steps
+  previousStep: string;
+  nextStep: string;
+  addStep: string;
+  addStepHint: string;
+  deleteStep: string;
+  stepLabel: string;
+  stepLabelPlaceholder: string;
+
   // Nodes
   declareLocalVariable: string;
   returnMethod: string;
@@ -61,6 +70,7 @@ export interface Translations {
     disableGarbageCollector: string;
     createNewOnEdgeDrop: string;
     inlineStrings: string;
+    hideSteps: string;
   };
 }
 
@@ -77,6 +87,14 @@ const en: Translations = {
   newArray: "new Array",
   callMethod: "Call Method",
   declareGlobalVariable: "Declare Global Variable",
+
+  previousStep: "Previous step",
+  nextStep: "Next step",
+  addStep: "Add step",
+  addStepHint: "Duplicate this step and continue from it",
+  deleteStep: "Delete step",
+  stepLabel: "Step label",
+  stepLabelPlaceholder: "What happens here?",
 
   declareLocalVariable: "Declare Local Variable",
   returnMethod: "Return",
@@ -121,6 +139,7 @@ const en: Translations = {
     disableGarbageCollector: "Disable garbage collector",
     createNewOnEdgeDrop: "Create a new object when an edge is dropped",
     inlineStrings: "Show String values inside their object",
+    hideSteps: "Hide the step bar",
   },
 };
 
@@ -137,6 +156,14 @@ const de: Translations = {
   newArray: "neues Array",
   callMethod: "Methode aufrufen",
   declareGlobalVariable: "Globale Variable deklarieren",
+
+  previousStep: "Vorheriger Schritt",
+  nextStep: "Nächster Schritt",
+  addStep: "Schritt hinzufügen",
+  addStepHint: "Diesen Schritt kopieren und dort weitermachen",
+  deleteStep: "Schritt löschen",
+  stepLabel: "Beschriftung",
+  stepLabelPlaceholder: "Was passiert hier?",
 
   declareLocalVariable: "Lokale Variable deklarieren",
   returnMethod: "Zurückkehren",
@@ -181,6 +208,7 @@ const de: Translations = {
     disableGarbageCollector: "Garbage Collector deaktivieren",
     createNewOnEdgeDrop: "Neues Objekt erstellen, wenn eine Kante abgelegt wird",
     inlineStrings: "String-Werte im Objekt anzeigen",
+    hideSteps: "Schrittleiste ausblenden",
   },
 };
 

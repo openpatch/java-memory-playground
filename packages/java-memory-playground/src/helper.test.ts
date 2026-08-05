@@ -19,17 +19,46 @@ describe("parseMemory", () => {
     expect(parsed?.klasses).toEqual({ Node: { attributes: { next: "Node" } } });
   });
 
+  test("reads a diagram written before stepping as a single step", () => {
+    const parsed = parseMemory(
+      JSON.stringify({
+        objects: {
+          "@a": { klass: "Node", attributes: {}, position: { x: 0, y: 0 } },
+        },
+      }),
+    );
+
+    expect(parsed?.steps).toHaveLength(1);
+    expect(Object.keys(parsed!.steps![0].objects)).toEqual(["@a"]);
+  });
+
+  test("keeps the steps of a diagram that has them", () => {
+    const parsed = parseMemory(
+      JSON.stringify({
+        steps: [
+          { label: "call", objects: {}, variables: {}, methodCalls: {} },
+          { label: "return", objects: {}, variables: {} },
+        ],
+      }),
+    );
+
+    expect(parsed?.steps).toHaveLength(2);
+    expect(parsed!.steps!.map((s) => s.label)).toEqual(["call", "return"]);
+    // A step missing a section is still safe to render.
+    expect(parsed!.steps![1].methodCalls).toEqual({});
+  });
+
   test("accepts an already parsed object", () => {
     const parsed = parseMemory({ ...initialMemory });
-    expect(parsed?.objects).toEqual(initialMemory.objects);
+    expect(parsed!.steps![0].objects).toEqual(initialMemory.objects);
   });
 
   test("fills in every section so partial input stays renderable", () => {
     const parsed = parseMemory('{"objects":{}}');
 
     expect(parsed).not.toBeNull();
-    expect(parsed?.variables).toEqual({});
-    expect(parsed?.methodCalls).toEqual({});
+    expect(parsed!.steps![0].variables).toEqual({});
+    expect(parsed!.steps![0].methodCalls).toEqual({});
     expect(parsed?.klasses).toEqual({});
     expect(parsed?.viewport).toEqual({ x: 0, y: 0, zoom: 1 });
   });

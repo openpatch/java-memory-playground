@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stepping through a trace</title>
+  <link rel="stylesheet" href="./dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      height: 100vh;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    aside {
+      padding: 16px;
+      border-right: 2px solid #333;
+      overflow-y: auto;
+    }
+
+    aside li {
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    aside li.active {
+      font-weight: bold;
+    }
+
+    java-memory-playground {
+      display: block;
+      height: 100vh;
+    }
+  </style>
+</head>
+
+<body>
+  <aside>
+    <h3>Insert at the head</h3>
+    <ol id="prose">
+      <li data-step="0">A one element list. <code>head</code> points at Ada.</li>
+      <li data-step="1"><code>insert</code> is called, and a frame is pushed.</li>
+      <li data-step="2">The new node is allocated on the heap.</li>
+      <li data-step="3"><code>node.next = head</code> — the list is now reachable twice.</li>
+      <li data-step="4"><code>head = node</code>, and <code>insert</code> returns.</li>
+    </ol>
+  </aside>
+  <java-memory-playground id="trace" options='{"hideSidebar":true,"disableGarbageCollector":true}'></java-memory-playground>
+
+  <script src="./dist/index.umd.js"></script>
+  <script>
+    const el = document.getElementById('trace');
+
+    const node = (id, next, x, y) => ({
+      klass: "Node",
+      attributes: { next: { dataType: "Node", value: next } },
+      position: { x, y },
+    });
+    const head = (value) => ({
+      "@h": { name: "head", dataType: "Node", value, position: { x: 40, y: 40 } },
+    });
+    const frame = (localVariables) => ({
+      1: { name: "List.insert", index: 0, localVariables, position: { x: 40, y: 200 } },
+    });
+
+    const ada = node("@ada", undefined, 360, 40);
+    const fresh = node("@new", undefined, 360, 240);
+
+    el.setAttribute('memory', JSON.stringify({
+      klasses: { Node: { attributes: { next: "Node" } } },
+      steps: [
+        { label: "start", objects: { "@ada": ada }, variables: head("@ada"), methodCalls: {} },
+        {
+          label: "insert(\"Grace\") is called", objects: { "@ada": ada },
+          variables: head("@ada"), methodCalls: frame({ node: { dataType: "Node" } }),
+        },
+        {
+          label: "new Node()", objects: { "@ada": ada, "@new": fresh },
+          variables: head("@ada"),
+          methodCalls: frame({ node: { dataType: "Node", value: "@new" } }),
+        },
+        {
+          label: "node.next = head",
+          objects: { "@ada": ada, "@new": node("@new", "@ada", 360, 240) },
+          variables: head("@ada"),
+          methodCalls: frame({ node: { dataType: "Node", value: "@new" } }),
+        },
+        {
+          label: "head = node, insert returns",
+          objects: { "@ada": ada, "@new": node("@new", "@ada", 360, 240) },
+          variables: head("@new"), methodCalls: {},
+        },
+      ],
+    }));
+
+    const items = [...document.querySelectorAll('#prose li')];
+    const mark = (step) => items.forEach((li, i) => li.classList.toggle('active', i === step));
+
+    items.forEach((li) => li.addEventListener('click', () => {
+      el.setAttribute('step', li.dataset.step);
+    }));
+
+    // The page follows the diagram, and the diagram follows the page.
+    el.addEventListener('stepchange', (e) => mark(e.detail));
+    mark(0);
+  </script>
+</body>
+
+</html>

@@ -1,7 +1,7 @@
 import "@xyflow/react/dist/style.css";
 import "./index.css";
 import { ReactFlowProvider } from "@xyflow/react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/shallow";
 
 import { ConfigView } from "./ConfigView";
@@ -40,6 +40,13 @@ export interface MemoryPlaygroundProps {
   /** Overrides for the default keyboard shortcuts. */
   keyBindings?: Partial<KeyBindings>;
   /**
+   * The step to show, zero based. Set it to drive the diagram from the page
+   * around it — prose can walk a reader through a trace.
+   */
+  step?: number;
+  /** Called with the step index whenever the shown step changes. */
+  onStepChange?: (step: number) => void;
+  /**
    * Called with the full memory whenever the user saves. The web component
    * wrapper uses this to dispatch its `change` event.
    */
@@ -49,6 +56,9 @@ export interface MemoryPlaygroundProps {
 const selector = (state: RFState) => ({
   route: state.route,
   saveCount: state.saveCount,
+  currentStep: state.currentStep,
+  stepCount: state.steps.length,
+  goToStep: state.goToStep,
   loadMemory: state.loadMemory,
   getMemory: state.getMemory,
   setDefaultLanguage: state.setDefaultLanguage,
@@ -59,11 +69,16 @@ function Playground({
   options,
   language,
   keyBindings,
+  step,
   onChange,
+  onStepChange,
 }: MemoryPlaygroundProps) {
   const {
     route,
     saveCount,
+    currentStep,
+    stepCount,
+    goToStep,
     loadMemory,
     getMemory,
     setDefaultLanguage,
@@ -94,6 +109,18 @@ function Playground({
     // the diagram from the props, it must not re-run on the user's own edits.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memoryKey, optionsKey, loadMemory]);
+
+  useEffect(() => {
+    if (step === undefined) return;
+    goToStep(step);
+  }, [step, stepCount, goToStep]);
+
+  const reportedStep = useRef<number | null>(null);
+  useEffect(() => {
+    if (reportedStep.current === currentStep) return;
+    reportedStep.current = currentStep;
+    onStepChange?.(currentStep);
+  }, [currentStep, onStepChange]);
 
   useEffect(() => {
     // saveCount starts at 0 and is only ever bumped by the Save button, so this

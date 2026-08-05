@@ -16,9 +16,9 @@ describe("getEdgesAndNodes", () => {
       return acc;
     }, {});
 
-    expect(byType.object).toBe(Object.keys(initialMemory.objects).length);
+    expect(byType.object).toBe(Object.keys(initialMemory.objects!).length);
     expect(byType["method-call"]).toBe(
-      Object.keys(initialMemory.methodCalls).length,
+      Object.keys(initialMemory.methodCalls!).length,
     );
   });
 
@@ -77,7 +77,7 @@ describe("getMemory", () => {
     // Method calls come back keyed by their stack index rather than by the key
     // they were written under, so compare the entries themselves.
     expect(Object.values(result.methodCalls!)).toEqual(
-      Object.values(initialMemory.methodCalls),
+      Object.values(initialMemory.methodCalls!),
     );
   });
 
@@ -121,7 +121,7 @@ describe("getMemory", () => {
     const result = roundTrip(initialMemory);
 
     expect(result.objects!["@55"].position).toEqual(
-      initialMemory.objects["@55"].position,
+      initialMemory.objects!["@55"].position,
     );
   });
 

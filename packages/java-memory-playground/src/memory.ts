@@ -99,6 +99,21 @@ export interface MethodCalls {
   [key: number]: MethodCall;
 }
 
+/**
+ * One state of the diagram: the heap, the roots and the call stack at a single
+ * moment. A diagram is a sequence of these, so that a stack can be shown doing
+ * the thing that makes it a stack — growing and shrinking over time.
+ */
+export type Step = {
+  /** Shown in the step bar, e.g. "3: head = head.next". */
+  label?: string;
+  /** The teacher's note about what this step did. */
+  note?: string;
+  objects: Objs;
+  variables: Variables;
+  methodCalls: MethodCalls;
+};
+
 export type Memory = {
   viewport: {
     x: number;
@@ -119,11 +134,23 @@ export type Memory = {
      * object like any other — `==` versus `.equals()`, the string pool.
      */
     inlineStrings?: boolean;
+    /** Hide the step bar, for lessons that are about one picture. */
+    hideSteps?: boolean;
   };
   klasses: Klasses;
-  objects: Objs;
-  variables: Variables;
-  methodCalls: MethodCalls;
+  /**
+   * The steps of the diagram. `parseMemory` always fills this in, from the
+   * single-state fields below when a diagram predates stepping.
+   */
+  steps?: Step[];
+  /**
+   * The state of a one-step diagram. Still written for those, so that a link to
+   * a single picture stays readable by older versions, and still read from
+   * every diagram saved before steps existed.
+   */
+  objects?: Objs;
+  variables?: Variables;
+  methodCalls?: MethodCalls;
 };
 
 export const initialMemory: Memory = {

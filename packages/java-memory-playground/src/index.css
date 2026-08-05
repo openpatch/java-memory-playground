@@ -364,3 +364,25 @@ path.react-flow__edge-path:hover {
 .java-memory-playground input.inline-string__input {
   margin-left: 0;
 }
+
+.step-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.step-bar__count {
+  min-width: 56px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.java-memory-playground input.step-bar__label {
+  width: 180px;
+}
+
+.step-bar__label-text {
+  padding: 0 4px;
+}

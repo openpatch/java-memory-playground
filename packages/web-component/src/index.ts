@@ -17,11 +17,14 @@ const MemoryPlaygroundWC = r2wc(MemoryPlayground, {
     language: "string",
     persistence: "boolean",
     keyBindings: "json",
+    step: "number",
   },
-  // r2wc keys events by prop name: it passes an `onChange` prop that dispatches
-  // a `change` CustomEvent on this element, with the memory as `detail`.
+  // r2wc keys events by prop name and dispatches on this element: `onChange`
+  // becomes a `change` event carrying the memory, `onStepChange` a `stepchange`
+  // event carrying the step index.
   events: {
     onChange: {},
+    onStepChange: {},
   },
 });
 

@@ -1,10 +1,11 @@
-import { Memory, MethodCall, Obj, Variable, primitveDataTypes } from "./memory";
+import { MethodCall, Obj, Step, Variable, primitveDataTypes } from "./memory";
 import { CustomEdgeType, CustomNodeType } from "./types";
 
 export type EdgeData = {};
 
+/** Builds the React Flow graph for one step of a diagram. */
 export const getEdgesAndNodes = (
-  memory: Memory,
+  memory: Partial<Step>,
 ): {
   edges: CustomEdgeType[];
   nodes: CustomNodeType[];
@@ -85,13 +86,14 @@ export const getEdgesAndNodes = (
   };
 };
 
+/** Serializes a React Flow graph back into one step of a diagram. */
 export const getMemory = (
   edges: CustomEdgeType[],
   nodes: CustomNodeType[],
-): Partial<Memory> => {
-  const variables: Memory["variables"] = {};
-  const objects: Memory["objects"] = {};
-  const methodCalls: Memory["methodCalls"] = {};
+): Step => {
+  const variables: Step["variables"] = {};
+  const objects: Step["objects"] = {};
+  const methodCalls: Step["methodCalls"] = {};
 
   nodes.forEach((n) => {
     if (n.type == "object") {

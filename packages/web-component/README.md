@@ -63,6 +63,7 @@ java-memory-playground {
 | `language`    | string    | `en`, `de`, or `auto` to follow the browser. Defaults to the browser language.                   |
 | `persistence` | boolean   | Mirror the diagram into `location.hash`. Off by default — an embedded playground should not take over the page URL. |
 | `key-bindings`| JSON      | Overrides for the keyboard shortcuts, e.g. `{"save":{"key":"e","ctrl":true}}`.                   |
+| `step`        | number    | The step to show, zero based. Set it to drive the diagram from your page.                        |
 
 Attributes can be updated at any time; setting `memory` again replaces the
 diagram.
@@ -78,6 +79,7 @@ diagram.
 | `disableGarbageCollector`    | Hide the garbage collector button.                      |
 | `createNewOnEdgeDrop`        | Create a new object when an edge is dropped on empty canvas. |
 | `inlineStrings`              | Draw String values inside the object that references them instead of as their own heap box. On by default. |
+| `hideSteps`                  | Hide the step bar, for a lesson that is about one picture.  |
 
 ## Events
 
@@ -94,6 +96,33 @@ playground.addEventListener("change", (event) => {
   localStorage.setItem("diagram", JSON.stringify(event.detail));
 });
 ```
+
+## Steps
+
+A diagram can be a sequence of steps rather than a single picture, which is what
+lets it show a frame being pushed and popped, or an object becoming garbage the
+moment the last reference to it goes away.
+
+```json
+{
+  "klasses": { "Node": { "attributes": { "next": "Node" } } },
+  "steps": [
+    { "label": "start", "objects": {}, "variables": {}, "methodCalls": {} },
+    { "label": "insert is called", "objects": {}, "variables": {}, "methodCalls": {} }
+  ]
+}
+```
+
+Set the `step` attribute to drive it from your page, and listen for `stepchange`
+to follow along — the two together let prose and diagram stay in sync:
+
+```javascript
+playground.setAttribute("step", "2");
+playground.addEventListener("stepchange", (e) => highlight(e.detail));
+```
+
+A diagram with a single state needs no `steps` key; it is read as a one-step
+story, and saved back in the same shape.
 
 ## Undo, redo and keyboard shortcuts
 
@@ -152,5 +181,5 @@ can host as many playgrounds as it needs.
 pnpm build     # writes dist/index.umd.js and dist/index.css
 ```
 
-`index.html`, `multi.html` and `de.html` in this package are demo pages for the
-built bundle — serve the package directory and open them in a browser.
+`index.html`, `multi.html`, `de.html`, `strings.html` and `steps.html` in this
+package are demo pages for the built bundle — serve the package directory and open them in a browser.

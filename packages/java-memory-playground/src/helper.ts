@@ -3,6 +3,7 @@ import {
   Memory,
   Obj,
   STRING_KLASS,
+  Step,
   initialMemory,
 } from "./memory";
 
@@ -36,8 +37,8 @@ const stripQuotes = (value: string): string => {
  * something baked into the saved diagram. Links written before that still open:
  * their inline values are converted here, on read.
  */
-const migrateInlineStrings = (memory: Memory): Memory => {
-  const objects: Memory["objects"] = { ...memory.objects };
+const migrateInlineStrings = (step: Step): Step => {
+  const objects: Step["objects"] = { ...step.objects };
   const used = new Set(Object.keys(objects));
   let counter = 0;
 
@@ -86,7 +87,7 @@ const migrateInlineStrings = (memory: Memory): Memory => {
     return next;
   };
 
-  Object.entries(memory.objects ?? {}).forEach(([id, obj]) => {
+  Object.entries(step.objects ?? {}).forEach(([id, obj]) => {
     if (obj.klass === STRING_KLASS) return;
     objects[id] = {
       ...obj,
@@ -94,15 +95,42 @@ const migrateInlineStrings = (memory: Memory): Memory => {
     } as Obj;
   });
 
-  const methodCalls: Memory["methodCalls"] = {};
-  Object.entries(memory.methodCalls ?? {}).forEach(([id, call]) => {
+  const methodCalls: Step["methodCalls"] = {};
+  Object.entries(step.methodCalls ?? {}).forEach(([id, call]) => {
     methodCalls[id as unknown as number] = {
       ...call,
       localVariables: convertAll(call.localVariables ?? {}, call.position),
     };
   });
 
-  return { ...memory, objects, methodCalls };
+  return { ...step, objects, methodCalls };
+};
+
+/**
+ * The steps of a diagram, whichever shape it was saved in.
+ *
+ * Diagrams written before stepping existed hold a single state in the top level
+ * `objects` / `variables` / `methodCalls`, which is exactly one step.
+ */
+export const stepsOf = (m: Partial<Memory>): Step[] => {
+  const steps = Array.isArray(m.steps) ? m.steps : [];
+  if (steps.length > 0) {
+    return steps.map((step) => ({
+      label: step?.label,
+      note: step?.note,
+      objects: step?.objects ?? {},
+      variables: step?.variables ?? {},
+      methodCalls: step?.methodCalls ?? {},
+    }));
+  }
+
+  return [
+    {
+      objects: m.objects ?? {},
+      variables: m.variables ?? {},
+      methodCalls: m.methodCalls ?? {},
+    },
+  ];
 };
 
 /**
@@ -136,12 +164,10 @@ export const parseMemory = (memory?: string | Memory | null): Memory | null => {
   }
 
   const m = parsed as Partial<Memory>;
-  return migrateInlineStrings({
+  return {
     viewport: m.viewport ?? { x: 0, y: 0, zoom: 1 },
     options: { ...initialMemory.options, ...m.options },
     klasses: m.klasses ?? {},
-    objects: m.objects ?? {},
-    variables: m.variables ?? {},
-    methodCalls: m.methodCalls ?? {},
-  });
+    steps: stepsOf(m).map(migrateInlineStrings),
+  };
 };

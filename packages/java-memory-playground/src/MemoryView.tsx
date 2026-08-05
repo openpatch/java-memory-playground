@@ -20,6 +20,7 @@ import ObjectNode, { ObjectNodeType } from "./ObjectNode";
 import VariableNode from "./VariableNode";
 import { useCallback, useState, useRef, useMemo } from "react";
 import { Sidebar } from "./Sidebar";
+import { StepBar } from "./StepBar";
 import {
   Attribute,
   builtInDataTypes,
@@ -47,8 +48,8 @@ const selector = (state: RFState) => ({
   options: state.options,
   setRoute: state.setRoute,
   persistence: state.persistence,
-  nodes: state.nodes,
-  edges: state.edges,
+  nodes: state.steps[state.currentStep]?.nodes ?? [],
+  edges: state.steps[state.currentStep]?.edges ?? [],
   setNodes: state.setNodes,
   setEdges: state.setEdges,
   onNodesChange: state.onNodesChange,
@@ -743,6 +744,13 @@ export const MemoryView = () => {
             <button onClick={onConfig}>{t.config}</button>
           </div>
         </Panel>
+        {!options.hideSteps && (
+          <Panel position="bottom-center">
+            <div className="button-group">
+              <StepBar />
+            </div>
+          </Panel>
+        )}
         {!options.disableGarbageCollector && <Panel position="bottom-right">
           <div className="button-group">
             <button className="button-gc" onClick={onGC}>

@@ -8,8 +8,8 @@ import { CustomEdgeType, CustomNodeType } from "./types";
 import { getRanMemoryAdress } from "./utils";
 
 const selector = (state: RFState) => ({
-  nodes: state.nodes,
-  edges: state.edges,
+  nodes: state.steps[state.currentStep]?.nodes ?? [],
+  edges: state.steps[state.currentStep]?.edges ?? [],
   setNodes: state.setNodes,
   setEdges: state.setEdges,
 });

@@ -7,8 +7,8 @@ import { persist, StateStorage, createJSONStorage } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
-import { parseMemory } from "./helper";
-import { Memory, initialMemory } from "./memory";
+import { parseMemory, stepsOf } from "./helper";
+import { Memory, Step, initialMemory } from "./memory";
 import { deserializeState, serializeState } from "./serde";
 import {
   Translations,
@@ -20,6 +20,14 @@ import { CustomEdgeType, CustomNodeType } from "./types";
 
 export type Route = "view" | "config";
 
+/** One step, in the shape React Flow wants. */
+export type StoreStep = {
+  label?: string;
+  note?: string;
+  nodes: CustomNodeType[];
+  edges: CustomEdgeType[];
+};
+
 type Updater<T> = T[] | ((current: T[]) => T[]);
 
 export type RFState = {
@@ -30,8 +38,11 @@ export type RFState = {
 
   // Core data. The diagram lives here rather than in React Flow's local state,
   // so it survives switching to the config view and is never silently lost.
-  nodes: CustomNodeType[];
-  edges: CustomEdgeType[];
+  //
+  // A diagram is a sequence of steps; `currentStep` is the one on screen and
+  // the one every edit applies to.
+  steps: StoreStep[];
+  currentStep: number;
   klasses: Memory["klasses"];
   options: Memory["options"];
   viewport: Viewport;
@@ -45,6 +56,18 @@ export type RFState = {
 
   // Actions
   save: () => void;
+  goToStep: (index: number) => void;
+  addStep: () => void;
+  deleteStep: (index: number) => void;
+  setStepLabel: (index: number, label: string) => void;
+  /** The nodes and edges of the step on screen. */
+  getNodes: () => CustomNodeType[];
+  getEdges: () => CustomEdgeType[];
+  /** Reconciles every step's objects with a new set of class definitions. */
+  applyKlasses: (
+    klasses: Memory["klasses"],
+    options: Memory["options"],
+  ) => void;
   setRoute: (route: Route) => void;
   selectNodeId: (nodeId: string) => void;
   setDefaultLanguage: (language: string) => void;
@@ -127,7 +150,21 @@ const createHashStorage = (enabled: boolean): StateStorage => {
   };
 };
 
-const initialNodesAndEdges = getEdgesAndNodes(initialMemory);
+const toStoreStep = (step: Step): StoreStep => ({
+  label: step.label,
+  note: step.note,
+  ...getEdgesAndNodes(step),
+});
+
+const initialSteps: StoreStep[] = [toStoreStep(initialMemory as Step)];
+
+/** Replaces the step at `index`, leaving the rest of the story alone. */
+const withStep = (
+  steps: StoreStep[],
+  index: number,
+  update: (step: StoreStep) => StoreStep,
+): StoreStep[] =>
+  steps.map((step, i) => (i === index ? update(step) : step));
 
 /**
  * Strips the fields React Flow maintains itself. What is left is the part of a
@@ -154,32 +191,124 @@ export const createMemoryStore = (persistence: boolean = defaultPersistence) => 
           selectedNodeId: "",
           persistence,
 
-          nodes: initialNodesAndEdges.nodes,
-          edges: initialNodesAndEdges.edges,
+          steps: initialSteps,
+          currentStep: 0,
           klasses: initialMemory.klasses,
           options: initialMemory.options,
           viewport: initialMemory.viewport,
           saveCount: 0,
 
           save: () => set({ saveCount: get().saveCount + 1 }),
+
+          getNodes: () => get().steps[get().currentStep]?.nodes ?? [],
+          getEdges: () => get().steps[get().currentStep]?.edges ?? [],
+
+          goToStep: (index) =>
+            set({
+              currentStep: Math.min(
+                Math.max(index, 0),
+                get().steps.length - 1,
+              ),
+            }),
+
+          addStep: () => {
+            const { steps, currentStep } = get();
+            // A new step starts as a copy of the one on screen: a trace is
+            // authored by duplicating and then changing what the next line did.
+            const source = steps[currentStep];
+            const copy: StoreStep = {
+              nodes: source.nodes.map(
+                (n) => ({ ...n, data: { ...n.data } }) as CustomNodeType,
+              ),
+              edges: source.edges.map((e) => ({ ...e })),
+            };
+            set({
+              steps: [
+                ...steps.slice(0, currentStep + 1),
+                copy,
+                ...steps.slice(currentStep + 1),
+              ],
+              currentStep: currentStep + 1,
+            });
+          },
+
+          deleteStep: (index) => {
+            const { steps, currentStep } = get();
+            // A diagram always has at least one step to show.
+            if (steps.length <= 1) return;
+            const next = steps.filter((_, i) => i !== index);
+            set({
+              steps: next,
+              currentStep: Math.min(currentStep, next.length - 1),
+            });
+          },
+
+          setStepLabel: (index, label) =>
+            set({
+              steps: withStep(get().steps, index, (step) => ({
+                ...step,
+                label: label || undefined,
+              })),
+            }),
           setRoute: (route) => set({ route }),
           selectNodeId: (selectedNodeId) => set({ selectedNodeId }),
           setDefaultLanguage: (defaultLanguage) => set({ defaultLanguage }),
 
-          onNodesChange: (changes) =>
-            set({ nodes: applyNodeChanges(changes, get().nodes) }),
+          onNodesChange: (changes) => {
+            const { steps, currentStep } = get();
+            const moves = new Map(
+              changes
+                .filter((c) => c.type === "position" && c.position)
+                .map((c: any) => [c.id, c.position]),
+            );
+
+            set({
+              steps: steps.map((step, i) => {
+                if (i === currentStep) {
+                  return {
+                    ...step,
+                    nodes: applyNodeChanges(changes, step.nodes),
+                  };
+                }
+                // Layout is a property of the diagram, not of one moment in it:
+                // dragging a node moves it in every step it appears in, so the
+                // picture does not jump around while scrubbing.
+                if (moves.size === 0) return step;
+                return {
+                  ...step,
+                  nodes: step.nodes.map((n) =>
+                    moves.has(n.id)
+                      ? { ...n, position: moves.get(n.id)! }
+                      : n,
+                  ),
+                };
+              }),
+            });
+          },
+
           onEdgesChange: (changes) =>
-            set({ edges: applyEdgeChanges(changes, get().edges) }),
+            set({
+              steps: withStep(get().steps, get().currentStep, (step) => ({
+                ...step,
+                edges: applyEdgeChanges(changes, step.edges),
+              })),
+            }),
 
           // The updater form keeps the call sites identical to React Flow's
           // useNodesState/useEdgesState that these replaced.
           setNodes: (nodes) =>
             set({
-              nodes: typeof nodes === "function" ? nodes(get().nodes) : nodes,
+              steps: withStep(get().steps, get().currentStep, (step) => ({
+                ...step,
+                nodes: typeof nodes === "function" ? nodes(step.nodes) : nodes,
+              })),
             }),
           setEdges: (edges) =>
             set({
-              edges: typeof edges === "function" ? edges(get().edges) : edges,
+              steps: withStep(get().steps, get().currentStep, (step) => ({
+                ...step,
+                edges: typeof edges === "function" ? edges(step.edges) : edges,
+              })),
             }),
 
           setKlasses: (klasses) => set({ klasses }),
@@ -187,10 +316,12 @@ export const createMemoryStore = (persistence: boolean = defaultPersistence) => 
           setViewport: (viewport) => set({ viewport }),
 
           loadMemory: (memory) => {
-            const { nodes, edges } = getEdgesAndNodes(memory);
+            // Through stepsOf, so that a caller may hand over a diagram in
+            // either shape — a one-step diagram still has no `steps` key.
+            const steps = stepsOf(memory).map(toStoreStep);
             set({
-              nodes,
-              edges,
+              steps: steps.length > 0 ? steps : initialSteps,
+              currentStep: 0,
               klasses: memory.klasses,
               options: memory.options,
               viewport: memory.viewport,
@@ -199,12 +330,63 @@ export const createMemoryStore = (persistence: boolean = defaultPersistence) => 
 
           getMemory: () => {
             const state = get();
+            const steps = state.steps.map((step) => ({
+              ...(step.label ? { label: step.label } : {}),
+              ...(step.note ? { note: step.note } : {}),
+              ...getMemory(step.edges, step.nodes),
+            }));
+
+            // A one-step diagram is written in the shape it has always had, so
+            // a link to a single picture stays readable by older versions.
+            if (steps.length === 1) {
+              return {
+                viewport: state.viewport,
+                options: state.options,
+                klasses: state.klasses,
+                ...steps[0],
+              } as Memory;
+            }
+
             return {
               viewport: state.viewport,
               options: state.options,
               klasses: state.klasses,
-              ...getMemory(state.edges, state.nodes),
+              steps,
             } as Memory;
+          },
+
+          applyKlasses: (klasses, options) => {
+            // A class definition belongs to the whole diagram, so adding or
+            // removing an attribute has to reach every step's objects.
+            const reconcile = (node: CustomNodeType): CustomNodeType => {
+              if (node.type !== "object") return node;
+              const definition = klasses[node.data.klass];
+              if (!definition) return node;
+
+              const names = Object.keys(definition.attributes);
+              const attributes = { ...node.data.attributes };
+              names.forEach((name) => {
+                if (!attributes[name]) {
+                  attributes[name] = {
+                    dataType: definition.attributes[name],
+                    value: undefined,
+                  };
+                }
+              });
+              Object.keys(attributes).forEach((name) => {
+                if (!names.includes(name)) delete attributes[name];
+              });
+              return { ...node, data: { ...node.data, attributes } };
+            };
+
+            set({
+              klasses,
+              options,
+              steps: get().steps.map((step) => ({
+                ...step,
+                nodes: step.nodes.map(reconcile),
+              })),
+            });
           },
 
           getLanguage: () => {
@@ -223,8 +405,12 @@ export const createMemoryStore = (persistence: boolean = defaultPersistence) => 
           // flag) is stripped too, so it neither creates history entries nor
           // gets restored on undo.
           partialize: (state: RFState) => ({
-            nodes: state.nodes.map(undoableNode),
-            edges: state.edges,
+            steps: state.steps.map((step) => ({
+              label: step.label,
+              note: step.note,
+              nodes: step.nodes.map(undoableNode),
+              edges: step.edges,
+            })),
             klasses: state.klasses,
             options: state.options,
           }),
@@ -260,11 +446,11 @@ export const createMemoryStore = (persistence: boolean = defaultPersistence) => 
           const memory = parseMemory(stored);
           if (!memory) return current;
 
-          const { nodes, edges } = getEdgesAndNodes(memory);
+          const steps = stepsOf(memory).map(toStoreStep);
           return {
             ...current,
-            nodes,
-            edges,
+            steps: steps.length > 0 ? steps : current.steps,
+            currentStep: 0,
             klasses: memory.klasses,
             options: memory.options,
             viewport: memory.viewport ?? current.viewport,

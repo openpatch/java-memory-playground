@@ -33,24 +33,24 @@ describe("createMemoryStore", () => {
 
     a.getState().loadMemory(emptyMemory);
 
-    expect(a.getState().nodes).toHaveLength(0);
-    expect(b.getState().nodes.length).toBeGreaterThan(0);
+    expect(a.getState().getNodes()).toHaveLength(0);
+    expect(b.getState().getNodes().length).toBeGreaterThan(0);
   });
 
   test("holds the diagram as nodes and edges, not only on save", () => {
     const store = createMemoryStore(false);
 
     // The initial memory has one method call and four objects.
-    expect(store.getState().nodes.length).toBe(
-      Object.keys(initialMemory.objects).length +
-        Object.keys(initialMemory.methodCalls).length,
+    expect(store.getState().getNodes().length).toBe(
+      Object.keys(initialMemory.objects!).length +
+        Object.keys(initialMemory.methodCalls!).length,
     );
-    expect(store.getState().getMemory().objects).toEqual(initialMemory.objects);
+    expect(store.getState().getMemory().objects!).toEqual(initialMemory.objects!);
   });
 
   test("a node moved on the canvas is in the memory right away", () => {
     const store = createMemoryStore(false);
-    const target = store.getState().nodes.find((n) => n.type === "object")!;
+    const target = store.getState().getNodes().find((n: any) => n.type === "object")!;
 
     store.getState().onNodesChange([
       {
@@ -61,7 +61,7 @@ describe("createMemoryStore", () => {
     ]);
 
     // No save call in between — the store is the source of truth.
-    expect(store.getState().getMemory().objects[target.id].position).toEqual({
+    expect(store.getState().getMemory().objects![target.id].position).toEqual({
       x: 999,
       y: 111,
     });
@@ -69,7 +69,7 @@ describe("createMemoryStore", () => {
 
   test("survives switching to the config view and back", () => {
     const store = createMemoryStore(false);
-    const target = store.getState().nodes.find((n) => n.type === "object")!;
+    const target = store.getState().getNodes().find((n: any) => n.type === "object")!;
 
     store
       .getState()
@@ -79,7 +79,7 @@ describe("createMemoryStore", () => {
     store.getState().setRoute("config");
     store.getState().setRoute("view");
 
-    expect(store.getState().getMemory().objects[target.id].position).toEqual({
+    expect(store.getState().getMemory().objects![target.id].position).toEqual({
       x: 42,
       y: 42,
     });
@@ -110,7 +110,7 @@ describe("createMemoryStore", () => {
 
     const store = createMemoryStore(true);
 
-    expect(store.getState().getMemory().objects).toEqual(initialMemory.objects);
+    expect(store.getState().getMemory().objects!).toEqual(initialMemory.objects!);
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
   });
@@ -163,7 +163,7 @@ describe("createMemoryStore", () => {
       "ListNode",
       "Message",
     ]);
-    const objects = store.getState().getMemory().objects;
+    const objects = store.getState().getMemory().objects!;
     const strings = Object.values(objects).filter(
       (o) => o.klass === STRING_KLASS,
     );
@@ -175,23 +175,129 @@ describe("createMemoryStore", () => {
     // Quotes were decoration typed into the old value field, not data.
     expect(strings.map((s) => s.literal)).toContain("mike");
     expect(strings.map((s) => s.literal)).toContain("Hallo!");
-    expect(Object.keys(store.getState().getMemory().variables)).toHaveLength(2);
+    expect(Object.keys(store.getState().getMemory().variables!)).toHaveLength(2);
+  });
+});
+
+describe("steps", () => {
+  test("a diagram without steps is a one-step story", () => {
+    const store = createMemoryStore(false);
+
+    expect(store.getState().steps).toHaveLength(1);
+    expect(store.getState().currentStep).toBe(0);
+  });
+
+  test("adding a step copies the one on screen and moves to it", () => {
+    const store = createMemoryStore(false);
+    const before = store.getState().getNodes().length;
+
+    store.getState().addStep();
+
+    expect(store.getState().steps).toHaveLength(2);
+    expect(store.getState().currentStep).toBe(1);
+    expect(store.getState().getNodes()).toHaveLength(before);
+  });
+
+  test("editing a step leaves the others alone", () => {
+    const store = createMemoryStore(false);
+    store.getState().addStep();
+    store.getState().setNodes([]);
+
+    expect(store.getState().getNodes()).toHaveLength(0);
+    store.getState().goToStep(0);
+    expect(store.getState().getNodes().length).toBeGreaterThan(0);
+  });
+
+  test("moving a node moves it in every step", () => {
+    const store = createMemoryStore(false);
+    store.getState().addStep();
+    const target = store.getState().getNodes().find((n: any) => n.type === "object")!;
+
+    store
+      .getState()
+      .onNodesChange([
+        { id: target.id, type: "position", position: { x: 500, y: 500 } },
+      ]);
+
+    // Layout belongs to the diagram, so scrubbing does not make things jump.
+    store.getState().goToStep(0);
+    expect(
+      store.getState().getNodes().find((n: any) => n.id === target.id)!.position,
+    ).toEqual({ x: 500, y: 500 });
+  });
+
+  test("goToStep stays inside the story", () => {
+    const store = createMemoryStore(false);
+    store.getState().addStep();
+
+    store.getState().goToStep(99);
+    expect(store.getState().currentStep).toBe(1);
+    store.getState().goToStep(-5);
+    expect(store.getState().currentStep).toBe(0);
+  });
+
+  test("the last step cannot be deleted", () => {
+    const store = createMemoryStore(false);
+
+    store.getState().deleteStep(0);
+    expect(store.getState().steps).toHaveLength(1);
+  });
+
+  test("deleting a step keeps the cursor in range", () => {
+    const store = createMemoryStore(false);
+    store.getState().addStep();
+    store.getState().deleteStep(1);
+
+    expect(store.getState().steps).toHaveLength(1);
+    expect(store.getState().currentStep).toBe(0);
+  });
+
+  test("a one-step diagram is still written in the old shape", () => {
+    const store = createMemoryStore(false);
+    const memory = store.getState().getMemory();
+
+    // So that a link to a single picture stays readable by older versions.
+    expect(memory.steps).toBeUndefined();
+    expect(memory.objects).toBeDefined();
+  });
+
+  test("a multi-step diagram round-trips through the URL", async () => {
+    const location = stubLocation();
+
+    const writer = createMemoryStore(true);
+    writer.getState().addStep();
+    writer.getState().setNodes([]);
+    writer.getState().setStepLabel(1, "everything returned");
+
+    expect(writer.getState().getMemory().steps).toHaveLength(2);
+
+    // Writes are throttled, so wait for the trailing one to land.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    location.hash = "#" + location.hash.replace(/^#/, "");
+    const reader = createMemoryStore(true);
+
+    expect(reader.getState().steps).toHaveLength(2);
+    expect(reader.getState().steps[1].label).toBe("everything returned");
+    expect(reader.getState().steps[1].nodes).toHaveLength(0);
+    expect(reader.getState().steps[0].nodes.length).toBeGreaterThan(0);
+    // A reader always starts at the beginning of the story.
+    expect(reader.getState().currentStep).toBe(0);
   });
 });
 
 describe("undo/redo", () => {
   test("undoes an edit to the diagram", () => {
     const store = createMemoryStore(false);
-    const before = store.getState().nodes.length;
+    const before = store.getState().getNodes().length;
 
     store.getState().setNodes((nodes) => nodes.slice(1));
-    expect(store.getState().nodes.length).toBe(before - 1);
+    expect(store.getState().getNodes().length).toBe(before - 1);
 
     store.temporal.getState().undo();
-    expect(store.getState().nodes.length).toBe(before);
+    expect(store.getState().getNodes().length).toBe(before);
 
     store.temporal.getState().redo();
-    expect(store.getState().nodes.length).toBe(before - 1);
+    expect(store.getState().getNodes().length).toBe(before - 1);
   });
 
   test("does not record navigation as an undo step", () => {
@@ -199,8 +305,12 @@ describe("undo/redo", () => {
 
     store.getState().setRoute("config");
     store.getState().selectNodeId("@33");
+    store.getState().addStep();
+    store.getState().goToStep(0);
 
-    expect(store.temporal.getState().pastStates).toHaveLength(0);
+    // Adding a step changes the story, so that is undoable; walking through it
+    // is not.
+    expect(store.temporal.getState().pastStates).toHaveLength(1);
   });
 
   test("each playground has its own history", () => {

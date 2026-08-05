@@ -8,8 +8,7 @@ import { SimpleInputDialog } from "./SimpleInputDialog";
 const selector = (state: RFState) => ({
   storedKlasses: state.klasses,
   storedOptions: state.options,
-  loadMemory: state.loadMemory,
-  getMemory: state.getMemory,
+  applyKlasses: state.applyKlasses,
   setRoute: state.setRoute,
   t: state.getTranslations(),
 });
@@ -18,8 +17,7 @@ export const ConfigView = () => {
   const {
     storedKlasses,
     storedOptions,
-    loadMemory,
-    getMemory,
+    applyKlasses,
     setRoute,
     t,
   } = useStore(useShallow(selector));
@@ -53,53 +51,13 @@ export const ConfigView = () => {
   }, [klasses, options, storedKlasses, storedOptions]);
 
   const onSave = useCallback(() => {
-    const memory = getMemory();
-    // Update existing objects to match new class definitions
-    const updatedObjects = { ...memory.objects };
-
-    Object.entries(updatedObjects).forEach(([objId, obj]) => {
-      const klassDefinition = klasses[obj.klass];
-
-      // Skip if class doesn't exist (e.g., Array) or object class is not in klasses
-      if (!klassDefinition) return;
-
-      const updatedAttributes = { ...obj.attributes };
-      const klassAttributeNames = Object.keys(klassDefinition.attributes);
-      const currentAttributeNames = Object.keys(updatedAttributes);
-
-      // Add new attributes from class definition
-      klassAttributeNames.forEach((attrName) => {
-        if (!updatedAttributes[attrName]) {
-          updatedAttributes[attrName] = {
-            dataType: klassDefinition.attributes[attrName],
-            value: undefined,
-          };
-        }
-      });
-
-      // Remove attributes that are no longer in class definition
-      currentAttributeNames.forEach((attrName) => {
-        if (!klassAttributeNames.includes(attrName)) {
-          delete updatedAttributes[attrName];
-        }
-      });
-
-      updatedObjects[objId] = {
-        ...obj,
-        attributes: updatedAttributes,
-      };
-    });
-
-    loadMemory({
-      ...memory,
-      klasses,
-      options,
-      objects: updatedObjects,
-    });
+    // Class definitions belong to the whole diagram, so the store reconciles
+    // every step's objects rather than only the one on screen.
+    applyKlasses(klasses, options);
     setHasUnsavedChanges(false);
     setShowSaveSuccess(true);
     setTimeout(() => setShowSaveSuccess(false), 2000);
-  }, [getMemory, klasses, options, loadMemory]);
+  }, [applyKlasses, klasses, options]);
 
   const onView = useCallback(() => {
     if (hasUnsavedChanges) {
