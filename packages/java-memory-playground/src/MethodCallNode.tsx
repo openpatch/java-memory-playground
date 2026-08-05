@@ -12,9 +12,11 @@ import {
   MethodCall,
   numericDataTypes,
   primitveDataTypes,
+  STRING_KLASS,
 } from "./memory";
 import { CustomEdgeType, CustomNodeType } from "./types";
 import useStore from "./storeContext";
+import { InlineString } from "./InlineString";
 
 function LocalVariableHandle({
   name,
@@ -22,6 +24,7 @@ function LocalVariableHandle({
   isFinal,
   isConnectable,
   nodeId,
+  inlineStrings,
 }: {
   name: string;
   value: Attribute;
@@ -29,6 +32,7 @@ function LocalVariableHandle({
   isFinal: boolean;
   isConnected: boolean;
   isConnectable: boolean;
+  inlineStrings?: boolean;
 }) {
   const { setNodes, setEdges } = useReactFlow<CustomNodeType, CustomEdgeType>();
 
@@ -82,6 +86,15 @@ function LocalVariableHandle({
     );
   };
 
+  if (value.dataType === STRING_KLASS && inlineStrings) {
+    return (
+      <div className="method-call-node__variable">
+        <div className="method-call-node__variable-name">{name} =</div>
+        <InlineString nodeId={nodeId} handleId={name} readOnly={isFinal} />
+      </div>
+    );
+  }
+
   return !primitveDataTypes.includes(value.dataType) ? (
     <div className="method-call-node__variable">
       <button onClick={onDelete} className="method-call-node__delete">
@@ -118,14 +131,6 @@ function LocalVariableHandle({
               className="method-call-node__variable-value"
             />
           )}
-          {value.dataType == "String" && (
-            <input
-              type="text"
-              onChange={onChange}
-              value={(value.value as string) || ""}
-              className="method-call-node__variable-value"
-            />
-          )}
         </>
       )}
     </div>
@@ -146,6 +151,7 @@ function MethodCallNode({
   const { setNodes } = useReactFlow<CustomNodeType, CustomEdgeType>();
   const edges = useEdges<CustomEdgeType>();
   const t = useStore((state) => state.getTranslations());
+  const inlineStrings = useStore((state) => state.options.inlineStrings);
 
   const localVariablesEdges = edges.filter((e) => e.source == id);
 
@@ -180,6 +186,7 @@ function MethodCallNode({
             nodeId={id}
             name={name}
             value={value}
+            inlineStrings={inlineStrings}
           />
         ))}
 

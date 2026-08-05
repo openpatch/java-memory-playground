@@ -70,3 +70,22 @@ export const isConnectedTo = (
 
   return false;
 };
+
+/**
+ * A random hexadecimal address, optionally avoiding ids already in use.
+ */
+export const getRanMemoryAdress = (
+  size: number,
+  taken: Set<string> = new Set(),
+): string => {
+  const hex = "0123456789abcdef";
+  let address: string;
+  do {
+    let result = "";
+    for (let n = 0; n < size; n++) {
+      result += hex[Math.floor(Math.random() * 16)];
+    }
+    address = `@${result}`;
+  } while (taken.has(address));
+  return address;
+};

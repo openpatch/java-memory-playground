@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Strings as heap objects</title>
+  <link rel="stylesheet" href="./dist/index.css">
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; }
+    java-memory-playground { display: block; width: 100vw; height: 100vh; }
+  </style>
+</head>
+<body>
+  <java-memory-playground id="expanded"></java-memory-playground>
+  <script src="./dist/index.umd.js"></script>
+  <script>
+    // inlineStrings off: the lesson is about Strings themselves.
+    document.getElementById('expanded').setAttribute('options',
+      JSON.stringify({ inlineStrings: false, hideSidebar: true, hideDeclareGlobalVariable: false }));
+    document.getElementById('expanded').setAttribute('memory', JSON.stringify({
+      klasses: { Person: { attributes: { name: "String" } } },
+      objects: {
+        "@p1": { klass: "Person", attributes: { name: { dataType: "String", value: "@s1" } }, position: { x: 60, y: 60 } },
+        "@p2": { klass: "Person", attributes: { name: { dataType: "String", value: "@s1" } }, position: { x: 60, y: 260 } },
+        "@s1": { klass: "String", literal: "Ada", attributes: {}, position: { x: 420, y: 160 } }
+      },
+      variables: {
+        "@v1": { name: "a", dataType: "Person", value: "@p1", position: { x: -180, y: 60 } },
+        "@v2": { name: "b", dataType: "Person", value: "@p2", position: { x: -180, y: 260 } }
+      },
+      methodCalls: {}
+    }));
+  </script>
+</body>
+</html>

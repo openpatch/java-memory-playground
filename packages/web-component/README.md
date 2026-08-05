@@ -77,6 +77,7 @@ diagram.
 | `hideNewArray`               | Hide the "new Array" entry in the sidebar.              |
 | `disableGarbageCollector`    | Hide the garbage collector button.                      |
 | `createNewOnEdgeDrop`        | Create a new object when an edge is dropped on empty canvas. |
+| `inlineStrings`              | Draw String values inside the object that references them instead of as their own heap box. On by default. |
 
 ## Events
 
@@ -122,6 +123,23 @@ English and German ship with the bundle:
 
 Leave the attribute off (or set `auto`) to follow the browser, falling back to
 English for anything unsupported.
+
+## Strings
+
+A String is a reference type, so a String value is a heap object like any other.
+Drawing every one of them would bury the point of a diagram about, say, a linked
+list, so they are collapsed into their owner by default and shown as an editable
+field in quotes.
+
+Set `inlineStrings` to `false` when the String *is* the lesson — two references
+to one String object is the picture behind `==` versus `.equals()`:
+
+```html
+<java-memory-playground options='{"inlineStrings":false}'></java-memory-playground>
+```
+
+This is a display choice only. The saved diagram holds the reference either way,
+so a diagram authored with Strings collapsed can be shown expanded, and back.
 
 ## Several playgrounds on one page
 

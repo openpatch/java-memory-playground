@@ -60,6 +60,7 @@ export interface Translations {
     hideNewArray: string;
     disableGarbageCollector: string;
     createNewOnEdgeDrop: string;
+    inlineStrings: string;
   };
 }
 
@@ -119,6 +120,7 @@ const en: Translations = {
     hideNewArray: "Hide „new Array“",
     disableGarbageCollector: "Disable garbage collector",
     createNewOnEdgeDrop: "Create a new object when an edge is dropped",
+    inlineStrings: "Show String values inside their object",
   },
 };
 
@@ -178,6 +180,7 @@ const de: Translations = {
     hideNewArray: "„neues Array“ ausblenden",
     disableGarbageCollector: "Garbage Collector deaktivieren",
     createNewOnEdgeDrop: "Neues Objekt erstellen, wenn eine Kante abgelegt wird",
+    inlineStrings: "String-Werte im Objekt anzeigen",
   },
 };
 

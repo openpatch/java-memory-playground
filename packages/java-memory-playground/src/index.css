@@ -346,3 +346,21 @@ path.react-flow__edge-path:hover {
   width: 100px;
   z-index: 1000;
 }
+
+.inline-string {
+  display: inline-flex;
+  align-items: center;
+}
+
+.inline-string__quote {
+  color: #94a3b8;
+  padding: 0 2px;
+}
+
+.inline-string__value {
+  padding: 4px;
+}
+
+.java-memory-playground input.inline-string__input {
+  margin-left: 0;
+}

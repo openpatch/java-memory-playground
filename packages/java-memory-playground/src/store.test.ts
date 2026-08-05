@@ -4,7 +4,7 @@ import {
   isPersistenceEnabled,
   setPersistence,
 } from "./store";
-import { Memory, initialMemory } from "./memory";
+import { Memory, STRING_KLASS, initialMemory } from "./memory";
 
 afterEach(() => {
   setPersistence(false);
@@ -163,7 +163,18 @@ describe("createMemoryStore", () => {
       "ListNode",
       "Message",
     ]);
-    expect(Object.keys(store.getState().getMemory().objects)).toHaveLength(8);
+    const objects = store.getState().getMemory().objects;
+    const strings = Object.values(objects).filter(
+      (o) => o.klass === STRING_KLASS,
+    );
+
+    // Eight objects as authored, plus one String object per String field that
+    // used to hold its characters inline (4 Messages x 3 fields).
+    expect(Object.values(objects)).toHaveLength(20);
+    expect(strings).toHaveLength(12);
+    // Quotes were decoration typed into the old value field, not data.
+    expect(strings.map((s) => s.literal)).toContain("mike");
+    expect(strings.map((s) => s.literal)).toContain("Hallo!");
     expect(Object.keys(store.getState().getMemory().variables)).toHaveLength(2);
   });
 });

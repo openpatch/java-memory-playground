@@ -6,6 +6,7 @@ export type { MemoryPlaygroundProps } from "./MemoryPlayground";
 export { MemoryView } from "./MemoryView";
 export { ConfigView } from "./ConfigView";
 export { KeyboardShortcuts, defaultKeyBindings } from "./KeyboardShortcuts";
+export { InlineString } from "./InlineString";
 
 export {
   createMemoryStore,
@@ -32,7 +33,13 @@ export type { Translations } from "./translations";
 export { parseMemory } from "./helper";
 export { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 export { serializeState, deserializeState } from "./serde";
-export { initialMemory, primitveDataTypes, numericDataTypes } from "./memory";
+export {
+  initialMemory,
+  primitveDataTypes,
+  numericDataTypes,
+  builtInDataTypes,
+  STRING_KLASS,
+} from "./memory";
 export type {
   Memory,
   Obj,

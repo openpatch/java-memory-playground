@@ -22,11 +22,13 @@ import { useCallback, useState, useRef, useMemo } from "react";
 import { Sidebar } from "./Sidebar";
 import {
   Attribute,
+  builtInDataTypes,
   numericDataTypes,
   DataType,
-  primitveDataTypes,
+  STRING_KLASS,
 } from "./memory";
 import {
+  getRanMemoryAdress,
   isConnectedTo,
   isConnectedToMethodCall,
   isConnectedToVariable,
@@ -69,8 +71,6 @@ const createAttributesForObject = (
       value = false;
     } else if (numericDataTypes.includes(dataType)) {
       value = 0;
-    } else if (dataType == "String") {
-      value = "";
     }
     objAttributes[name] = {
       value,
@@ -80,32 +80,6 @@ const createAttributesForObject = (
   return objAttributes;
 };
 
-const getRanMemoryAdress = (size: number): string => {
-  let result = [];
-  let hexRef = [
-    "0",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-  ];
-
-  for (let n = 0; n < size; n++) {
-    result.push(hexRef[Math.floor(Math.random() * 16)]);
-  }
-  return `@${result.join("")}`;
-};
 
 export const MemoryView = () => {
   const {
@@ -224,7 +198,7 @@ export const MemoryView = () => {
 
   // Get available types for arrays: primitives + defined classes
   const getAvailableTypes = (): DataType[] => {
-    return [...primitveDataTypes, ...Object.keys(klasses)];
+    return [...builtInDataTypes, ...Object.keys(klasses)];
   };
 
   // Handler for declaring local variables
@@ -327,8 +301,6 @@ export const MemoryView = () => {
                   value = false;
                 } else if (numericDataTypes.includes(elementType)) {
                   value = 0;
-                } else if (elementType === "String") {
-                  value = "";
                 }
                 tempAttributes[`[${i}]`] = {
                   dataType: elementType,
@@ -496,8 +468,6 @@ export const MemoryView = () => {
               value = false;
             } else if (numericDataTypes.includes(elementType)) {
               value = 0;
-            } else if (elementType === "String") {
-              value = "";
             }
             objAttributes[`[${i}]`] = {
               dataType: elementType,
@@ -661,13 +631,30 @@ export const MemoryView = () => {
     },
     [createNodeAtPosition]);
 
+  // While Strings are inlined they are still real objects with real references
+  // — they are only left out of the drawing, and out of it as edge targets.
+  const { visibleNodes, visibleEdges } = useMemo(() => {
+    if (!options.inlineStrings) {
+      return { visibleNodes: nodes, visibleEdges: edges };
+    }
+    const inlined = new Set(
+      nodes
+        .filter((n) => n.type === "object" && n.data.klass === STRING_KLASS)
+        .map((n) => n.id),
+    );
+    return {
+      visibleNodes: nodes.filter((n) => !inlined.has(n.id)),
+      visibleEdges: edges.filter((e) => !inlined.has(e.target)),
+    };
+  }, [nodes, edges, options.inlineStrings]);
+
   return (
     <div className="memory-view">
       {!options.hideSidebar && <Sidebar klasses={klasses} options={options} onNodeDrop={onNodeDrop} />}
       <ReactFlow
         ref={flowRef}
         className="memory"
-        nodes={nodes.map((n) => {
+        nodes={visibleNodes.map((n) => {
           n.className = "";
           n.deletable = options.disableGarbageCollector;
           if (
@@ -694,7 +681,7 @@ export const MemoryView = () => {
           }
           return { ...n };
         })}
-        edges={edges.map((e) => {
+        edges={visibleEdges.map((e) => {
           const node = nodes.find((n) => n.id == e.source);
           e.className = "";
           e.deletable = false;

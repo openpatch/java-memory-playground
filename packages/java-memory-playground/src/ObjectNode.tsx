@@ -8,7 +8,14 @@ import {
   useNodes,
   useReactFlow,
 } from "@xyflow/react";
-import { Attribute, Obj, numericDataTypes, primitveDataTypes } from "./memory";
+import {
+  Attribute,
+  Obj,
+  STRING_KLASS,
+  numericDataTypes,
+  primitveDataTypes,
+} from "./memory";
+import { InlineString } from "./InlineString";
 import { isConnectedToMethodCall, isConnectedToVariable } from "./utils";
 import { CustomEdgeType, CustomNodeType } from "./types";
 import useStore from "./storeContext";
@@ -18,6 +25,7 @@ import { useShallow } from "zustand/shallow";
 function AttributeHandle({
   name,
   value,
+  inlineStrings,
   isFinal,
   isConnectable,
   nodeId,
@@ -28,6 +36,7 @@ function AttributeHandle({
   isFinal: boolean;
   isConnected: boolean;
   isConnectable: boolean;
+  inlineStrings?: boolean;
 }) {
   const { setNodes } = useReactFlow<CustomNodeType, CustomEdgeType>();
 
@@ -57,6 +66,17 @@ function AttributeHandle({
       })
     );
   };
+
+  // A String is a reference like any other; `inlineStrings` only decides
+  // whether its object is drawn separately or shown right here.
+  if (value.dataType === STRING_KLASS && inlineStrings) {
+    return (
+      <div className="object-node__attribute">
+        <div className="object-node__attribute-name">{name} =</div>
+        <InlineString nodeId={nodeId} handleId={name} readOnly={isFinal} />
+      </div>
+    );
+  }
 
   return !primitveDataTypes.includes(value.dataType) ? (
     <div className="object-node__attribute">
@@ -91,14 +111,6 @@ function AttributeHandle({
               className="object-node__attribute-value"
             />
           )}
-          {value.dataType == "String" && (
-            <input
-              type="text"
-              onChange={onChange}
-              value={(value.value as string) || ""}
-              className="object-node__attribute-value"
-            />
-          )}
         </>
       )}
     </div>
@@ -116,7 +128,9 @@ const selector = (state: RFState) => ({
 });
 
 function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
-  const { disableGarbageCollector } = useStore(useShallow(selector));
+  const { disableGarbageCollector, inlineStrings } = useStore(
+    useShallow(selector),
+  );
   const nodes = useNodes();
   const edges = useEdges();
   const gc = !disableGarbageCollector &&
@@ -130,6 +144,30 @@ function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
     ? `:${data.arrayElementType}[]`
     : `:${data.klass}`;
   
+  if (data.klass === STRING_KLASS) {
+    return (
+      <>
+        <div className={`object-node__header ${gc ? "gc" : ""}`}>
+          <Handle
+            type="target"
+            isConnectable={!gc}
+            isConnectableStart={false}
+            position={Position.Left}
+          />
+          <div className="object-node__name">{displayName}</div>
+          <div className="spacer-10"></div>
+        </div>
+        <div className={`object-node__body ${gc ? "gc" : ""}`}>
+          <div className="object-node__attribute">
+            <span className="inline-string__quote">&quot;</span>
+            <span className="inline-string__value">{data.literal ?? ""}</span>
+            <span className="inline-string__quote">&quot;</span>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <div className={`object-node__header ${gc ? "gc" : ""}`}>
@@ -154,6 +192,7 @@ function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
             nodeId={id}
             name={name}
             value={value}
+            inlineStrings={inlineStrings}
           />
         ))}
       </div>

@@ -2,7 +2,7 @@ import { useShallow } from "zustand/shallow";
 import useStore from "./storeContext";
 import { RFState } from "./store";
 import { useCallback, useState, useEffect } from "react";
-import { DataType, primitveDataTypes } from "./memory";
+import { DataType, builtInDataTypes } from "./memory";
 import { SimpleInputDialog } from "./SimpleInputDialog";
 
 const selector = (state: RFState) => ({
@@ -40,7 +40,7 @@ export const ConfigView = () => {
 
   // Get available data types: primitives + Array + defined classes
   const availableDataTypes = [
-    ...primitveDataTypes,
+    ...builtInDataTypes,
     "Array",
     ...Object.keys(klasses),
   ];
@@ -433,6 +433,28 @@ export const ConfigView = () => {
               }}
             />
             {t.optionLabels.createNewOnEdgeDrop}
+          </label>
+          <label style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "14px",
+            color: "#374151",
+            cursor: "pointer"
+          }}>
+            <input
+              type="checkbox"
+              checked={options.inlineStrings ?? true}
+              onChange={(e) =>
+                handleOptionChange("inlineStrings", e.target.checked)
+              }
+              style={{
+                width: "16px",
+                height: "16px",
+                cursor: "pointer"
+              }}
+            />
+            {t.optionLabels.inlineStrings}
           </label>
         </div>
       </div>

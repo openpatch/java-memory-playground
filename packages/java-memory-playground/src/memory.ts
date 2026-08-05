@@ -1,13 +1,21 @@
 export const numericDataTypes = ["int", "float", "double", "char"];
 
-export const primitveDataTypes = [
-  "int",
-  "float",
-  "double",
-  "char",
-  "boolean",
-  "String",
-];
+/**
+ * The eight-ish types whose value really is stored in the variable itself.
+ *
+ * `String` is deliberately NOT here: in Java it is a reference type, and a
+ * String value lives on the heap like any other object. Drawing every String as
+ * its own box clutters a diagram whose lesson is elsewhere, so the playground
+ * collapses them by default — but that is a display choice (`options.
+ * inlineStrings`), not a claim about how memory works.
+ */
+export const primitveDataTypes = ["int", "float", "double", "char", "boolean"];
+
+/** The class name of the heap objects that hold String values. */
+export const STRING_KLASS = "String";
+
+/** Types always offered in a type picker, before the user's own classes. */
+export const builtInDataTypes = [...primitveDataTypes, STRING_KLASS];
 
 export type DataType =
   | "int"
@@ -44,6 +52,11 @@ export type Obj = {
     y: number;
   };
   arrayElementType?: DataType; // For arrays, stores the type of elements
+  /**
+   * The characters held by a String object (`klass === STRING_KLASS`), without
+   * surrounding quotes — those are added when rendering.
+   */
+  literal?: string;
 };
 
 export type Variable = {
@@ -99,6 +112,13 @@ export type Memory = {
     hideDeclareGlobalVariable?: boolean;
     hideNewArray?: boolean;
     createNewOnEdgeDrop?: boolean;
+    /**
+     * Draw String values inside the object that references them instead of as
+     * their own heap box. On by default: a diagram about a linked list should
+     * not sprout a box per name. Turn it off to teach that a String is an
+     * object like any other — `==` versus `.equals()`, the string pool.
+     */
+    inlineStrings?: boolean;
   };
   klasses: Klasses;
   objects: Objs;
@@ -112,6 +132,7 @@ export const initialMemory: Memory = {
     hideCallMethod: false,
     hideDeclareGlobalVariable: true,
     hideNewArray: false,
+    inlineStrings: true,
   },
   viewport: {
     x: 0,
@@ -216,14 +237,34 @@ export const initialMemory: Memory = {
       attributes: {
         username: {
           dataType: "String",
-          value: '"mike"',
+          value: "@66",
         },
-        text: { dataType: "String", value: '"Hello World!"' },
+        text: { dataType: "String", value: "@77" },
         isRead: { dataType: "boolean", value: true },
       },
       position: {
         x: 400,
         y: 250,
+      },
+    },
+    // String values are heap objects too. They are collapsed into the object
+    // that references them while `options.inlineStrings` is on.
+    "@66": {
+      klass: STRING_KLASS,
+      literal: "mike",
+      attributes: {},
+      position: {
+        x: 650,
+        y: 250,
+      },
+    },
+    "@77": {
+      klass: STRING_KLASS,
+      literal: "Hello World!",
+      attributes: {},
+      position: {
+        x: 650,
+        y: 330,
       },
     },
   },

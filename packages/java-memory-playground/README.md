@@ -70,6 +70,23 @@ back, and when persistence is on the URL keeps up on its own.
 **Save** is therefore a commit, not a rescue: it is what fires `onChange`, which
 is how a host learns the user considers the diagram finished.
 
+## Strings
+
+A String is a reference type, so a String value lives on the heap like any other
+object. Drawing each one would bury the point of a diagram that is about
+something else, so they are collapsed into their owner by default and rendered
+as an editable field in quotes.
+
+```tsx
+// When the String is the lesson rather than the noise.
+<MemoryPlayground options={{ inlineStrings: false }} />
+```
+
+The collapsing is a display choice: the diagram stores the reference either way,
+and a String value is an `Obj` with `klass === "String"` holding a `literal`.
+Diagrams saved before Strings were modelled this way are converted when read, so
+existing links keep working.
+
 ## Undo and redo
 
 Undo/redo is backed by [zundo](https://github.com/charkour/zundo). Only the

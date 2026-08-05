@@ -22,24 +22,29 @@ describe("getEdgesAndNodes", () => {
     );
   });
 
-  test("draws an edge for every non-primitive reference that is set", () => {
+  test("draws an edge for every reference that is set", () => {
     const { edges } = getEdgesAndNodes(initialMemory);
 
-    // @11.current, @11.first, @33.content and App.main's myList are set;
-    // @33.next, @44.next and @44.content are null and get no edge.
+    // @33.next, @44.next and @44.content are null and get no edge. @55's two
+    // String attributes do get one: a String is a reference, it is only drawn
+    // collapsed.
     expect(edges.map((e) => `${e.source}:${e.sourceHandle}`).sort()).toEqual([
       "1:myList",
       "@11:current",
       "@11:first",
       "@33:content",
+      "@55:username",
+      "@55:text",
     ].sort());
   });
 
   test("does not draw edges for primitive attributes", () => {
     const { edges } = getEdgesAndNodes(initialMemory);
 
-    // @55 is a Message whose attributes are all String/boolean.
-    expect(edges.filter((e) => e.source === "@55")).toHaveLength(0);
+    // isRead is a boolean, so it stays inside the object.
+    expect(
+      edges.filter((e) => e.source === "@55" && e.sourceHandle === "isRead"),
+    ).toHaveLength(0);
   });
 
   test("tolerates a diagram saved without every section", () => {
