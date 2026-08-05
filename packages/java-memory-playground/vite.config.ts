@@ -12,7 +12,7 @@ export default defineConfig({
     cssCodeSplit: false,
     lib: {
       formats: ["es"],
-      entry: resolve(__dirname, "src/index.ts"),
+      entry: resolve(import.meta.dirname, "src/index.ts"),
       fileName: () => "index.js",
     },
     rollupOptions: {

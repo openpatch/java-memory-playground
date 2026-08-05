@@ -147,6 +147,25 @@ describe("createMemoryStore", () => {
       "String",
     ]);
   });
+
+  test("opens a link from before method calls existed", () => {
+    // This diagram has no `methodCalls` key at all. Reading it used to throw
+    // inside the persist merge, which silently dropped the user back to the
+    // default diagram instead of the one they were sent.
+    stubLocation(
+      "#pako:eNq1lk1v2zgQhv9K1rcFWpVDDodkLptbe9iPQxfYSy4URaVqLSuQ5Gyzgf_7jqwPJ5YVJHELw5BEisOXj17OcPVwvWpa38br1SXflrGs6vv-vrpti2rT9A9fiix-5n_qa27I_bqJu3fXq7si_ntb1W3_0ne-CG69H67_VVXJt9C9-W3tmyYO0X4vmmGIb9u6SLft2BO2dR03XWf_1p9VxtJ4fF7UzYlmjnrcuuumOzyemmUTv5-IFapNy3P_lX6Noe_-IzaNvxljTk-nQm6bWG98GffjPnPf5mYftB2netSW9bwPbbt9_Go_8RDvSpCM2uaZN3nunR-m3WOcpO-jLSN82E_l_76_jfPV3vn1tmvebNfr3SPALxrE-ryRzhiRB5sGmynkVRy-x0uDRGWU1w6NDz4TIRtI31ZN0ZnvYCuwiVRGSydRAQoCHHz2HhOSGoQ1ZEkLR7CPcELeHN-kaMEfL12FEdbJXGWZA6IQbI_i2E7H0SY7PQ2WYiDrhJIQyHmDi0gkUoL8pkTUghc-EgGlEqOMQxJaSWddD2Qu8ucBOfFZ3w4kQrAmmBSVRUVpvggEbQdEggJrLKLTExF2DxkJ5FCydQhtj2Qu8ychGffYGwmwbBODcyIQqSzCIgGDJlHaONCK16lBDwC4GdAQsBmk4p-gHsDca08BPNbzTMJ7eKy2LL7FMcsdVjZlukNKfDLqk1-vq1-eH5dNZeowTgqpPoD8INQFiEslnomwsIsIEimsFcIQIuDETEmbWCkEyg6Y1NoMppnZ8XxmX6u3INuejQtejUsrpiKo200OLO-lkZbqMGqDKNGBII09rbl1z6eV10XmX8_rnyJe3MQvbfPb2dzw1dwsmASBtCV0Bu1UvthaieBMLQwKTTRWr0gujaBTlWkTfE4_AlssyzdQ-7htLy5_PZuYeTUxQJewZziVKS0tOTkWfOg2puVcJsFy1dPg-uPTna8Ln65HDFdZ8EhRpWxIh2IseNMZrewRNsfJdn7uOimPZegEgAUKZTjjHhLHe0q0NOQM8JGEu9Dt3p0oEj26KytTTSoPLmRZkD49UllsQlUypqXaOPPJglgjEquQuCaikdZpNdEUmHAZVCiUMHyYALWkdqAc66aPLXar_wFTSdLd",
+    );
+
+    const store = createMemoryStore(true);
+
+    expect(Object.keys(store.getState().klasses)).toEqual([
+      "List",
+      "ListNode",
+      "Message",
+    ]);
+    expect(Object.keys(store.getState().getMemory().objects)).toHaveLength(8);
+    expect(Object.keys(store.getState().getMemory().variables)).toHaveLength(2);
+  });
 });
 
 describe("undo/redo", () => {

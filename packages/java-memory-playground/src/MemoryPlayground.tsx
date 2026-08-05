@@ -2,7 +2,7 @@ import "@xyflow/react/dist/style.css";
 import "./index.css";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useEffect, useMemo } from "react";
-import { shallow } from "zustand/shallow";
+import { useShallow } from "zustand/shallow";
 
 import { ConfigView } from "./ConfigView";
 import { KeyboardShortcuts } from "./KeyboardShortcuts";
@@ -67,7 +67,7 @@ function Playground({
     loadMemory,
     getMemory,
     setDefaultLanguage,
-  } = useStore(selector, shallow);
+  } = useStore(useShallow(selector));
 
   // Serialized so that a host passing an inline object literal does not reload
   // the diagram — and throw away the user's edits — on every render.

@@ -1,4 +1,4 @@
-import { shallow } from "zustand/shallow";
+import { useShallow } from "zustand/shallow";
 import useStore from "./storeContext";
 import { RFState } from "./store";
 import { useCallback, useState, useEffect } from "react";
@@ -22,7 +22,7 @@ export const ConfigView = () => {
     getMemory,
     setRoute,
     t,
-  } = useStore(selector, shallow);
+  } = useStore(useShallow(selector));
 
   const [klasses, setKlasses] = useState(storedKlasses);
   const [options, setOptions] = useState(storedOptions);

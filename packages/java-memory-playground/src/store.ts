@@ -7,6 +7,7 @@ import { persist, StateStorage, createJSONStorage } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
+import { parseMemory } from "./helper";
 import { Memory, initialMemory } from "./memory";
 import { deserializeState, serializeState } from "./serde";
 import {
@@ -251,7 +252,12 @@ export const createMemoryStore = (persistence: boolean = defaultPersistence) => 
         // shared before this refactor still open.
         partialize: (state): any => ({ memory: state.getMemory() }),
         merge: (persisted, current): RFState => {
-          const memory = (persisted as { memory?: Memory } | undefined)?.memory;
+          const stored = (persisted as { memory?: Memory } | undefined)?.memory;
+          // Through parseMemory, because a link may have been written by an
+          // older version that left whole sections out — early diagrams have no
+          // `methodCalls` at all, and reading those raw used to throw in here,
+          // silently dropping the user back to the default diagram.
+          const memory = parseMemory(stored);
           if (!memory) return current;
 
           const { nodes, edges } = getEdgesAndNodes(memory);

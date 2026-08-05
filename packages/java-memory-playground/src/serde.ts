@@ -11,7 +11,9 @@ const pakoSerde = {
   },
   deserialize: (state: string): string => {
     const data = toUint8Array(state);
-    return inflate(data, { to: "string" });
+    // pako 3 renamed the decode option from `{ to: "string" }` to `toText`.
+    // The compressed format is unchanged, so older links still decode.
+    return inflate(data, { toText: true });
   },
 };
 

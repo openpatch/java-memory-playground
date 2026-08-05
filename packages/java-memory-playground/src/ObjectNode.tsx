@@ -13,7 +13,7 @@ import { isConnectedToMethodCall, isConnectedToVariable } from "./utils";
 import { CustomEdgeType, CustomNodeType } from "./types";
 import useStore from "./storeContext";
 import { RFState } from "./store";
-import { shallow } from "zustand/shallow";
+import { useShallow } from "zustand/shallow";
 
 function AttributeHandle({
   name,
@@ -116,7 +116,7 @@ const selector = (state: RFState) => ({
 });
 
 function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
-  const { disableGarbageCollector } = useStore(selector, shallow);
+  const { disableGarbageCollector } = useStore(useShallow(selector));
   const nodes = useNodes();
   const edges = useEdges();
   const gc = !disableGarbageCollector &&

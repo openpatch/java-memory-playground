@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useRef } from "react";
 import type { TemporalState } from "zundo";
-import { useStoreWithEqualityFn } from "zustand/traditional";
+import { useStore as useZustandStore } from "zustand";
 
 import { createMemoryStore, MemoryStore, RFState } from "./store";
 
@@ -14,7 +14,7 @@ export const StoreProvider = ({
   children: ReactNode;
 }) => {
   // Created once per mounted playground, never shared between instances.
-  const storeRef = useRef<MemoryStore>();
+  const storeRef = useRef<MemoryStore | null>(null);
   if (!storeRef.current) {
     storeRef.current = createMemoryStore(persistence);
   }
@@ -29,18 +29,15 @@ export const StoreProvider = ({
 /**
  * Reads from the store of the surrounding `MemoryPlayground`.
  *
- * Mirrors the zustand hook API: pass a selector and an optional equality
- * function.
+ * For a selector that builds an object, wrap it in zustand's `useShallow` so
+ * the component only re-renders when one of the picked values actually changes.
  */
-export function useStore<U>(
-  selector: (state: RFState) => U,
-  equalityFn?: (a: U, b: U) => boolean,
-): U {
+export function useStore<U>(selector: (state: RFState) => U): U {
   const store = useContext(StoreContext);
   if (!store) {
     throw new Error("useStore has to be used inside a MemoryPlayground");
   }
-  return useStoreWithEqualityFn(store, selector, equalityFn);
+  return useZustandStore(store, selector);
 }
 
 /** The raw store instance, for reading or subscribing outside of React. */
@@ -59,10 +56,9 @@ export function useMemoryStore(): MemoryStore {
  */
 export function useTemporalStore<U>(
   selector: (state: TemporalState<Partial<RFState>>) => U,
-  equalityFn?: (a: U, b: U) => boolean,
 ): U {
   const store = useMemoryStore();
-  return useStoreWithEqualityFn(store.temporal, selector, equalityFn);
+  return useZustandStore(store.temporal, selector);
 }
 
 export default useStore;

@@ -15,7 +15,7 @@ import { toPng } from "html-to-image";
 import useStore from "./storeContext";
 import { useUndoRedo } from "./useUndoRedo";
 import { RFState } from "./store";
-import { shallow } from "zustand/shallow";
+import { useShallow } from "zustand/shallow";
 import ObjectNode, { ObjectNodeType } from "./ObjectNode";
 import VariableNode from "./VariableNode";
 import { useCallback, useState, useRef, useMemo } from "react";
@@ -121,7 +121,7 @@ export const MemoryView = () => {
     onEdgesChange,
     save,
     t,
-  } = useStore(selector, shallow);
+  } = useStore(useShallow(selector));
   const { screenToFlowPosition } = useReactFlow();
   const connectingNode = useRef<OnConnectStartParams | null>(null);
   // Scoped to this instance so that exporting works when a page embeds more

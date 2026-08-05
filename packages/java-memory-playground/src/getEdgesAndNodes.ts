@@ -12,7 +12,13 @@ export const getEdgesAndNodes = (
   const nodes: CustomNodeType[] = [];
   const edges: CustomEdgeType[] = [];
 
-  Object.entries(memory.variables).forEach(([id, data]) => {
+  // Diagrams saved by older versions can be missing whole sections — the very
+  // first ones had no `methodCalls` at all — and a shared link must still open.
+  const variables = memory.variables ?? {};
+  const methodCalls = memory.methodCalls ?? {};
+  const objects = memory.objects ?? {};
+
+  Object.entries(variables).forEach(([id, data]) => {
     nodes.push({
       id,
       type: "variable",
@@ -29,7 +35,7 @@ export const getEdgesAndNodes = (
     }
   });
 
-  Object.entries(memory.methodCalls).forEach(([id, data]) => {
+  Object.entries(methodCalls).forEach(([id, data]) => {
     nodes.push({
       id,
       type: "method-call",
@@ -52,7 +58,7 @@ export const getEdgesAndNodes = (
     });
   });
 
-  Object.entries(memory.objects).forEach(([id, data]) => {
+  Object.entries(objects).forEach(([id, data]) => {
     nodes.push({
       id,
       type: "object",

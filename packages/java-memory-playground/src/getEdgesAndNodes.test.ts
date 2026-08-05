@@ -41,6 +41,26 @@ describe("getEdgesAndNodes", () => {
     // @55 is a Message whose attributes are all String/boolean.
     expect(edges.filter((e) => e.source === "@55")).toHaveLength(0);
   });
+
+  test("tolerates a diagram saved without every section", () => {
+    // Links shared by the earliest versions carry no `methodCalls` key at all.
+    const partial = {
+      options: {},
+      viewport: { x: 0, y: 0, zoom: 1 },
+      klasses: { Node: { attributes: { next: "Node" } } },
+      objects: {
+        "@aa": {
+          klass: "Node",
+          attributes: { next: { dataType: "Node" } },
+          position: { x: 0, y: 0 },
+        },
+      },
+      variables: {},
+    } as unknown as Memory;
+
+    expect(() => getEdgesAndNodes(partial)).not.toThrow();
+    expect(getEdgesAndNodes(partial).nodes).toHaveLength(1);
+  });
 });
 
 describe("getMemory", () => {
