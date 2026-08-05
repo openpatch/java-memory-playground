@@ -60,7 +60,9 @@ java-memory-playground {
 | ------------- | --------- | ---------------------------------------------------------------------------------------------- |
 | `memory`      | JSON      | The diagram to show. Any missing section (`klasses`, `objects`, `variables`, `methodCalls`) defaults to empty. |
 | `options`     | JSON      | Overrides for `memory.options`, e.g. `{"hideSidebar":true}`. Applied on top of the options in `memory`. |
+| `language`    | string    | `en`, `de`, or `auto` to follow the browser. Defaults to the browser language.                   |
 | `persistence` | boolean   | Mirror the diagram into `location.hash`. Off by default — an embedded playground should not take over the page URL. |
+| `key-bindings`| JSON      | Overrides for the keyboard shortcuts, e.g. `{"save":{"key":"e","ctrl":true}}`.                   |
 
 Attributes can be updated at any time; setting `memory` again replaces the
 diagram.
@@ -82,11 +84,44 @@ A `change` event fires when the user presses **Save**. `event.detail` is the
 complete memory, in the same shape the `memory` attribute accepts, so it can be
 stored and fed straight back in later.
 
+Edits are never lost in the meantime: the diagram lives in the component's own
+state from the moment it changes. **Save** is a commit — it is how the user tells
+your page that the diagram is finished.
+
 ```javascript
 playground.addEventListener("change", (event) => {
   localStorage.setItem("diagram", JSON.stringify(event.detail));
 });
 ```
+
+## Undo, redo and keyboard shortcuts
+
+The toolbar has undo/redo buttons, and the component listens for:
+
+| Shortcut       | Action                      |
+| -------------- | --------------------------- |
+| `Ctrl/Cmd + S` | Save                        |
+| `Ctrl/Cmd + Z` | Undo                        |
+| `Ctrl/Cmd + Y` | Redo                        |
+| `Ctrl/Cmd + ,` | Toggle the config view      |
+| `Ctrl/Cmd + +` | Zoom in                     |
+| `Ctrl/Cmd + -` | Zoom out                    |
+| `Ctrl/Cmd + 0` | Reset zoom                  |
+| `Shift + 1`    | Fit the diagram to the view |
+
+Shortcuts are ignored while an input has focus. Only diagram edits are undoable,
+and one drag is one undo step.
+
+## Languages
+
+English and German ship with the bundle:
+
+```html
+<java-memory-playground language="de"></java-memory-playground>
+```
+
+Leave the attribute off (or set `auto`) to follow the browser, falling back to
+English for anything unsupported.
 
 ## Several playgrounds on one page
 
@@ -99,5 +134,5 @@ can host as many playgrounds as it needs.
 pnpm build     # writes dist/index.umd.js and dist/index.css
 ```
 
-`index.html` and `multi.html` in this package are demo pages for the built
-bundle — serve the package directory and open them in a browser.
+`index.html`, `multi.html` and `de.html` in this package are demo pages for the
+built bundle — serve the package directory and open them in a browser.

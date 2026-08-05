@@ -15,6 +15,8 @@ Visit **[jmp.openpatch.org](https://jmp.openpatch.org)** to start using the Java
 - **References**: Connect variables to objects with visual reference arrows
 - **Class Definitions**: Define custom classes with attributes
 - **Garbage Collection**: Simulate garbage collection to see which objects would be removed
+- **Undo and Redo**: Step back through your edits, with keyboard shortcuts
+- **English and German**: The interface follows your browser language
 
 ### Saving and Sharing
 
@@ -58,7 +60,7 @@ Besides the hosted app, the playground ships as two packages:
 ```
 
 An embedded playground never touches the URL of its host page, and several of
-them can share a page.
+them can share a page. The UI is available in English and German.
 
 ## For Developers
 
@@ -104,8 +106,11 @@ This is a pnpm workspace.
   - `MemoryPlayground.tsx` - the embeddable entry point (props, change events)
   - `MemoryView.tsx` - main canvas for creating memory diagrams
   - `ConfigView.tsx` - configuration view for defining classes and options
-  - `store.ts` - per-instance state, with opt-in URL persistence
+  - `store.ts` - per-instance state (nodes, edges, classes, options), undo
+    history and opt-in URL persistence
   - `storeContext.tsx` - scopes a store to one playground instance
+  - `translations.ts` - English and German strings
+  - `KeyboardShortcuts.tsx` - keyboard handling
   - `serde.ts` - serialization/deserialization for URL encoding
   - `memory.ts` - type definitions for memory objects
 - `packages/web-component/` - `<java-memory-playground>` custom element (UMD bundle)
@@ -128,6 +133,7 @@ pnpm changeset
 - **@xyflow/react** - Flow diagram rendering
 - **Zustand** - State management
 - **Pako** - Compression for URL encoding
+- **Zundo** - Undo/redo history
 - **@r2wc/react-to-web-component** - React to custom element bridge
 
 ## License

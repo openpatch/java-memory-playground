@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { Memory } from "./memory";
 import { useDnDPosition, useDnD, OnDropAction } from "./useDnD";
+import useStore from "./storeContext";
 
 interface DragGhostProps {
   type: string | null;
@@ -9,18 +10,19 @@ interface DragGhostProps {
 // The DragGhost component is used to display a ghost node when dragging a node into the flow.
 export function DragGhost({ type }: DragGhostProps) {
   const { position } = useDnDPosition();
+  const t = useStore((state) => state.getTranslations());
 
   if (!position) return null;
 
   let className = "sidebar-class";
-  let label = "new " + type;
+  let label = type === "Array" ? t.newArray : t.newInstanceOf(type ?? "");
 
   if (type === "method-call") {
     className = "sidebar-method-call";
-    label = "Call Method";
+    label = t.callMethod;
   } else if (type === "variable") {
     className = "sidebar-variable";
-    label = "Declare Global Variable";
+    label = t.declareGlobalVariable;
   }
 
 
@@ -37,13 +39,16 @@ export function DragGhost({ type }: DragGhostProps) {
 }
 
 export const Sidebar = ({
-  memory,
+  klasses,
+  options,
   onNodeDrop,
 }: {
-  memory: Memory;
+  klasses: Memory["klasses"];
+  options: Memory["options"];
   onNodeDrop: (nodeType: string, offsetX: number, offsetY: number) => void;
 }) => {
   const { onDragStart, isDragging } = useDnD();
+  const t = useStore((state) => state.getTranslations());
   // The type of the node that is being dragged.
   const [type, setType] = useState<string | null>(null);
 
@@ -58,7 +63,7 @@ export const Sidebar = ({
     <>
       {isDragging && <DragGhost type={type} />}
       <aside className="sidebar">
-        {Object.entries(memory.klasses).map(([name]) => (
+        {Object.entries(klasses).map(([name]) => (
           <div
             key={name}
             className="dndnode sidebar-class"
@@ -67,10 +72,10 @@ export const Sidebar = ({
               onDragStart(event, makeOnDropAction(name));
             }}
           >
-            new {name}
+            {t.newInstanceOf(name)}
           </div>
         ))}
-        {!memory.options.hideNewArray && (
+        {!options.hideNewArray && (
           <div
             className="dndnode sidebar-class"
             onPointerDown={(event) => {
@@ -78,10 +83,10 @@ export const Sidebar = ({
               onDragStart(event, makeOnDropAction('Array'));
             }}
           >
-            new Array
+            {t.newArray}
           </div>
         )}
-        {!memory.options.hideDeclareGlobalVariable && (
+        {!options.hideDeclareGlobalVariable && (
           <div
             className="sidebar-variable"
             onPointerDown={(event) => {
@@ -89,10 +94,10 @@ export const Sidebar = ({
               onDragStart(event, makeOnDropAction('variable'));
             }}
           >
-            Declare Global Variable
+            {t.declareGlobalVariable}
           </div>
         )}
-        {!memory.options.hideCallMethod && (
+        {!options.hideCallMethod && (
           <div
             className="sidebar-method-call"
             onPointerDown={(event) => {
@@ -100,7 +105,7 @@ export const Sidebar = ({
               onDragStart(event, makeOnDropAction('method-call'));
             }}
           >
-            Call Method
+            {t.callMethod}
           </div>
         )}
       </aside>

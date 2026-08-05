@@ -112,7 +112,7 @@ export function isObjectNode(node: CustomNodeType): node is ObjectNodeType {
 }
 
 const selector = (state: RFState) => ({
-  ...state.memory.options,
+  ...state.options,
 });
 
 function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {

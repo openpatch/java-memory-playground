@@ -19,7 +19,7 @@ export type DataType =
   | "Array"
   | string;
 
-interface KlassAttributes {
+export interface KlassAttributes {
   [key: string]: DataType;
 }
 
@@ -32,7 +32,7 @@ export type Attribute = {
   value?: string | number | boolean;
 };
 
-interface ObjAttributes {
+export interface ObjAttributes {
   [key: string]: Attribute;
 }
 
@@ -47,7 +47,7 @@ export type Obj = {
 };
 
 export type Variable = {
-  name: String;
+  name: string;
   dataType: DataType;
   value: string | null;
   position: {
@@ -56,7 +56,7 @@ export type Variable = {
   };
 };
 
-interface localVariables {
+export interface localVariables {
   [key: string]: Attribute;
 }
 
@@ -70,19 +70,19 @@ export type MethodCall = {
   };
 };
 
-interface Klasses {
+export interface Klasses {
   [key: string]: Klass;
 }
 
-interface Objs {
+export interface Objs {
   [key: string]: Obj;
 }
 
-interface Variables {
+export interface Variables {
   [key: string]: Variable;
 }
 
-interface MethodCalls {
+export interface MethodCalls {
   [key: number]: MethodCall;
 }
 

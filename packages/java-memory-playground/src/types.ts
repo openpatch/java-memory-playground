@@ -9,3 +9,21 @@ import { ReferenceEdge } from "./ReferenceEdge";
 // `data.label`, which made every setNodes call fail to type check.
 export type CustomNodeType = ObjectNodeType | VariableNode | MethodCallNodeType;
 export type CustomEdgeType = BuiltInEdge | ReferenceEdge;
+
+export interface KeyBinding {
+  key: string;
+  ctrl?: boolean;
+  shift?: boolean;
+  alt?: boolean;
+}
+
+export interface KeyBindings {
+  save: KeyBinding;
+  undo: KeyBinding;
+  redo: KeyBinding;
+  toggleConfig: KeyBinding;
+  zoomIn: KeyBinding;
+  zoomOut: KeyBinding;
+  resetZoom: KeyBinding;
+  fitView: KeyBinding;
+}

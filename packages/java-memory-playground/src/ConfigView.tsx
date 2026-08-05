@@ -6,16 +6,26 @@ import { DataType, primitveDataTypes } from "./memory";
 import { SimpleInputDialog } from "./SimpleInputDialog";
 
 const selector = (state: RFState) => ({
-  updateMemory: state.updateMemory,
-  memory: state.memory,
+  storedKlasses: state.klasses,
+  storedOptions: state.options,
+  loadMemory: state.loadMemory,
+  getMemory: state.getMemory,
   setRoute: state.setRoute,
+  t: state.getTranslations(),
 });
 
 export const ConfigView = () => {
-  const { memory, updateMemory, setRoute } = useStore(selector, shallow);
+  const {
+    storedKlasses,
+    storedOptions,
+    loadMemory,
+    getMemory,
+    setRoute,
+    t,
+  } = useStore(selector, shallow);
 
-  const [klasses, setKlasses] = useState(memory.klasses);
-  const [options, setOptions] = useState(memory.options);
+  const [klasses, setKlasses] = useState(storedKlasses);
+  const [options, setOptions] = useState(storedOptions);
   const [addingAttribute, setAddingAttribute] = useState<string | null>(null);
   const [editingAttribute, setEditingAttribute] = useState<{
     klassName: string;
@@ -37,12 +47,13 @@ export const ConfigView = () => {
 
   // Track changes
   useEffect(() => {
-    const klassesChanged = JSON.stringify(klasses) !== JSON.stringify(memory.klasses);
-    const optionsChanged = JSON.stringify(options) !== JSON.stringify(memory.options);
+    const klassesChanged = JSON.stringify(klasses) !== JSON.stringify(storedKlasses);
+    const optionsChanged = JSON.stringify(options) !== JSON.stringify(storedOptions);
     setHasUnsavedChanges(klassesChanged || optionsChanged);
-  }, [klasses, options, memory.klasses, memory.options]);
+  }, [klasses, options, storedKlasses, storedOptions]);
 
   const onSave = useCallback(() => {
+    const memory = getMemory();
     // Update existing objects to match new class definitions
     const updatedObjects = { ...memory.objects };
 
@@ -79,7 +90,7 @@ export const ConfigView = () => {
       };
     });
 
-    updateMemory({
+    loadMemory({
       ...memory,
       klasses,
       options,
@@ -88,11 +99,11 @@ export const ConfigView = () => {
     setHasUnsavedChanges(false);
     setShowSaveSuccess(true);
     setTimeout(() => setShowSaveSuccess(false), 2000);
-  }, [memory, klasses, options, updateMemory]);
+  }, [getMemory, klasses, options, loadMemory]);
 
   const onView = useCallback(() => {
     if (hasUnsavedChanges) {
-      if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
+      if (window.confirm(t.unsavedChangesLeave)) {
         setRoute("view");
       }
     } else {
@@ -125,7 +136,7 @@ export const ConfigView = () => {
   }, []);
 
   const handleRemoveKlass = useCallback((name: string) => {
-    if (window.confirm(`Are you sure you want to delete class "${name}"?`)) {
+    if (window.confirm(t.confirmDeleteClass(name))) {
       setKlasses((prev) => {
         const newKlasses = { ...prev };
         delete newKlasses[name];
@@ -234,7 +245,7 @@ export const ConfigView = () => {
           color: "#111827",
           fontSize: "24px",
           fontWeight: "600"
-        }}>Configuration</h1>
+        }}>{t.configuration}</h1>
 
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <button
@@ -249,7 +260,7 @@ export const ConfigView = () => {
               borderRadius: "6px",
               cursor: "pointer"
             }}
-          >{hasUnsavedChanges ? "Save" : "Saved"}</button>
+          >{hasUnsavedChanges ? t.save : t.saved}</button>
           <button
             onClick={onView}
             style={{
@@ -262,7 +273,7 @@ export const ConfigView = () => {
               borderRadius: "6px",
               cursor: "pointer"
             }}
-          >View</button>
+          >{t.backToDiagram}</button>
           {showSaveSuccess && (
             <span style={{
               color: "#10b981",
@@ -287,7 +298,7 @@ export const ConfigView = () => {
           color: "#111827",
           fontSize: "18px",
           fontWeight: "600"
-        }}>Options</h2>
+        }}>{t.options}</h2>
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
@@ -313,7 +324,7 @@ export const ConfigView = () => {
                 cursor: "pointer"
               }}
             />
-            Disable Garbage Collector
+            {t.optionLabels.disableGarbageCollector}
           </label>
           <label style={{
             display: "flex",
@@ -333,7 +344,7 @@ export const ConfigView = () => {
                 cursor: "pointer"
               }}
             />
-            Hide Sidebar
+            {t.optionLabels.hideSidebar}
           </label>
           <label style={{
             display: "flex",
@@ -355,7 +366,7 @@ export const ConfigView = () => {
                 cursor: "pointer"
               }}
             />
-            Hide Call Method
+            {t.optionLabels.hideCallMethod}
           </label>
           <label style={{
             display: "flex",
@@ -377,7 +388,7 @@ export const ConfigView = () => {
                 cursor: "pointer"
               }}
             />
-            Hide Declare Global Variable
+            {t.optionLabels.hideDeclareGlobalVariable}
           </label>
           <label style={{
             display: "flex",
@@ -399,7 +410,7 @@ export const ConfigView = () => {
                 cursor: "pointer"
               }}
             />
-            Hide New Array
+            {t.optionLabels.hideNewArray}
           </label>
           <label style={{
             display: "flex",
@@ -421,7 +432,7 @@ export const ConfigView = () => {
                 cursor: "pointer"
               }}
             />
-            Create New On Edge Drop
+            {t.optionLabels.createNewOnEdgeDrop}
           </label>
         </div>
       </div>
@@ -445,7 +456,7 @@ export const ConfigView = () => {
             color: "#111827",
             fontSize: "18px",
             fontWeight: "600"
-          }}>Classes</h2>
+          }}>{t.classes}</h2>
           <button
             onClick={handleAddKlass}
             style={{
@@ -458,7 +469,7 @@ export const ConfigView = () => {
               borderRadius: "6px",
               cursor: "pointer"
             }}
-          >Add Class</button>
+          >{t.addClass}</button>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -559,7 +570,7 @@ export const ConfigView = () => {
                           color: "#374151",
                           fontSize: "13px"
                         }}>
-                          Attribute Name
+                          {t.attributeName}
                         </th>
                         <th style={{
                           padding: "10px 12px",
@@ -568,7 +579,7 @@ export const ConfigView = () => {
                           color: "#374151",
                           fontSize: "13px"
                         }}>
-                          Data Type
+                          {t.dataType}
                         </th>
                         <th style={{
                           padding: "10px 12px",
@@ -702,7 +713,7 @@ export const ConfigView = () => {
                 fontWeight: "500",
                 color: "#374151"
               }}>
-                Attribute Name
+                {t.attributeName}
               </label>
               <input
                 type="text"
@@ -716,7 +727,7 @@ export const ConfigView = () => {
                   fontSize: "14px",
                   boxSizing: "border-box"
                 }}
-                placeholder="Enter attribute name"
+                placeholder={t.attributeName}
                 autoFocus
               />
             </div>
@@ -728,7 +739,7 @@ export const ConfigView = () => {
                 fontWeight: "500",
                 color: "#374151"
               }}>
-                Data Type
+                {t.dataType}
               </label>
               <select
                 value={newAttrType}
@@ -770,7 +781,7 @@ export const ConfigView = () => {
                   borderRadius: "6px",
                   cursor: "pointer"
                 }}
-              >Cancel</button>
+              >{t.cancel}</button>
               <button
                 onClick={handleConfirmAddAttribute}
                 style={{
@@ -783,7 +794,7 @@ export const ConfigView = () => {
                   borderRadius: "6px",
                   cursor: "pointer"
                 }}
-              >Add</button>
+              >{t.addAttribute}</button>
             </div>
           </div>
         </div>
@@ -833,7 +844,7 @@ export const ConfigView = () => {
                 fontWeight: "500",
                 color: "#374151"
               }}>
-                Data Type
+                {t.dataType}
               </label>
               <select
                 value={newAttrType}
@@ -875,7 +886,7 @@ export const ConfigView = () => {
                   borderRadius: "6px",
                   cursor: "pointer"
                 }}
-              >Cancel</button>
+              >{t.cancel}</button>
               <button
                 onClick={handleConfirmEditAttribute}
                 style={{
@@ -888,7 +899,7 @@ export const ConfigView = () => {
                   borderRadius: "6px",
                   cursor: "pointer"
                 }}
-              >Save</button>
+              >{t.save}</button>
             </div>
           </div>
         </div>
@@ -897,9 +908,9 @@ export const ConfigView = () => {
       {/* Add Class Dialog */}
       {showAddClassDialog && (
         <SimpleInputDialog
-          title="Add Class"
-          label="Class Name"
-          placeholder="Enter class name"
+          title={t.addClass}
+          label={t.className}
+          placeholder={t.classNamePlaceholder}
           onConfirm={handleAddKlassConfirm}
           onCancel={() => setShowAddClassDialog(false)}
         />

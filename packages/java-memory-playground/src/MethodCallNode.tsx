@@ -14,6 +14,7 @@ import {
   primitveDataTypes,
 } from "./memory";
 import { CustomEdgeType, CustomNodeType } from "./types";
+import useStore from "./storeContext";
 
 function LocalVariableHandle({
   name,
@@ -144,6 +145,7 @@ function MethodCallNode({
 }: NodeProps<MethodCallNodeType> & { onDeclareVariable?: (nodeId: string) => void }) {
   const { setNodes } = useReactFlow<CustomNodeType, CustomEdgeType>();
   const edges = useEdges<CustomEdgeType>();
+  const t = useStore((state) => state.getTranslations());
 
   const localVariablesEdges = edges.filter((e) => e.source == id);
 
@@ -186,10 +188,10 @@ function MethodCallNode({
             className="method-call-node__declare"
             onClick={handleDeclareLocaleVariable}
           >
-            Declare Local Variable
+            {t.declareLocalVariable}
           </button>
           <button className="method-call-node__return" onClick={handleReturn}>
-            Return
+            {t.returnMethod}
           </button>
         </div>
       </div>

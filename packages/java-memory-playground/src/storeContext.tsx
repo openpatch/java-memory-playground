@@ -1,4 +1,5 @@
 import { createContext, ReactNode, useContext, useRef } from "react";
+import type { TemporalState } from "zundo";
 import { useStoreWithEqualityFn } from "zustand/traditional";
 
 import { createMemoryStore, MemoryStore, RFState } from "./store";
@@ -49,6 +50,19 @@ export function useMemoryStore(): MemoryStore {
     throw new Error("useMemoryStore has to be used inside a MemoryPlayground");
   }
   return store;
+}
+
+/**
+ * Reads the undo/redo history of the surrounding `MemoryPlayground`.
+ *
+ * `undo`, `redo`, `pastStates` and `futureStates` come from zundo.
+ */
+export function useTemporalStore<U>(
+  selector: (state: TemporalState<Partial<RFState>>) => U,
+  equalityFn?: (a: U, b: U) => boolean,
+): U {
+  const store = useMemoryStore();
+  return useStoreWithEqualityFn(store.temporal, selector, equalityFn);
 }
 
 export default useStore;

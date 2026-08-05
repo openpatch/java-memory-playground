@@ -29,6 +29,21 @@
   background: lightgrey;
 }
 
+.java-memory-playground button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.java-memory-playground button:disabled:hover {
+  background: whitesmoke;
+}
+
+.button-icon {
+  min-width: 40px;
+  font-size: 20px;
+  line-height: 1;
+}
+
 .java-memory-playground input {
   display: inline-block;
   border-width: 1px;

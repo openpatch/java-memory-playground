@@ -1,15 +1,17 @@
 import "@xyflow/react/dist/style.css";
 import "./index.css";
 import { ReactFlowProvider } from "@xyflow/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { shallow } from "zustand/shallow";
 
 import { ConfigView } from "./ConfigView";
+import { KeyboardShortcuts } from "./KeyboardShortcuts";
 import { MemoryView } from "./MemoryView";
 import { parseMemory } from "./helper";
 import { Memory } from "./memory";
 import { RFState } from "./store";
 import useStore, { StoreProvider } from "./storeContext";
+import { KeyBindings } from "./types";
 import { DnDProvider } from "./useDnD";
 
 export interface MemoryPlaygroundProps {
@@ -20,16 +22,23 @@ export interface MemoryPlaygroundProps {
    */
   memory?: string | Memory;
   /**
-   * Overrides for `memory.options`, applied on top of the options that come
+   * Overrides for the diagram options, applied on top of the options that come
    * with `memory`. Handy for hiding the sidebar or the garbage collector
    * without rewriting the whole diagram.
    */
   options?: Partial<Memory["options"]>;
   /**
+   * UI language: `"en"`, `"de"`, or `"auto"` to follow the browser. Defaults to
+   * the browser language.
+   */
+  language?: string;
+  /**
    * Mirror the diagram into `location.hash`. Defaults to the value set through
    * `setPersistence`, which is off unless a host opts in.
    */
   persistence?: boolean;
+  /** Overrides for the default keyboard shortcuts. */
+  keyBindings?: Partial<KeyBindings>;
   /**
    * Called with the full memory whenever the user saves. The web component
    * wrapper uses this to dispatch its `change` event.
@@ -39,21 +48,26 @@ export interface MemoryPlaygroundProps {
 
 const selector = (state: RFState) => ({
   route: state.route,
-  memory: state.memory,
-  updateMemory: state.updateMemory,
+  saveCount: state.saveCount,
+  loadMemory: state.loadMemory,
+  getMemory: state.getMemory,
+  setDefaultLanguage: state.setDefaultLanguage,
 });
 
-function Playground({ memory, options, onChange }: MemoryPlaygroundProps) {
+function Playground({
+  memory,
+  options,
+  language,
+  keyBindings,
+  onChange,
+}: MemoryPlaygroundProps) {
   const {
     route,
-    memory: currentMemory,
-    updateMemory,
+    saveCount,
+    loadMemory,
+    getMemory,
+    setDefaultLanguage,
   } = useStore(selector, shallow);
-  // MemoryView copies the memory into local React Flow state on mount, so a new
-  // diagram needs a fresh instance rather than a prop update.
-  const [loadCount, setLoadCount] = useState(0);
-  const loadedFromProps = useRef<Memory | null>(null);
-  const hasMounted = useRef(false);
 
   // Serialized so that a host passing an inline object literal does not reload
   // the diagram — and throw away the user's edits — on every render.
@@ -65,39 +79,36 @@ function Playground({ memory, options, onChange }: MemoryPlaygroundProps) {
   const optionsKey = useMemo(() => JSON.stringify(options ?? null), [options]);
 
   useEffect(() => {
+    setDefaultLanguage(language ?? "auto");
+  }, [language, setDefaultLanguage]);
+
+  useEffect(() => {
     const parsed = parseMemory(memory);
     if (!parsed && !options) return;
 
-    const base = parsed ?? currentMemory;
-    const merged: Memory = options
-      ? { ...base, options: { ...base.options, ...options } }
-      : base;
-
-    loadedFromProps.current = merged;
-    updateMemory(merged);
-    setLoadCount((c) => c + 1);
-    // currentMemory is deliberately not a dependency: this effect loads the
-    // diagram from the props, it must not re-run on the user's own edits.
+    const base = parsed ?? getMemory();
+    loadMemory(
+      options ? { ...base, options: { ...base.options, ...options } } : base,
+    );
+    // getMemory is only read here, so it is not a dependency: this effect loads
+    // the diagram from the props, it must not re-run on the user's own edits.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [memoryKey, optionsKey, updateMemory]);
+  }, [memoryKey, optionsKey, loadMemory]);
 
   useEffect(() => {
-    // Mounting is not a change. Without this the host would receive an event
-    // carrying the default diagram before its own `memory` was even applied.
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      return;
-    }
-    // Do not echo a prop back to the host as if the user had changed it.
-    if (loadedFromProps.current === currentMemory) return;
-
-    onChange?.(currentMemory);
-  }, [currentMemory, onChange]);
+    // saveCount starts at 0 and is only ever bumped by the Save button, so this
+    // fires exactly when the user commits — never on mount.
+    if (saveCount === 0) return;
+    onChange?.(getMemory());
+    // getMemory is read at save time; it is not what triggers the effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saveCount, onChange]);
 
   return (
     <div className="java-memory-playground">
       <DnDProvider>
-        {route === "view" && <MemoryView key={loadCount} />}
+        <KeyboardShortcuts keyBindings={keyBindings} />
+        {route === "view" && <MemoryView />}
         {route === "config" && <ConfigView />}
       </DnDProvider>
     </div>

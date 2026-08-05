@@ -38,6 +38,7 @@ export function Example() {
           },
         }}
         options={{ hideSidebar: true }}
+        language="de"
         onChange={(memory) => console.log(memory)}
       />
     </div>
@@ -47,15 +48,69 @@ export function Example() {
 
 ## Props
 
-| Prop          | Type                        | Description                                                                                  |
-| ------------- | --------------------------- | -------------------------------------------------------------------------------------------- |
-| `memory`      | `Memory \| string`          | The diagram, as an object or a JSON string. Omit it to keep whatever the store already holds. |
-| `options`     | `Partial<Memory["options"]>`| Overrides applied on top of `memory.options`.                                                 |
-| `persistence` | `boolean`                   | Mirror the diagram into `location.hash`. Defaults to the value set through `setPersistence`.  |
-| `onChange`    | `(memory: Memory) => void`  | Called when the user presses **Save**.                                                        |
+| Prop          | Type                         | Description                                                                                  |
+| ------------- | ---------------------------- | -------------------------------------------------------------------------------------------- |
+| `memory`      | `Memory \| string`           | The diagram, as an object or a JSON string. Omit it to keep whatever the store already holds. |
+| `options`     | `Partial<Memory["options"]>` | Overrides applied on top of `memory.options`.                                                 |
+| `language`    | `string`                     | `"en"`, `"de"`, or `"auto"` to follow the browser. Defaults to the browser language.          |
+| `persistence` | `boolean`                    | Mirror the diagram into `location.hash`. Defaults to the value set through `setPersistence`.  |
+| `keyBindings` | `Partial<KeyBindings>`       | Overrides for the default keyboard shortcuts.                                                 |
+| `onChange`    | `(memory: Memory) => void`   | Called when the user presses **Save**.                                                        |
 
 Every `MemoryPlayground` creates its own store, so several playgrounds can live
 on the same page without sharing state.
+
+## State and saving
+
+The diagram lives in the playground's store, not in React Flow's local state.
+Every edit — dragging a node, connecting a reference, editing an attribute — is
+in the store immediately, so nothing is lost by switching to the config view and
+back, and when persistence is on the URL keeps up on its own.
+
+**Save** is therefore a commit, not a rescue: it is what fires `onChange`, which
+is how a host learns the user considers the diagram finished.
+
+## Undo and redo
+
+Undo/redo is backed by [zundo](https://github.com/charkour/zundo). Only the
+diagram is undoable — opening a dialog, selecting a node or switching views does
+not consume a step, and a single drag is one step rather than one per pixel.
+
+```tsx
+import { useUndoRedo } from "@openpatch/java-memory-playground";
+
+// Inside a MemoryPlayground subtree:
+const { undo, redo, canUndo, canRedo, clear } = useUndoRedo();
+```
+
+## Keyboard shortcuts
+
+| Shortcut       | Action                     |
+| -------------- | -------------------------- |
+| `Ctrl/Cmd + S` | Save                       |
+| `Ctrl/Cmd + Z` | Undo                       |
+| `Ctrl/Cmd + Y` | Redo                       |
+| `Ctrl/Cmd + ,` | Toggle the config view     |
+| `Ctrl/Cmd + +` | Zoom in                    |
+| `Ctrl/Cmd + -` | Zoom out                   |
+| `Ctrl/Cmd + 0` | Reset zoom                 |
+| `Shift + 1`    | Fit the diagram to the view |
+
+Shortcuts are ignored while an input has focus. Override any of them with
+`keyBindings`:
+
+```tsx
+<MemoryPlayground keyBindings={{ save: { key: "e", ctrl: true } }} />
+```
+
+## Languages
+
+English and German ship with the package. `language="auto"` (the default) picks
+the browser language and falls back to English.
+
+```tsx
+import { translations, getTranslations } from "@openpatch/java-memory-playground";
+```
 
 ## URL persistence
 
@@ -70,7 +125,8 @@ import { setPersistence } from "@openpatch/java-memory-playground";
 setPersistence(true);
 ```
 
-Or per instance with the `persistence` prop.
+Or per instance with the `persistence` prop. Writes are throttled and use
+`history.replaceState`, so continuous syncing does not fill up the back button.
 
 ## Development
 

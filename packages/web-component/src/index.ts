@@ -14,7 +14,9 @@ const MemoryPlaygroundWC = r2wc(MemoryPlayground, {
   props: {
     memory: "string",
     options: "json",
+    language: "string",
     persistence: "boolean",
+    keyBindings: "json",
   },
   // r2wc keys events by prop name: it passes an `onChange` prop that dispatches
   // a `change` CustomEvent on this element, with the memory as `detail`.

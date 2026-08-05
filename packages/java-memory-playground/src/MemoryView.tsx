@@ -3,8 +3,6 @@ import {
   Controls,
   Background,
   Panel,
-  useNodesState,
-  useEdgesState,
   addEdge,
   OnConnectStart,
   OnConnectEnd,
@@ -15,9 +13,9 @@ import {
 } from "@xyflow/react";
 import { toPng } from "html-to-image";
 import useStore from "./storeContext";
+import { useUndoRedo } from "./useUndoRedo";
 import { RFState } from "./store";
 import { shallow } from "zustand/shallow";
-import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 import ObjectNode, { ObjectNodeType } from "./ObjectNode";
 import VariableNode from "./VariableNode";
 import { useCallback, useState, useRef, useMemo } from "react";
@@ -43,10 +41,18 @@ import { SimpleInputDialog } from "./SimpleInputDialog";
 
 const selector = (state: RFState) => ({
   selectedNodeId: state.selectedNodeId,
-  updateMemory: state.updateMemory,
-  memory: state.memory,
+  klasses: state.klasses,
+  options: state.options,
   setRoute: state.setRoute,
   persistence: state.persistence,
+  nodes: state.nodes,
+  edges: state.edges,
+  setNodes: state.setNodes,
+  setEdges: state.setEdges,
+  onNodesChange: state.onNodesChange,
+  onEdgesChange: state.onEdgesChange,
+  save: state.save,
+  t: state.getTranslations(),
 });
 
 const edgeTypes = {
@@ -102,19 +108,28 @@ const getRanMemoryAdress = (size: number): string => {
 };
 
 export const MemoryView = () => {
-  const { memory, updateMemory, setRoute, persistence } = useStore(
-    selector,
-    shallow
-  );
+  const {
+    klasses,
+    options,
+    setRoute,
+    persistence,
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    onNodesChange,
+    onEdgesChange,
+    save,
+    t,
+  } = useStore(selector, shallow);
   const { screenToFlowPosition } = useReactFlow();
-  const { edges: initialEdges, nodes: initialNodes } = getEdgesAndNodes(memory);
   const connectingNode = useRef<OnConnectStartParams | null>(null);
   // Scoped to this instance so that exporting works when a page embeds more
   // than one playground.
   const flowRef = useRef<HTMLDivElement>(null);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const { undo, redo, canUndo, canRedo } = useUndoRedo();
+
   const nodeIds: string[] = nodes.map((n) => n.id);
 
   // Array creation dialog state
@@ -209,7 +224,7 @@ export const MemoryView = () => {
 
   // Get available types for arrays: primitives + defined classes
   const getAvailableTypes = (): DataType[] => {
-    return [...primitveDataTypes, ...Object.keys(memory.klasses)];
+    return [...primitveDataTypes, ...Object.keys(klasses)];
   };
 
   // Handler for declaring local variables
@@ -260,7 +275,7 @@ export const MemoryView = () => {
 
   const onConnectEnd = useCallback<OnConnectEnd>(
     (event, connectionState) => {
-      if (!connectingNode.current || !memory.options.createNewOnEdgeDrop)
+      if (!connectingNode.current || !options.createNewOnEdgeDrop)
         return;
       if (!connectionState.isValid) {
         const node = nodes.find((n) => n.id == connectingNode.current?.nodeId);
@@ -278,12 +293,12 @@ export const MemoryView = () => {
             klassName = elementAttribute.dataType;
           } else {
             // For regular objects, look up the type from the class definition
-            const objKlass = memory.klasses[objNode.data["klass"]];
+            const objKlass = klasses[objNode.data["klass"]];
             if (!objKlass) return;
             klassName = objKlass.attributes[connectingNode.current.handleId || ""];
           }
 
-          const klass = memory.klasses[klassName];
+          const klass = klasses[klassName];
 
           const { clientX, clientY } =
             'changedTouches' in event ? event.changedTouches[0] : event;
@@ -391,7 +406,7 @@ export const MemoryView = () => {
       }
       connectingNode.current = null;
     },
-    [nodes, memory, setNodes, setEdges]
+    [nodes, klasses, options, setNodes, setEdges]
   );
 
   const onGC = () => {
@@ -406,15 +421,7 @@ export const MemoryView = () => {
   };
 
   const onConfig = () => {
-    onSaveURL();
     setRoute("config");
-  };
-
-  const onSaveURL = () => {
-    updateMemory({
-      ...memory,
-      ...getMemory(edges, nodes),
-    });
   };
 
   const onDownloadPng = () => {
@@ -442,12 +449,12 @@ export const MemoryView = () => {
   };
 
   const createNodeAtPosition = (type: string, position: { x: number; y: number }) => {
-    const k = memory.klasses[type];
+    const k = klasses[type];
 
     if (type == "method-call") {
       showSimpleInputDialog(
-        "Create Method Call",
-        "Method Name",
+        t.createMethodCall,
+        t.methodName,
         (name) => {
           const index = nodes.filter((n) => n.type === "method-call").length;
           const newNode: CustomNodeType = {
@@ -468,7 +475,7 @@ export const MemoryView = () => {
           };
           setNodes((nds) => nds.concat(newNode));
         },
-        "Enter method name"
+        t.methodNamePlaceholder
       );
       return;
     }
@@ -563,8 +570,8 @@ export const MemoryView = () => {
       }
 
       showSimpleInputDialog(
-        `Create ${type}`,
-        "Object Name",
+        t.createObject(type),
+        t.objectName,
         (name) => {
           let objAttributes = createAttributesForObject(k?.attributes || {});
 
@@ -628,12 +635,12 @@ export const MemoryView = () => {
             setEdges((egs) => egs.concat(newEdge));
           }
         },
-        `Enter name for ${type}`
+        t.variableNamePlaceholder
       );
     } else if (type == "variable") {
       showSimpleInputDialog(
-        "Create Global Variable",
-        "Variable Name",
+        t.createGlobalVariable,
+        t.variableName,
         (name) => {
           const newNode: CustomNodeType = {
             id: getId(),
@@ -643,7 +650,7 @@ export const MemoryView = () => {
           };
           setNodes((nds) => nds.concat(newNode));
         },
-        "Enter variable name"
+        t.variableNamePlaceholder
       );
     }
   };
@@ -656,13 +663,13 @@ export const MemoryView = () => {
 
   return (
     <div className="memory-view">
-      {!memory.options.hideSidebar && <Sidebar memory={memory} onNodeDrop={onNodeDrop} />}
+      {!options.hideSidebar && <Sidebar klasses={klasses} options={options} onNodeDrop={onNodeDrop} />}
       <ReactFlow
         ref={flowRef}
         className="memory"
         nodes={nodes.map((n) => {
           n.className = "";
-          n.deletable = memory.options.disableGarbageCollector;
+          n.deletable = options.disableGarbageCollector;
           if (
             previousMethodCall !== undefined &&
             isConnectedTo(n.id, previousMethodCall.id, nodes, edges)
@@ -726,17 +733,33 @@ export const MemoryView = () => {
       >
         <Panel position="top-right">
           <div className="button-group">
-            <button onClick={onSaveURL}>
-              {persistence ? "Save (URL)" : "Save"}
+            <button
+              className="button-icon"
+              onClick={undo}
+              disabled={!canUndo}
+              title={t.undo}
+              aria-label={t.undo}
+            >
+              ↶
             </button>
-            <button onClick={onDownloadPng}>Download (PNG)</button>
-            <button onClick={onConfig}>Config</button>
+            <button
+              className="button-icon"
+              onClick={redo}
+              disabled={!canRedo}
+              title={t.redo}
+              aria-label={t.redo}
+            >
+              ↷
+            </button>
+            <button onClick={save}>{persistence ? t.saveUrl : t.save}</button>
+            <button onClick={onDownloadPng}>{t.downloadPng}</button>
+            <button onClick={onConfig}>{t.config}</button>
           </div>
         </Panel>
-        {!memory.options.disableGarbageCollector && <Panel position="bottom-right">
+        {!options.disableGarbageCollector && <Panel position="bottom-right">
           <div className="button-group">
             <button className="button-gc" onClick={onGC}>
-              Run Garbage Collector
+              {t.runGarbageCollector}
             </button>
           </div>
         </Panel>}
@@ -775,9 +798,9 @@ export const MemoryView = () => {
       )}
       {showLocalVarDialog && (
         <SimpleInputDialog
-          title="Declare Local Variable"
-          label="Variable Name"
-          placeholder="Enter variable name"
+          title={t.declareLocalVariableTitle}
+          label={t.variableName}
+          placeholder={t.variableNamePlaceholder}
           onConfirm={handleLocalVarDialogConfirm}
           onCancel={() => {
             setShowLocalVarDialog(false);
