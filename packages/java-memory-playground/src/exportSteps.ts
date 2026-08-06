@@ -1,12 +1,7 @@
+import { getNodesBounds, getViewportForBounds } from "@xyflow/react";
 import { toPng } from "html-to-image";
 
-/** Chrome that belongs to the editor rather than to the diagram. */
-export const excludeChrome = (node: HTMLElement) =>
-  !(
-    node?.classList?.contains("react-flow__minimap") ||
-    node?.classList?.contains("react-flow__controls") ||
-    node?.classList?.contains("button-group")
-  );
+import { CustomNodeType } from "./types";
 
 const loadImage = (src: string) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
@@ -23,8 +18,48 @@ const download = (dataUrl: string, name: string) => {
   a.click();
 };
 
-export const downloadStep = async (element: HTMLElement, name: string) => {
-  download(await toPng(element, { filter: excludeChrome }), name);
+/**
+ * A picture of the diagram alone.
+ *
+ * Photographing the whole canvas loses the references: React Flow keeps them in
+ * a transformed container that measures 0x0, which html-to-image drops. So the
+ * viewport is captured instead, framed to the nodes — which also crops away the
+ * empty canvas and every floating panel, none of which belong in a diagram.
+ */
+export const captureDiagram = async (
+  flowElement: HTMLElement,
+  nodes: CustomNodeType[],
+): Promise<string | null> => {
+  const viewport = flowElement.querySelector<HTMLElement>(
+    ".react-flow__viewport",
+  );
+  if (!viewport || nodes.length === 0) return null;
+
+  const bounds = getNodesBounds(nodes);
+  const margin = 40;
+  const width = Math.ceil(bounds.width) + margin * 2;
+  const height = Math.ceil(bounds.height) + margin * 2;
+  const framed = getViewportForBounds(bounds, width, height, 0.2, 4, 0.1);
+
+  return toPng(viewport, {
+    backgroundColor: "#ffffff",
+    width,
+    height,
+    style: {
+      width: `${width}px`,
+      height: `${height}px`,
+      transform: `translate(${framed.x}px, ${framed.y}px) scale(${framed.zoom})`,
+    },
+  });
+};
+
+export const downloadStep = async (
+  flowElement: HTMLElement,
+  nodes: CustomNodeType[],
+  name: string,
+) => {
+  const dataUrl = await captureDiagram(flowElement, nodes);
+  if (dataUrl) download(dataUrl, name);
 };
 
 /**
@@ -34,29 +69,35 @@ export const downloadStep = async (element: HTMLElement, name: string) => {
  * exporting the step on screen gives you.
  */
 export const downloadAllSteps = async ({
-  element,
+  flowElement,
   stepCount,
   labelFor,
   showStep,
+  nodesNow,
   fileName = "java-memory-playground.png",
 }: {
-  element: HTMLElement;
+  flowElement: HTMLElement;
   stepCount: number;
   labelFor: (index: number) => string;
-  /** Puts a step on screen and resolves once it has been drawn. */
+  /** Puts a step on screen and resolves once it has been drawn and measured. */
   showStep: (index: number) => Promise<void>;
+  /** The nodes of the step now on screen, measured. */
+  nodesNow: () => CustomNodeType[];
   fileName?: string;
 }) => {
   const shots: { image: HTMLImageElement; caption: string }[] = [];
 
   for (let i = 0; i < stepCount; i++) {
     await showStep(i);
-    const dataUrl = await toPng(element, { filter: excludeChrome });
+    const dataUrl = await captureDiagram(flowElement, nodesNow());
+    if (!dataUrl) continue;
     shots.push({
       image: await loadImage(dataUrl),
       caption: `${i + 1}/${stepCount}${labelFor(i) ? ` — ${labelFor(i)}` : ""}`,
     });
   }
+
+  if (shots.length === 0) return;
 
   const captionHeight = 44;
   const gap = 12;

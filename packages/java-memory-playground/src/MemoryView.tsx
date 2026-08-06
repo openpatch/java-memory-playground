@@ -12,7 +12,7 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { downloadAllSteps, downloadStep } from "./exportSteps";
-import useStore from "./storeContext";
+import useStore, { useMemoryStore } from "./storeContext";
 import { useUndoRedo } from "./useUndoRedo";
 import { RFState } from "./store";
 import { useShallow } from "zustand/shallow";
@@ -120,6 +120,7 @@ export const MemoryView = () => {
     t,
   } = useStore(useShallow(selector));
   const { screenToFlowPosition } = useReactFlow();
+  const store = useMemoryStore();
   const connectingNode = useRef<OnConnectStartParams | null>(null);
   // Scoped to this instance so that exporting works when a page embeds more
   // than one playground.
@@ -411,21 +412,22 @@ export const MemoryView = () => {
 
   const onDownloadPng = () => {
     if (!flowRef.current) return;
-    downloadStep(flowRef.current, "java-memory-playground.png");
+    downloadStep(flowRef.current, nodes, "java-memory-playground.png");
   };
 
   const onDownloadAllPng = async () => {
     if (!flowRef.current) return;
     const back = currentStep;
     await downloadAllSteps({
-      element: flowRef.current,
+      flowElement: flowRef.current,
       stepCount: steps.length,
       labelFor: (i) => steps[i]?.label ?? "",
       showStep: async (i) => {
         goToStep(i);
-        // Let the step render before it is photographed.
+        // Let the step render and be measured before it is photographed.
         await new Promise((resolve) => setTimeout(resolve, 320));
       },
+      nodesNow: () => store.getState().getNodes(),
     });
     goToStep(back);
   };
@@ -697,7 +699,6 @@ export const MemoryView = () => {
 
   return (
     <div className="memory-view">
-      {!options.hideSidebar && <Sidebar klasses={klasses} options={options} onNodeDrop={onNodeDrop} />}
       <ReactFlow
         ref={flowRef}
         className="memory"
@@ -752,6 +753,15 @@ export const MemoryView = () => {
         edgeTypes={edgeTypes}
         minZoom={0.1}
       >
+        {!options.hideSidebar && (
+          <Panel position="top-left">
+            <Sidebar
+              klasses={klasses}
+              options={options}
+              onNodeDrop={onNodeDrop}
+            />
+          </Panel>
+        )}
         <Panel position="top-right">
           <div className="button-group">
             <button

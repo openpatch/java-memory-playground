@@ -67,14 +67,20 @@
   height: 100%;
 }
 
+/* The palette floats over the canvas like the other controls rather than
+   taking a column out of it, so a small embed keeps its width for the diagram. */
 .sidebar {
-  width: 200px;
+  width: 170px;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   gap: 8px;
-  border-right: 4px solid #000;
   padding: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
+  /* Never taller than the canvas: a class-heavy diagram scrolls instead. */
+  max-height: calc(100% - 30px);
+  overflow-y: auto;
 }
 
 .sidebar-class {

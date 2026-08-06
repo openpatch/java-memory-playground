@@ -200,7 +200,8 @@ const { undo, redo, canUndo, canRedo, clear } = useUndoRedo();
 
 **Download all steps** writes one image with every step under its label, which
 is what a worksheet wants — exporting the step on screen gives you the last
-picture instead.
+picture instead. Both exports capture the diagram framed to its nodes, so the
+empty canvas and the floating panels stay out of the picture.
 
 Shortcuts are ignored while an input has focus. Override any of them with
 `keyBindings`:
