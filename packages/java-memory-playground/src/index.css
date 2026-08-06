@@ -50,9 +50,15 @@
 }
 
 .button-icon {
-  min-width: 40px;
-  font-size: 20px;
+  min-width: 32px;
+  font-size: 16px;
   line-height: 1;
+}
+
+/* Every control in the bottom bar is the same height, so a row of them reads
+   as a row rather than as a skyline. */
+.bottom-bar button {
+  min-height: 26px;
 }
 
 .java-memory-playground input {
@@ -282,9 +288,17 @@
   opacity: 0.7;
 }
 
-.button-gc {
+/* The collector wears the colour the diagram uses for garbage, which is what
+   sets it apart from the step controls beside it in the bottom bar.
+   Scoped through the container because `.java-memory-playground button` is
+   one class plus one type, and beat a bare `.button-gc`. */
+.java-memory-playground button.button-gc {
   color: #000;
   background: #ff9c9c;
+}
+
+.java-memory-playground button.button-gc:hover {
+  background: #ff8080;
 }
 
 .object-node__body.gc {
@@ -411,14 +425,30 @@ path.react-flow__edge-path:hover {
 }
 
 /* Everything pinned along the bottom, in one row that wraps rather than two
-   panels that slide over each other when the canvas gets narrow. */
+   panels that slide over each other when the canvas gets narrow.
+   One card rather than two: side by side, two cards of their own sat at
+   different heights with a hairline between them. */
 .bottom-bar {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: var(--jmp-space);
+  gap: var(--jmp-space) var(--jmp-space-lg);
   max-width: 100%;
+  padding: var(--jmp-space);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--jmp-radius);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
+}
+
+/* The groups inside it are not cards of their own. `.step-bar` keeps its own
+   styling for anyone rendering it outside the bar. */
+.bottom-bar .step-bar,
+.bottom-bar .gc-panel {
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .step-bar {
