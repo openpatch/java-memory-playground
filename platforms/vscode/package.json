@@ -1,0 +1,125 @@
+{
+  "name": "java-memory-playground-studio",
+  "displayName": "Java Memory Playground Studio",
+  "description": "Visual editor for .jmp files — diagrams of the Java stack and heap",
+  "version": "0.1.0",
+  "publisher": "openpatch",
+  "author": "Mike Barkmin",
+  "license": "MIT",
+  "private": true,
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openpatch/java-memory-playground.git",
+    "directory": "platforms/vscode"
+  },
+  "keywords": [
+    "java",
+    "memory",
+    "stack",
+    "heap",
+    "education",
+    "visual-editor"
+  ],
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Visualization",
+    "Education"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "browser": "./dist/extension.js",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "jmp.editor",
+        "displayName": "Java Memory Playground",
+        "selector": [
+          {
+            "filenamePattern": "*.jmp",
+            "scheme": "file"
+          },
+          {
+            "filenamePattern": "*.jmp",
+            "scheme": "untitled"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "languages": [
+      {
+        "id": "jmp",
+        "extensions": [
+          ".jmp"
+        ],
+        "aliases": [
+          "Java Memory Playground"
+        ],
+        "icon": {
+          "light": "./icon.png",
+          "dark": "./icon.png"
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "jmp.new",
+        "title": "New Diagram",
+        "category": "Java Memory Playground"
+      },
+      {
+        "command": "jmp.showSource",
+        "title": "Show Source",
+        "category": "Java Memory Playground"
+      },
+      {
+        "command": "jmp.showDiagram",
+        "title": "Show Diagram",
+        "category": "Java Memory Playground"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "jmp.showSource",
+          "when": "activeCustomEditorId == jmp.editor",
+          "group": "navigation"
+        },
+        {
+          "command": "jmp.showDiagram",
+          "when": "resourceExtname == .jmp && activeCustomEditorId != jmp.editor",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node ../../scripts/build-vscode.mjs",
+    "lint": "tsc --noEmit",
+    "watch": "node ../../scripts/build-vscode.mjs --watch",
+    "vscode:package": "vsce package",
+    "vscode:publish": "vsce publish --packagePath $(find . -iname *.vsix)",
+    "ovsx:publish": "ovsx publish $(find . -iname *.vsix)"
+  },
+  "dependencies": {
+    "@openpatch/java-memory-playground": "workspace:*",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/vscode": "^1.80.0",
+    "@vscode/vsce": "^3.2.1",
+    "ovsx": "^0.10.6",
+    "typescript": "^7.0.2"
+  },
+  "vsce": {
+    "dependencies": false,
+    "skipDuplicate": true
+  }
+}

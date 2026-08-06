@@ -10,7 +10,7 @@ import { MemoryView } from "./MemoryView";
 import { parseMemory } from "./helper";
 import { Memory } from "./memory";
 import { PlaygroundMode, RFState } from "./store";
-import useStore, { StoreProvider } from "./storeContext";
+import useStore, { StoreProvider, useMemoryStore } from "./storeContext";
 import { KeyBindings } from "./types";
 import { DnDProvider } from "./useDnD";
 
@@ -58,6 +58,17 @@ export interface MemoryPlaygroundProps {
    * wrapper uses this to dispatch its `change` event.
    */
   onChange?: (memory: Memory) => void;
+  /**
+   * Called with the full memory on every edit — each drag, each value typed —
+   * rather than only when the user saves.
+   *
+   * A host that owns the file and has a save of its own, like an editor with a
+   * dirty marker, needs to hear about edits as they happen; a host that only
+   * wants the finished diagram wants `onChange`. Loading a new `memory` prop is
+   * not an edit, and neither is panning or zooming, though the viewport is
+   * written along with the next real edit.
+   */
+  onEdit?: (memory: Memory) => void;
 }
 
 const selector = (state: RFState) => ({
@@ -78,6 +89,7 @@ function Playground({
   keyBindings,
   step,
   onChange,
+  onEdit,
   onStepChange,
 }: MemoryPlaygroundProps) {
   const {
@@ -90,6 +102,43 @@ function Playground({
     getMemory,
     setDefaultLanguage,
   } = useStore(useShallow(selector));
+
+  const store = useMemoryStore();
+  const loadingFromProps = useRef(false);
+  /** The diagram as it was when `onEdit` last ran, serialized. */
+  const lastReported = useRef<string | null>(null);
+
+  // Held in a ref so that a host passing an inline arrow does not resubscribe
+  // on every render.
+  const onEditRef = useRef(onEdit);
+  onEditRef.current = onEdit;
+
+  useEffect(
+    () =>
+      store.subscribe((state, previous) => {
+        if (loadingFromProps.current) return;
+        // Selection, the current step and the viewport all move without the
+        // diagram changing, so the cheap check comes first.
+        if (
+          state.steps === previous.steps &&
+          state.klasses === previous.klasses &&
+          state.options === previous.options
+        ) {
+          return;
+        }
+
+        // React Flow writes measurements back through `onNodesChange` as it
+        // mounts, which replaces `steps` without changing the diagram. Only
+        // what would actually be written to a file counts as an edit.
+        const memory = getMemory();
+        const serialized = JSON.stringify(memory);
+        if (serialized === lastReported.current) return;
+        lastReported.current = serialized;
+
+        onEditRef.current?.(memory);
+      }),
+    [store, getMemory],
+  );
 
   // Serialized so that a host passing an inline object literal does not reload
   // the diagram — and throw away the user's edits — on every render.
@@ -109,9 +158,19 @@ function Playground({
     if (!parsed && !options) return;
 
     const base = parsed ?? getMemory();
-    loadMemory(
-      options ? { ...base, options: { ...base.options, ...options } } : base,
-    );
+    // Reading the diagram back out of the props is not the user editing it, and
+    // `subscribe` runs inside `set`, so the flag only has to survive this call.
+    loadingFromProps.current = true;
+    try {
+      loadMemory(
+        options ? { ...base, options: { ...base.options, ...options } } : base,
+      );
+      // The baseline an edit is measured against, so that the normalising
+      // `loadMemory` does itself is not reported back as the user's doing.
+      lastReported.current = JSON.stringify(getMemory());
+    } finally {
+      loadingFromProps.current = false;
+    }
     // getMemory is only read here, so it is not a dependency: this effect loads
     // the diagram from the props, it must not re-run on the user's own edits.
     // eslint-disable-next-line react-hooks/exhaustive-deps

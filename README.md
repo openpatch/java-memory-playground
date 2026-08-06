@@ -52,6 +52,14 @@ There are two elements: `<java-memory-playground>` for students, and
 `<java-memory-playground-editor>` for teachers, which adds class configuration
 and step authoring on top.
 
+## In VS Code
+
+`.jmp` files open as the diagram rather than as JSON
+(see [platforms/vscode](platforms/vscode)). A `.jmp` file is the same JSON the
+playground puts in a shared link, so a diagram moves between the app, an
+embedded playground and the editor unchanged — and being a plain text file, it
+diffs and reviews like the code it illustrates.
+
 ```html
 <java-memory-playground id="playground"></java-memory-playground>
 
@@ -125,6 +133,7 @@ This is a pnpm workspace.
   - `memory.ts` - type definitions for memory objects
 - `packages/web-component/` - `<java-memory-playground>` custom element (UMD bundle)
 - `platforms/web/` - the standalone app served at jmp.openpatch.org
+- `platforms/vscode/` - the VS Code editor for `.jmp` files
 
 ### Releasing
 

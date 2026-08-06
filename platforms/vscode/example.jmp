@@ -1,0 +1,51 @@
+{
+  "viewport": { "x": 0, "y": 0, "zoom": 1 },
+  "options": {},
+  "klasses": {
+    "Node": {
+      "attributes": {
+        "value": "int",
+        "next": "Node"
+      }
+    }
+  },
+  "steps": [
+    {
+      "label": "an empty list",
+      "objects": {},
+      "variables": {},
+      "methodCalls": {
+        "1": {
+          "name": "App.main",
+          "index": 0,
+          "localVariables": { "head": { "dataType": "Node" } },
+          "position": { "x": 0, "y": 0 }
+        }
+      }
+    },
+    {
+      "label": "head = new Node(1)",
+      "objects": {
+        "@11": {
+          "klass": "Node",
+          "attributes": {
+            "value": { "dataType": "int", "value": 1 },
+            "next": { "dataType": "Node" }
+          },
+          "position": { "x": 260, "y": 20 }
+        }
+      },
+      "variables": {},
+      "methodCalls": {
+        "1": {
+          "name": "App.main",
+          "index": 0,
+          "localVariables": {
+            "head": { "dataType": "Node", "value": "@11" }
+          },
+          "position": { "x": 0, "y": 0 }
+        }
+      }
+    }
+  ]
+}

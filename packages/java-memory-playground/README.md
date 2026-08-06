@@ -77,6 +77,7 @@ export function Example() {
 | `step`        | `number`                     | The step to show, zero based. Set it to drive the diagram from the page around it.             |
 | `onStepChange`| `(step: number) => void`     | Called whenever the shown step changes.                                                       |
 | `onChange`    | `(memory: Memory) => void`   | Called when the user presses **Save**.                                                        |
+| `onEdit`      | `(memory: Memory) => void`   | Called on every edit, not only on Save. For a host that owns the file.                        |
 | `mode`        | `"view" \| "edit"`           | Which tools to show. Prefer picking the component; this is what it sets.                       |
 
 Every `MemoryPlayground` creates its own store, so several playgrounds can live
@@ -91,6 +92,15 @@ back, and when persistence is on the URL keeps up on its own.
 
 **Save** is therefore a commit, not a rescue: it is what fires `onChange`, which
 is how a host learns the user considers the diagram finished.
+
+A host that owns the file and has a save of its own — the VS Code editor, say —
+wants `onEdit` instead, which fires on every edit. Loading a `memory` prop is
+not an edit, and neither is panning or zooming, so opening a diagram does not
+mark it as changed.
+
+```tsx
+<MemoryPlayground onEdit={(memory) => markDirty(memory)} />
+```
 
 ## Steps
 
