@@ -17,7 +17,8 @@
     "./index.css": "./dist/index.css"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "publishConfig": {
     "access": "public"
