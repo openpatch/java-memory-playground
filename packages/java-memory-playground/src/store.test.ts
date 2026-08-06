@@ -223,6 +223,158 @@ describe("the call stack", () => {
   });
 });
 
+describe("exercises", () => {
+  const node = (next?: string) => ({
+    klass: "Node",
+    attributes: { next: { dataType: "Node", value: next } },
+    position: { x: 0, y: 0 },
+  });
+
+  const exerciseMemory: Memory = {
+    ...emptyMemory,
+    klasses: { Node: { attributes: { next: "Node" } } },
+    steps: [
+      {
+        objects: { "@a": node() },
+        variables: {
+          "@v": { name: "head", dataType: "Node", value: "@a", position: { x: 0, y: 0 } },
+        },
+        methodCalls: {},
+      },
+      {
+        exercise: true,
+        label: "add a second node",
+        objects: { "@a": node("@b"), "@b": node() },
+        variables: {
+          "@v": { name: "head", dataType: "Node", value: "@a", position: { x: 0, y: 0 } },
+        },
+        methodCalls: {},
+      },
+    ],
+  };
+
+  test("a student starts an exercise from the step before it", () => {
+    const store = createMemoryStore(false, "view");
+    store.getState().loadMemory(exerciseMemory);
+    store.getState().goToStep(1);
+
+    // One object, as in step 1 — not the two of the solution.
+    expect(
+      store.getState().getNodes().filter((n: any) => n.type === "object"),
+    ).toHaveLength(1);
+  });
+
+  test("the teacher sees the solution instead", () => {
+    const store = createMemoryStore(false, "edit");
+    store.getState().loadMemory(exerciseMemory);
+    store.getState().goToStep(1);
+
+    expect(
+      store.getState().getNodes().filter((n: any) => n.type === "object"),
+    ).toHaveLength(2);
+  });
+
+  test("checking an unfinished attempt says which root is wrong", () => {
+    const store = createMemoryStore(false, "view");
+    store.getState().loadMemory(exerciseMemory);
+    store.getState().goToStep(1);
+
+    store.getState().checkExercise();
+
+    expect(store.getState().exerciseResult?.correct).toBe(false);
+    expect(store.getState().exerciseResult?.wrong).toEqual(["head"]);
+  });
+
+  test("revealing the solution makes the check pass", () => {
+    const store = createMemoryStore(false, "view");
+    store.getState().loadMemory(exerciseMemory);
+    store.getState().goToStep(1);
+
+    store.getState().revealSolution();
+    store.getState().checkExercise();
+
+    expect(store.getState().exerciseResult?.correct).toBe(true);
+  });
+
+  test("saving from a student's playground keeps the exercise, not the attempt", () => {
+    const store = createMemoryStore(false, "view");
+    store.getState().loadMemory(exerciseMemory);
+    store.getState().goToStep(1);
+    store.getState().setNodes([]);
+
+    const saved = store.getState().getMemory();
+
+    expect(saved.steps![1].exercise).toBe(true);
+    expect(Object.keys(saved.steps![1].objects)).toHaveLength(2);
+  });
+});
+
+describe("garbage collection", () => {
+  const withGarbage = () => {
+    const store = createMemoryStore(false);
+    store.getState().loadMemory({
+      ...emptyMemory,
+      klasses: { Node: { attributes: { next: "Node" } } },
+      objects: {
+        "@kept": { klass: "Node", attributes: {}, position: { x: 0, y: 0 } },
+        "@junk": { klass: "Node", attributes: {}, position: { x: 0, y: 0 } },
+      },
+      variables: {
+        "@v": { name: "head", dataType: "Node", value: "@kept", position: { x: 0, y: 0 } },
+      },
+    });
+    return store;
+  };
+
+  test("collects what no root reaches", () => {
+    const store = withGarbage();
+
+    store.getState().collectGarbage();
+
+    const ids = store.getState().getNodes().map((n: any) => n.id);
+    expect(ids).toContain("@kept");
+    expect(ids).not.toContain("@junk");
+  });
+
+  test("scores a prediction before sweeping it away", () => {
+    const store = withGarbage();
+
+    store.getState().startGcPrediction();
+    store.getState().toggleGcPrediction("@junk");
+    store.getState().collectGarbage();
+
+    expect(store.getState().gcResult).toEqual({ found: 1, missed: 0, wrong: 0 });
+  });
+
+  test("marking a reachable object counts against the prediction", () => {
+    const store = withGarbage();
+
+    store.getState().startGcPrediction();
+    store.getState().toggleGcPrediction("@kept");
+    store.getState().collectGarbage();
+
+    expect(store.getState().gcResult).toEqual({ found: 0, missed: 1, wrong: 1 });
+  });
+
+  test("a prediction can be unmarked again", () => {
+    const store = withGarbage();
+
+    store.getState().startGcPrediction();
+    store.getState().toggleGcPrediction("@junk");
+    store.getState().toggleGcPrediction("@junk");
+
+    expect(store.getState().gcPrediction).toEqual([]);
+  });
+
+  test("collecting without predicting scores nothing", () => {
+    const store = withGarbage();
+
+    store.getState().collectGarbage();
+
+    expect(store.getState().gcResult).toBeNull();
+  });
+});
+
 describe("mode", () => {
   test("a playground is the student's unless asked otherwise", () => {
     expect(createMemoryStore(false).getState().mode).toBe("view");

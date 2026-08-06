@@ -118,6 +118,7 @@ export const stepsOf = (m: Partial<Memory>): Step[] => {
     return steps.map((step) => ({
       label: step?.label,
       note: step?.note,
+      exercise: step?.exercise,
       objects: step?.objects ?? {},
       variables: step?.variables ?? {},
       methodCalls: step?.methodCalls ?? {},

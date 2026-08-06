@@ -11,7 +11,7 @@ import {
   MarkerType,
   useReactFlow,
 } from "@xyflow/react";
-import { toPng } from "html-to-image";
+import { downloadAllSteps, downloadStep } from "./exportSteps";
 import useStore from "./storeContext";
 import { useUndoRedo } from "./useUndoRedo";
 import { RFState } from "./store";
@@ -32,7 +32,6 @@ import {
 import {
   getRanMemoryAdress,
   isConnectedTo,
-  isConnectedToMethodCall,
   isConnectedToVariable,
 } from "./utils";
 import MethodCallNode, {
@@ -58,6 +57,15 @@ const selector = (state: RFState) => ({
   save: state.save,
   mode: state.mode,
   previousStep: state.steps[state.currentStep - 1],
+  steps: state.steps,
+  currentStep: state.currentStep,
+  goToStep: state.goToStep,
+  gcPrediction: state.gcPrediction,
+  gcResult: state.gcResult,
+  startGcPrediction: state.startGcPrediction,
+  toggleGcPrediction: state.toggleGcPrediction,
+  cancelGcPrediction: state.cancelGcPrediction,
+  collectGarbage: state.collectGarbage,
   t: state.getTranslations(),
 });
 
@@ -100,6 +108,15 @@ export const MemoryView = () => {
     save,
     mode,
     previousStep,
+    steps,
+    currentStep,
+    goToStep,
+    gcPrediction,
+    gcResult,
+    startGcPrediction,
+    toggleGcPrediction,
+    cancelGcPrediction,
+    collectGarbage,
     t,
   } = useStore(useShallow(selector));
   const { screenToFlowPosition } = useReactFlow();
@@ -387,16 +404,6 @@ export const MemoryView = () => {
     [nodes, klasses, options, setNodes, setEdges]
   );
 
-  const onGC = () => {
-    setNodes((nds) =>
-      nds.filter(
-        (n) =>
-          n.type != "object" ||
-          isConnectedToVariable(n.id, nodes, edges) ||
-          isConnectedToMethodCall(n.id, nodes, edges)
-      )
-    );
-  };
 
   const onConfig = () => {
     setRoute("config");
@@ -404,26 +411,23 @@ export const MemoryView = () => {
 
   const onDownloadPng = () => {
     if (!flowRef.current) return;
-    toPng(flowRef.current, {
-      filter: (node) => {
-        // we don't want to add the minimap and the controls to the image
-        if (
-          node?.classList?.contains("react-flow__minimap") ||
-          node?.classList?.contains("react-flow__controls") ||
-          node?.classList?.contains("button-group")
-        ) {
-          return false;
-        }
+    downloadStep(flowRef.current, "java-memory-playground.png");
+  };
 
-        return true;
+  const onDownloadAllPng = async () => {
+    if (!flowRef.current) return;
+    const back = currentStep;
+    await downloadAllSteps({
+      element: flowRef.current,
+      stepCount: steps.length,
+      labelFor: (i) => steps[i]?.label ?? "",
+      showStep: async (i) => {
+        goToStep(i);
+        // Let the step render before it is photographed.
+        await new Promise((resolve) => setTimeout(resolve, 320));
       },
-    }).then((dataUrl) => {
-      const a = document.createElement("a");
-
-      a.setAttribute("download", "java-memory-playground.png");
-      a.setAttribute("href", dataUrl);
-      a.click();
     });
+    goToStep(back);
   };
 
   const createNodeAtPosition = (type: string, position: { x: number; y: number }) => {
@@ -703,6 +707,7 @@ export const MemoryView = () => {
             if (diff.added.has(n.id)) classes.push("step-added");
             else if (diff.changed.has(n.id)) classes.push("step-changed");
           }
+          if (gcPrediction?.includes(n.id)) classes.push("gc-predicted");
           return {
             ...n,
             className: classes.filter(Boolean).join(" "),
@@ -729,6 +734,10 @@ export const MemoryView = () => {
             type: MarkerType.ArrowClosed,
             color: "#778899",
           },
+        }}
+        onNodeClick={(_, node) => {
+          if (gcPrediction === null) return;
+          if (node.type === "object") toggleGcPrediction(node.id);
         }}
         onConnect={onConnect}
         onConnectStart={onConnectStart}
@@ -765,6 +774,11 @@ export const MemoryView = () => {
             </button>
             <button onClick={save}>{persistence ? t.saveUrl : t.save}</button>
             <button onClick={onDownloadPng}>{t.downloadPng}</button>
+            {steps.length > 1 && (
+              <button onClick={onDownloadAllPng} title={t.downloadAllPngHint}>
+                {t.downloadAllPng}
+              </button>
+            )}
             {mode === "edit" && (
               <button onClick={onConfig}>{t.config}</button>
             )}
@@ -777,13 +791,37 @@ export const MemoryView = () => {
             </div>
           </Panel>
         )}
-        {!options.disableGarbageCollector && <Panel position="bottom-right">
-          <div className="button-group">
-            <button className="button-gc" onClick={onGC}>
-              {t.runGarbageCollector}
-            </button>
-          </div>
-        </Panel>}
+        {!options.disableGarbageCollector && (
+          <Panel position="bottom-right">
+            <div className="button-group gc-panel">
+              {gcResult && (
+                <span className="gc-result">
+                  {t.gcScore(gcResult.found, gcResult.missed, gcResult.wrong)}
+                </span>
+              )}
+              {options.gcPrediction && gcPrediction === null && (
+                <button className="button-gc" onClick={startGcPrediction}>
+                  {t.predictGarbage}
+                </button>
+              )}
+              {gcPrediction !== null && (
+                <>
+                  <span className="gc-hint">
+                    {t.predictGarbageHint(gcPrediction.length)}
+                  </span>
+                  <button onClick={cancelGcPrediction}>{t.cancel}</button>
+                </>
+              )}
+              {(!options.gcPrediction || gcPrediction !== null) && (
+                <button className="button-gc" onClick={collectGarbage}>
+                  {gcPrediction !== null
+                    ? t.checkAndCollect
+                    : t.runGarbageCollector}
+                </button>
+              )}
+            </div>
+          </Panel>
+        )}
         <Controls />
         <Background />
       </ReactFlow>

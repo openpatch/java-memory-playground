@@ -109,6 +109,12 @@ export type Step = {
   label?: string;
   /** The teacher's note about what this step did. */
   note?: string;
+  /**
+   * The student produces this step themselves. Its contents are the solution:
+   * a student's playground starts them from the previous step and checks what
+   * they build against it.
+   */
+  exercise?: boolean;
   objects: Objs;
   variables: Variables;
   methodCalls: MethodCalls;
@@ -141,6 +147,11 @@ export type Memory = {
      * marking is usually the point of a trace, so it is on by default.
      */
     hideStepChanges?: boolean;
+    /**
+     * Ask which objects are unreachable before collecting them, instead of
+     * simply sweeping. Committing to an answer is where the learning is.
+     */
+    gcPrediction?: boolean;
   };
   klasses: Klasses;
   /**

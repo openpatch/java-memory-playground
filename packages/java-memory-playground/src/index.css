@@ -376,6 +376,8 @@ path.react-flow__edge-path:hover {
   background: rgba(255, 255, 255, 0.92);
   border-radius: 10px;
   box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
+  flex-wrap: nowrap;
+  max-width: min(92vw, 940px);
 }
 
 .step-bar__count {
@@ -390,6 +392,19 @@ path.react-flow__edge-path:hover {
 
 .step-bar__label-text {
   padding: 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+/* The bar is one row of controls; nothing in it should wrap into a column. */
+.step-bar > * {
+  flex: none;
+}
+
+.step-bar button {
+  white-space: nowrap;
 }
 
 /* What a step changed, compared with the step before it. The marks sit on top
@@ -420,4 +435,66 @@ path.react-flow__edge-path:hover {
 .react-flow__edge.step-changed .react-flow__edge-path {
   stroke: #f59e0b !important;
   opacity: 1;
+}
+
+/* An object marked as a guess in the garbage prediction. */
+.react-flow__node.gc-predicted {
+  opacity: 1;
+}
+
+.react-flow__node.gc-predicted::before {
+  content: "?";
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.gc-panel {
+  align-items: center;
+}
+
+.gc-hint,
+.gc-result {
+  font-size: 14px;
+  padding: 0 4px;
+}
+
+.step-bar__exercise {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.step-bar__your-turn {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.step-bar__result {
+  padding: 4px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.step-bar__result.correct {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.step-bar__result.wrong {
+  background: #fee2e2;
+  color: #991b1b;
 }

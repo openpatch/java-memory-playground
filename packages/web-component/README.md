@@ -92,6 +92,7 @@ diagram.
 | `inlineStrings`              | Draw String values inside the object that references them instead of as their own heap box. On by default. |
 | `hideSteps`                  | Hide the step bar, for a lesson that is about one picture.  |
 | `hideStepChanges`            | Stop marking what a step changed compared with the one before it. |
+| `gcPrediction`               | Ask which objects are unreachable before collecting them. |
 
 ## Events
 
@@ -137,6 +138,12 @@ Each step marks itself against the one before it — a green outline for what
 appeared, a dashed amber one for what changed, an amber reference for one that
 was assigned or repointed — so a reader can see what a line did rather than
 hunting for it. `hideStepChanges` turns that off.
+
+A step marked `"exercise": true` is one the student builds themselves: their
+playground starts from the step before it, and **Check** compares what they made
+with the authored contents. The comparison is by shape reachable from the named
+roots, so a student's own addresses do not matter, and the report names the
+variable that is wrong.
 
 A diagram with a single state needs no `steps` key; it is read as a one-step
 story, and saved back in the same shape.

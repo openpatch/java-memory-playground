@@ -11,6 +11,11 @@ export { KeyboardShortcuts, defaultKeyBindings } from "./KeyboardShortcuts";
 export { InlineString } from "./InlineString";
 export { StepBar } from "./StepBar";
 export { diffSteps, emptyDiff } from "./stepDiff";
+export { canonicalRoots, checkAgainst } from "./canonical";
+export type { ExerciseResult } from "./canonical";
+export { optionPresets } from "./presets";
+export type { PresetName } from "./presets";
+export { downloadStep, downloadAllSteps } from "./exportSteps";
 export type { StepDiff } from "./stepDiff";
 
 export {
@@ -24,6 +29,7 @@ export type {
   PlaygroundMode,
   MemoryStore,
   StoreStep,
+  GcPredictionResult,
 } from "./store";
 export {
   useStore,

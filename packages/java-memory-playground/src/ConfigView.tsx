@@ -4,6 +4,7 @@ import { RFState } from "./store";
 import { useCallback, useState, useEffect } from "react";
 import { DataType, builtInDataTypes } from "./memory";
 import { SimpleInputDialog } from "./SimpleInputDialog";
+import { optionPresets } from "./presets";
 
 const selector = (state: RFState) => ({
   storedKlasses: state.klasses,
@@ -257,6 +258,20 @@ export const ConfigView = () => {
           fontSize: "18px",
           fontWeight: "600"
         }}>{t.options}</h2>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "12px" }}>
+          <span style={{ fontSize: "14px", color: "#374151" }}>{t.presets}:</span>
+          {(
+            [
+              ["references", t.presetReferences],
+              ["stack", t.presetStack],
+              ["everything", t.presetEverything],
+            ] as const
+          ).map(([name, label]) => (
+            <button key={name} onClick={() => setOptions({ ...optionPresets[name] })}>
+              {label}
+            </button>
+          ))}
+        </div>
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
@@ -435,6 +450,28 @@ export const ConfigView = () => {
               }}
             />
             {t.optionLabels.hideStepChanges}
+          </label>
+          <label style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "14px",
+            color: "#374151",
+            cursor: "pointer"
+          }}>
+            <input
+              type="checkbox"
+              checked={options.gcPrediction || false}
+              onChange={(e) =>
+                handleOptionChange("gcPrediction", e.target.checked)
+              }
+              style={{
+                width: "16px",
+                height: "16px",
+                cursor: "pointer"
+              }}
+            />
+            {t.optionLabels.gcPrediction}
           </label>
         </div>
       </div>

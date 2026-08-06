@@ -10,6 +10,11 @@ const selector = (state: RFState) => ({
   addStep: state.addStep,
   deleteStep: state.deleteStep,
   setStepLabel: state.setStepLabel,
+  setStepExercise: state.setStepExercise,
+  hasSolution: state.solutions[state.currentStep] !== undefined,
+  exerciseResult: state.exerciseResult,
+  checkExercise: state.checkExercise,
+  revealSolution: state.revealSolution,
   t: state.getTranslations(),
 });
 
@@ -27,11 +32,17 @@ export function StepBar({ editable = true }: { editable?: boolean }) {
     addStep,
     deleteStep,
     setStepLabel,
+    setStepExercise,
+    hasSolution,
+    exerciseResult,
+    checkExercise,
+    revealSolution,
     t,
   } = useStore(useShallow(selector));
 
   const only = steps.length === 1;
-  if (only && !editable) return null;
+  // A single-step diagram is just a picture, unless it is an exercise.
+  if (only && !editable && !hasSolution) return null;
 
   const step = steps[currentStep];
 
@@ -61,6 +72,14 @@ export function StepBar({ editable = true }: { editable?: boolean }) {
 
       {editable ? (
         <>
+          <label className="step-bar__exercise" title={t.exerciseStepHint}>
+            <input
+              type="checkbox"
+              checked={step?.exercise ?? false}
+              onChange={(e) => setStepExercise(currentStep, e.target.checked)}
+            />
+            {t.exerciseStep}
+          </label>
           <input
             className="step-bar__label"
             value={step?.label ?? ""}
@@ -81,6 +100,29 @@ export function StepBar({ editable = true }: { editable?: boolean }) {
         </>
       ) : (
         step?.label && <span className="step-bar__label-text">{step.label}</span>
+      )}
+
+      {hasSolution && (
+        <>
+          <span className="step-bar__your-turn">{t.yourTurn}</span>
+          <button onClick={checkExercise}>{t.checkAnswer}</button>
+          <button onClick={revealSolution}>{t.showSolution}</button>
+        </>
+      )}
+      {exerciseResult && (
+        <span
+          className={
+            exerciseResult.correct
+              ? "step-bar__result correct"
+              : "step-bar__result wrong"
+          }
+        >
+          {exerciseResult.correct
+            ? t.exerciseCorrect
+            : exerciseResult.wrong.length > 0
+              ? t.exerciseWrong(exerciseResult.wrong)
+              : t.exerciseExtra(exerciseResult.extra)}
+        </span>
       )}
     </div>
   );

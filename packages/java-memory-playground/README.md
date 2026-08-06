@@ -122,6 +122,32 @@ A diagram with one step is just a picture, and is still saved in the shape it
 always had, so a link to a single diagram stays readable by older versions. Set
 `hideSteps` to hide the bar entirely.
 
+### Exercises
+
+A step can be marked as an exercise. The teacher authors it as the answer; a
+student's playground starts them from the step before it and checks what they
+build.
+
+```json
+{ "label": "insert at the head", "exercise": true, "objects": {}, "variables": {}, "methodCalls": {} }
+```
+
+The check compares the *shape* reachable from each root — the named variables
+and each frame's locals — not the addresses, because a student who allocates an
+object gets whatever address the playground handed out. Building the right
+diagram passes however it was built, and the report names the root that is
+wrong rather than only saying no. `checkAgainst` and `canonicalRoots` are
+exported if you want to run the comparison yourself.
+
+Saving from a student's playground writes the exercise back as authored, not
+their attempt, so a shared link stays the exercise.
+
+### Garbage collection
+
+With `gcPrediction` on, the collector asks first: the student marks the objects
+they think are unreachable, and the check scores them before sweeping. Reaching
+for an answer before seeing it is where the learning is.
+
 ### The call stack
 
 Only the frame on top of the stack can return; the others say so rather than
@@ -172,12 +198,28 @@ const { undo, redo, canUndo, canRedo, clear } = useUndoRedo();
 | `Ctrl/Cmd + 0` | Reset zoom                 |
 | `Shift + 1`    | Fit the diagram to the view |
 
+**Download all steps** writes one image with every step under its label, which
+is what a worksheet wants — exporting the step on screen gives you the last
+picture instead.
+
 Shortcuts are ignored while an input has focus. Override any of them with
 `keyBindings`:
 
 ```tsx
 <MemoryPlayground keyBindings={{ save: { key: "e", ctrl: true } }} />
 ```
+
+## Presets
+
+`optionPresets` names the option combinations a course moves through — a teacher
+picks one in the config view rather than remembering which flags belong to which
+stage.
+
+| Preset | What it is for |
+| ------ | -------------- |
+| `references` | Objects and the names that point at them. No stack, no steps. |
+| `stack` | Method calls, so the stack and stepping come with them. |
+| `everything` | Arrays, the garbage collector, and Strings as heap objects. |
 
 ## Languages
 

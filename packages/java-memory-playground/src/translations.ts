@@ -5,8 +5,14 @@ export interface Translations {
   save: string;
   saveUrl: string;
   downloadPng: string;
+  downloadAllPng: string;
+  downloadAllPngHint: string;
   config: string;
   runGarbageCollector: string;
+  predictGarbage: string;
+  predictGarbageHint: (marked: number) => string;
+  checkAndCollect: string;
+  gcScore: (found: number, missed: number, wrong: number) => string;
   undo: string;
   redo: string;
 
@@ -24,6 +30,14 @@ export interface Translations {
   deleteStep: string;
   stepLabel: string;
   stepLabelPlaceholder: string;
+  exerciseStep: string;
+  exerciseStepHint: string;
+  yourTurn: string;
+  checkAnswer: string;
+  showSolution: string;
+  exerciseCorrect: string;
+  exerciseWrong: (wrong: string[]) => string;
+  exerciseExtra: (extra: string[]) => string;
 
   // Nodes
   declareLocalVariable: string;
@@ -57,6 +71,10 @@ export interface Translations {
   attributeName: string;
   dataType: string;
   options: string;
+  presets: string;
+  presetReferences: string;
+  presetStack: string;
+  presetEverything: string;
   backToDiagram: string;
   saved: string;
   unsavedChangesLeave: string;
@@ -73,6 +91,7 @@ export interface Translations {
     inlineStrings: string;
     hideSteps: string;
     hideStepChanges: string;
+    gcPrediction: string;
   };
 }
 
@@ -80,8 +99,18 @@ const en: Translations = {
   save: "Save",
   saveUrl: "Save (URL)",
   downloadPng: "Download (PNG)",
+  downloadAllPng: "Download all steps",
+  downloadAllPngHint: "One image with every step, for a worksheet",
   config: "Config",
   runGarbageCollector: "Run Garbage Collector",
+  predictGarbage: "Predict garbage",
+  predictGarbageHint: (marked) =>
+    `Click the objects you think are unreachable (${marked} marked)`,
+  checkAndCollect: "Check and collect",
+  gcScore: (found, missed, wrong) =>
+    `Found ${found}${missed ? `, missed ${missed}` : ""}${
+      wrong ? `, ${wrong} still reachable` : ""
+    }`,
   undo: "Undo",
   redo: "Redo",
 
@@ -97,6 +126,14 @@ const en: Translations = {
   deleteStep: "Delete step",
   stepLabel: "Step label",
   stepLabelPlaceholder: "What happens here?",
+  exerciseStep: "Exercise",
+  exerciseStepHint: "The student builds this step; its contents are the solution",
+  yourTurn: "Your turn: build this step",
+  checkAnswer: "Check",
+  showSolution: "Show solution",
+  exerciseCorrect: "That matches.",
+  exerciseWrong: (wrong) => `Not right yet: ${wrong.join(", ")}`,
+  exerciseExtra: (extra) => `Not part of this step: ${extra.join(", ")}`,
 
   declareLocalVariable: "Declare Local Variable",
   returnMethod: "Return",
@@ -128,6 +165,10 @@ const en: Translations = {
   attributeName: "Attribute Name",
   dataType: "Data Type",
   options: "Options",
+  presets: "Presets",
+  presetReferences: "References only",
+  presetStack: "With the stack",
+  presetEverything: "Everything",
   backToDiagram: "Back to Diagram",
   saved: "Saved",
   unsavedChangesLeave:
@@ -145,6 +186,7 @@ const en: Translations = {
     inlineStrings: "Show String values inside their object",
     hideSteps: "Hide the step bar",
     hideStepChanges: "Do not mark what changed in a step",
+    gcPrediction: "Ask which objects are garbage before collecting",
   },
 };
 
@@ -152,8 +194,18 @@ const de: Translations = {
   save: "Speichern",
   saveUrl: "Speichern (URL)",
   downloadPng: "Herunterladen (PNG)",
+  downloadAllPng: "Alle Schritte herunterladen",
+  downloadAllPngHint: "Ein Bild mit allen Schritten, für ein Arbeitsblatt",
   config: "Einstellungen",
   runGarbageCollector: "Garbage Collector ausführen",
+  predictGarbage: "Müll vorhersagen",
+  predictGarbageHint: (marked) =>
+    `Klicke die Objekte an, die deiner Meinung nach nicht mehr erreichbar sind (${marked} markiert)`,
+  checkAndCollect: "Prüfen und aufräumen",
+  gcScore: (found, missed, wrong) =>
+    `${found} gefunden${missed ? `, ${missed} übersehen` : ""}${
+      wrong ? `, ${wrong} noch erreichbar` : ""
+    }`,
   undo: "Rückgängig",
   redo: "Wiederholen",
 
@@ -169,6 +221,15 @@ const de: Translations = {
   deleteStep: "Schritt löschen",
   stepLabel: "Beschriftung",
   stepLabelPlaceholder: "Was passiert hier?",
+  exerciseStep: "Aufgabe",
+  exerciseStepHint:
+    "Diesen Schritt bauen die Schüler:innen selbst; der Inhalt ist die Lösung",
+  yourTurn: "Du bist dran: baue diesen Schritt",
+  checkAnswer: "Prüfen",
+  showSolution: "Lösung zeigen",
+  exerciseCorrect: "Das passt.",
+  exerciseWrong: (wrong) => `Noch nicht richtig: ${wrong.join(", ")}`,
+  exerciseExtra: (extra) => `Gehört nicht zu diesem Schritt: ${extra.join(", ")}`,
 
   declareLocalVariable: "Lokale Variable deklarieren",
   returnMethod: "Zurückkehren",
@@ -200,6 +261,10 @@ const de: Translations = {
   attributeName: "Attributname",
   dataType: "Datentyp",
   options: "Optionen",
+  presets: "Voreinstellungen",
+  presetReferences: "Nur Referenzen",
+  presetStack: "Mit dem Stapel",
+  presetEverything: "Alles",
   backToDiagram: "Zurück zum Diagramm",
   saved: "Gespeichert",
   unsavedChangesLeave:
@@ -217,6 +282,7 @@ const de: Translations = {
     inlineStrings: "String-Werte im Objekt anzeigen",
     hideSteps: "Schrittleiste ausblenden",
     hideStepChanges: "Änderungen eines Schritts nicht hervorheben",
+    gcPrediction: "Vor dem Aufräumen fragen, welche Objekte Müll sind",
   },
 };
 

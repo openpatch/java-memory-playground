@@ -6,6 +6,7 @@ import { temporal } from "zundo";
 import { persist, StateStorage, createJSONStorage } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
+import { ExerciseResult, checkAgainst } from "./canonical";
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 import { parseMemory, stepsOf } from "./helper";
 import { Memory, Step, initialMemory } from "./memory";
@@ -17,6 +18,7 @@ import {
   translations,
 } from "./translations";
 import { CustomEdgeType, CustomNodeType } from "./types";
+import { isConnectedToMethodCall, isConnectedToVariable } from "./utils";
 
 export type Route = "view" | "config";
 
@@ -33,8 +35,18 @@ export type PlaygroundMode = "view" | "edit";
 export type StoreStep = {
   label?: string;
   note?: string;
+  exercise?: boolean;
   nodes: CustomNodeType[];
   edges: CustomEdgeType[];
+};
+
+export type GcPredictionResult = {
+  /** Unreachable objects the prediction found. */
+  found: number;
+  /** Unreachable objects it missed. */
+  missed: number;
+  /** Objects it marked that are still reachable. */
+  wrong: number;
 };
 
 type Updater<T> = T[] | ((current: T[]) => T[]);
@@ -56,6 +68,17 @@ export type RFState = {
   klasses: Memory["klasses"];
   options: Memory["options"];
   viewport: Viewport;
+
+  /**
+   * The authored contents of the exercise steps, kept aside in a student's
+   * playground so that their attempt can be compared with it.
+   */
+  solutions: Record<number, StoreStep>;
+  exerciseResult: ExerciseResult | null;
+
+  /** Ids of the objects a prediction has marked as unreachable, while running. */
+  gcPrediction: string[] | null;
+  gcResult: GcPredictionResult | null;
 
   defaultLanguage?: string;
   /**
@@ -88,6 +111,19 @@ export type RFState = {
   setKlasses: (klasses: Memory["klasses"]) => void;
   setOptions: (options: Memory["options"]) => void;
   setViewport: (viewport: Viewport) => void;
+
+  // Exercises
+  setStepExercise: (index: number, exercise: boolean) => void;
+  checkExercise: () => void;
+  revealSolution: () => void;
+  clearExerciseResult: () => void;
+
+  // Garbage collection
+  startGcPrediction: () => void;
+  toggleGcPrediction: (id: string) => void;
+  cancelGcPrediction: () => void;
+  /** Checks a prediction if one is running, then collects. */
+  collectGarbage: () => void;
 
   // Bulk operations
   loadMemory: (memory: Memory) => void;
@@ -163,8 +199,29 @@ const createHashStorage = (enabled: boolean): StateStorage => {
 const toStoreStep = (step: Step): StoreStep => ({
   label: step.label,
   note: step.note,
+  exercise: step.exercise,
   ...getEdgesAndNodes(step),
 });
+
+const copyStep = (step: StoreStep): StoreStep => ({
+  nodes: step.nodes.map((n) => ({ ...n, data: { ...n.data } }) as CustomNodeType),
+  edges: step.edges.map((e) => ({ ...e })),
+});
+
+/**
+ * In a student's playground an exercise step is not shown — it is the answer.
+ * The student starts from the step before it and builds the next one, so the
+ * authored contents move aside and the step begins as a copy of its predecessor.
+ */
+const withExercisesHidden = (steps: StoreStep[]) => {
+  const solutions: Record<number, StoreStep> = {};
+  const working = steps.map((step, i) => {
+    if (!step.exercise || i === 0) return step;
+    solutions[i] = step;
+    return { ...copyStep(steps[i - 1]), label: step.label, exercise: true };
+  });
+  return { steps: working, solutions };
+};
 
 const initialSteps: StoreStep[] = [toStoreStep(initialMemory as Step)];
 
@@ -211,6 +268,10 @@ export const createMemoryStore = (
           options: initialMemory.options,
           viewport: initialMemory.viewport,
           saveCount: 0,
+          solutions: {},
+          exerciseResult: null,
+          gcPrediction: null,
+          gcResult: null,
 
           save: () => set({ saveCount: get().saveCount + 1 }),
 
@@ -330,6 +391,92 @@ export const createMemoryStore = (
               })),
             }),
 
+          setStepExercise: (index, exercise) =>
+            set({
+              steps: withStep(get().steps, index, (step) => ({
+                ...step,
+                exercise: exercise || undefined,
+              })),
+            }),
+
+          checkExercise: () => {
+            const { steps, currentStep, solutions } = get();
+            const solution = solutions[currentStep];
+            if (!solution) return;
+            set({ exerciseResult: checkAgainst(solution, steps[currentStep]) });
+          },
+
+          revealSolution: () => {
+            const { currentStep, solutions } = get();
+            const solution = solutions[currentStep];
+            if (!solution) return;
+            set({
+              steps: withStep(get().steps, currentStep, (step) => ({
+                ...copyStep(solution),
+                label: step.label,
+                exercise: true,
+              })),
+              exerciseResult: null,
+            });
+          },
+
+          clearExerciseResult: () => set({ exerciseResult: null }),
+
+          startGcPrediction: () => set({ gcPrediction: [], gcResult: null }),
+
+          toggleGcPrediction: (id) => {
+            const marked = get().gcPrediction;
+            if (!marked) return;
+            set({
+              gcPrediction: marked.includes(id)
+                ? marked.filter((m) => m !== id)
+                : [...marked, id],
+            });
+          },
+
+          cancelGcPrediction: () => set({ gcPrediction: null, gcResult: null }),
+
+          collectGarbage: () => {
+            const { steps, currentStep, gcPrediction } = get();
+            const { nodes, edges } = steps[currentStep];
+
+            const unreachable = nodes
+              .filter(
+                (n) =>
+                  n.type === "object" &&
+                  !isConnectedToVariable(n.id, nodes, edges) &&
+                  !isConnectedToMethodCall(n.id, nodes, edges),
+              )
+              .map((n) => n.id);
+
+            // Scoring happens before the sweep, while there is still something
+            // to have been wrong about.
+            const gcResult = gcPrediction
+              ? {
+                  found: gcPrediction.filter((id) => unreachable.includes(id))
+                    .length,
+                  missed: unreachable.filter(
+                    (id) => !gcPrediction.includes(id),
+                  ).length,
+                  wrong: gcPrediction.filter((id) => !unreachable.includes(id))
+                    .length,
+                }
+              : null;
+
+            const collected = new Set(unreachable);
+            set({
+              gcPrediction: null,
+              gcResult,
+              steps: withStep(steps, currentStep, (step) => ({
+                ...step,
+                nodes: step.nodes.filter((n) => !collected.has(n.id)),
+                edges: step.edges.filter(
+                  (e) => !collected.has(e.target) && !collected.has(e.source),
+                ),
+              })),
+            });
+          },
+
           setKlasses: (klasses) => set({ klasses }),
           setOptions: (options) => set({ options }),
           setViewport: (viewport) => set({ viewport }),
@@ -337,9 +484,19 @@ export const createMemoryStore = (
           loadMemory: (memory) => {
             // Through stepsOf, so that a caller may hand over a diagram in
             // either shape — a one-step diagram still has no `steps` key.
-            const steps = stepsOf(memory).map(toStoreStep);
+            const loaded = stepsOf(memory).map(toStoreStep);
+            const all = loaded.length > 0 ? loaded : initialSteps;
+            const { steps, solutions } =
+              get().mode === "edit"
+                ? { steps: all, solutions: {} }
+                : withExercisesHidden(all);
+
             set({
-              steps: steps.length > 0 ? steps : initialSteps,
+              steps,
+              solutions,
+              exerciseResult: null,
+              gcPrediction: null,
+              gcResult: null,
               currentStep: 0,
               klasses: memory.klasses,
               options: memory.options,
@@ -349,9 +506,13 @@ export const createMemoryStore = (
 
           getMemory: () => {
             const state = get();
-            const steps = state.steps.map((step) => ({
+            // An exercise is written back as the teacher authored it, so that
+            // saving from a student's playground shares the exercise rather
+            // than whatever they had built when they pressed the button.
+            const steps = state.steps.map((s, i) => state.solutions[i] ?? s).map((step) => ({
               ...(step.label ? { label: step.label } : {}),
               ...(step.note ? { note: step.note } : {}),
+              ...(step.exercise ? { exercise: true } : {}),
               ...getMemory(step.edges, step.nodes),
             }));
 

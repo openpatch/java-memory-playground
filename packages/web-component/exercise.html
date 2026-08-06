@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Exercise and garbage prediction</title>
+  <link rel="stylesheet" href="./dist/index.css">
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; }
+    h2 { margin: 8px 12px; font-size: 15px; }
+    java-memory-playground { display: block; width: 100vw; height: 44vh; border-bottom: 2px solid #333; }
+  </style>
+</head>
+<body>
+  <h2>Exercise — the student builds step 2</h2>
+  <java-memory-playground id="ex"></java-memory-playground>
+
+  <h2>Garbage prediction — mark what you think is unreachable, then check</h2>
+  <java-memory-playground id="gc" options='{"gcPrediction":true,"hideSteps":true}'></java-memory-playground>
+
+  <script src="./dist/index.umd.js"></script>
+  <script>
+    const node = (next, x, y) => ({
+      klass: "Node",
+      attributes: { next: { dataType: "Node", value: next } },
+      position: { x, y },
+    });
+    const head = (value) => ({
+      "@v": { name: "head", dataType: "Node", value, position: { x: 40, y: 60 } },
+    });
+
+    document.getElementById('ex').setAttribute('memory', JSON.stringify({
+      klasses: { Node: { attributes: { next: "Node" } } },
+      steps: [
+        {
+          label: "one node",
+          objects: { "@a": node(undefined, 340, 60) },
+          variables: head("@a"), methodCalls: {},
+        },
+        {
+          label: "insert a second node at the head",
+          exercise: true,
+          objects: { "@a": node(undefined, 340, 60), "@b": node("@a", 340, 240) },
+          variables: head("@b"), methodCalls: {},
+        },
+      ],
+    }));
+
+    document.getElementById('gc').setAttribute('memory', JSON.stringify({
+      klasses: { Node: { attributes: { next: "Node" } } },
+      objects: {
+        "@kept": node(undefined, 340, 40),
+        "@junk1": node("@junk2", 340, 220),
+        "@junk2": node("@junk1", 640, 220),
+      },
+      variables: head("@kept"),
+      methodCalls: {},
+    }));
+  </script>
+</body>
+</html>
