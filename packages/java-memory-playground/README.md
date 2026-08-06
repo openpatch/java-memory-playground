@@ -301,6 +301,11 @@ stage.
 English and German ship with the package. `language="auto"` (the default) picks
 the browser language and falls back to English.
 
+React Flow's own accessible text is translated too, through its
+`ariaLabelConfig`. It ships those strings in English, so a German playground
+used to announce "Zoom In" and "Press enter or space to select a node" beside
+its own translated labels.
+
 ```tsx
 import { translations, getTranslations } from "@openpatch/java-memory-playground";
 ```

@@ -11,6 +11,7 @@ import {
   MarkerType,
   useReactFlow,
 } from "@xyflow/react";
+import { ariaLabelsFor } from "./ariaLabels";
 import { captureDiagram, downloadAllSteps } from "./exportSteps";
 import { fitPaddingFor } from "./fitPadding";
 import useStore, { useMemoryStore } from "./storeContext";
@@ -778,6 +779,7 @@ export const MemoryView = () => {
         }}
         fitView
         fitViewOptions={{ padding: fitPaddingFor(options) }}
+        ariaLabelConfig={ariaLabelsFor(t)}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         minZoom={0.1}

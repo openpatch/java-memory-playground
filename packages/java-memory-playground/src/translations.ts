@@ -90,6 +90,24 @@ export interface Translations {
   applyClassesMore: (count: number) => string;
   applyClassesConfirm: string;
 
+  /**
+   * React Flow's own accessible descriptions, which it ships in English only.
+   * A German playground was reading them out in English next to its own
+   * translated labels; they are handed back through `ariaLabelConfig`.
+   */
+  a11y: {
+    node: string;
+    nodeKeyboard: string;
+    nodeMoved: (direction: string, x: number, y: number) => string;
+    edge: string;
+    controls: string;
+    zoomIn: string;
+    zoomOut: string;
+    fitView: string;
+    toggleInteractivity: string;
+    handle: string;
+  };
+
   // Option labels
   optionLabels: {
     hideSidebar: string;
@@ -200,6 +218,21 @@ const en: Translations = {
   applyClassesMore: (count) => `…and ${count} more`,
   applyClassesConfirm: "Apply",
 
+  a11y: {
+    node: "Press enter or space to select a node. Press delete to remove it and escape to cancel.",
+    nodeKeyboard:
+      "Press enter or space to select a node. You can then use the arrow keys to move the node around. Press delete to remove it and escape to cancel.",
+    nodeMoved: (direction, x, y) =>
+      `Moved selected node ${direction}. New position, x: ${x}, y: ${y}`,
+    edge: "Press enter or space to select an edge. You can then press delete to remove it or escape to cancel.",
+    controls: "Control Panel",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
+    fitView: "Fit the diagram to the view",
+    toggleInteractivity: "Toggle interactivity",
+    handle: "Reference",
+  },
+
   optionLabels: {
     hideSidebar: "Hide sidebar",
     hideCallMethod: "Hide „Call Method“",
@@ -309,6 +342,21 @@ const de: Translations = {
     `${count} Objekt${count === 1 ? "" : "e"} der Klasse ${klass} — die Klasse gibt es nicht mehr, es lassen sich keine neuen erstellen`,
   applyClassesMore: (count) => `…und ${count} weitere`,
   applyClassesConfirm: "Übernehmen",
+
+  a11y: {
+    node: "Drücke Enter oder Leertaste, um einen Knoten auszuwählen. Entf entfernt ihn, Esc bricht ab.",
+    nodeKeyboard:
+      "Drücke Enter oder Leertaste, um einen Knoten auszuwählen. Danach kannst du ihn mit den Pfeiltasten bewegen. Entf entfernt ihn, Esc bricht ab.",
+    nodeMoved: (direction, x, y) =>
+      `Ausgewählter Knoten nach ${direction} bewegt. Neue Position, x: ${x}, y: ${y}`,
+    edge: "Drücke Enter oder Leertaste, um eine Referenz auszuwählen. Danach entfernt Entf sie, Esc bricht ab.",
+    controls: "Steuerung",
+    zoomIn: "Vergrößern",
+    zoomOut: "Verkleinern",
+    fitView: "Diagramm einpassen",
+    toggleInteractivity: "Interaktivität umschalten",
+    handle: "Referenz",
+  },
 
   optionLabels: {
     hideSidebar: "Seitenleiste ausblenden",
