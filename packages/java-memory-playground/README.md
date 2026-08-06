@@ -192,9 +192,14 @@ what that is first, and only when there is something to say:
 - objects whose class is gone, which stay in the diagram but can never be made
   again
 
-Adding a field, renaming nothing, or changing classes no object uses costs
-nothing and saves without asking — a dialog that always appears is one nobody
-reads. `klassImpact` computes the same report if you want it elsewhere.
+A field nobody has typed into is empty and goes unmentioned, even though an
+`int` shows a `0` and a `boolean` shows a box — those are what the field starts
+out holding, not something to lose. Adding a field, or changing classes no
+object uses, costs nothing and saves without asking: a dialog that always
+appears is one nobody reads.
+
+`klassImpact` computes the same report if you want it elsewhere, and
+`defaultValueFor` is what it counts as empty.
 
 ## Strings
 

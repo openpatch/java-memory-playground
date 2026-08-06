@@ -25,6 +25,7 @@ import { diffSteps } from "./stepDiff";
 import {
   Attribute,
   builtInDataTypes,
+  defaultValueFor,
   numericDataTypes,
   DataType,
   STRING_KLASS,
@@ -78,14 +79,8 @@ const createAttributesForObject = (
 ): Record<string, Attribute> => {
   const objAttributes: Record<string, Attribute> = {};
   Object.entries(attributes).forEach(([name, dataType]) => {
-    let value = undefined;
-    if (dataType == "boolean") {
-      value = false;
-    } else if (numericDataTypes.includes(dataType)) {
-      value = 0;
-    }
     objAttributes[name] = {
-      value,
+      value: defaultValueFor(dataType),
       dataType,
     };
   });
@@ -504,15 +499,9 @@ export const MemoryView = () => {
             },
           };
           for (let i = 0; i < length; i++) {
-            let value = undefined;
-            if (elementType === "boolean") {
-              value = false;
-            } else if (numericDataTypes.includes(elementType)) {
-              value = 0;
-            }
             objAttributes[`[${i}]`] = {
               dataType: elementType,
-              value: value,
+              value: defaultValueFor(elementType),
             };
           }
 

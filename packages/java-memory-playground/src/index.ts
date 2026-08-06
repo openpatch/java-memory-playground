@@ -58,6 +58,7 @@ export { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 export { serializeState, deserializeState } from "./serde";
 export {
   initialMemory,
+  defaultValueFor,
   primitveDataTypes,
   numericDataTypes,
   builtInDataTypes,

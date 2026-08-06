@@ -25,6 +25,18 @@ export const STRING_KLASS = "String";
 /** Types always offered in a type picker, before the user's own classes. */
 export const builtInDataTypes = [...primitveDataTypes, STRING_KLASS];
 
+/**
+ * What a field of this type holds before anyone has put anything in it.
+ *
+ * A reference starts out null, which the diagram draws as an empty handle
+ * rather than a value, so it has none.
+ */
+export const defaultValueFor = (dataType: string): Attribute["value"] => {
+  if (dataType === "boolean") return false;
+  if (numericDataTypes.includes(dataType)) return 0;
+  return undefined;
+};
+
 export type DataType =
   | "int"
   | "long"

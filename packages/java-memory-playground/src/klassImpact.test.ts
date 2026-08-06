@@ -39,6 +39,38 @@ describe("klassImpact", () => {
     expect(impact.dropped).toEqual([{ klass: "Node", field: "value", count: 1 }]);
   });
 
+  test("a field nobody has typed in yet is empty, 0 and false included", () => {
+    const impact = klassImpact(
+      [
+        step([
+          object("1", "Node", {
+            count: { dataType: "int", value: 0 },
+            done: { dataType: "boolean", value: false },
+          }),
+        ]),
+      ],
+      { Node: { attributes: {} } },
+    );
+
+    expect(hasImpact(impact)).toBe(false);
+  });
+
+  test("a 0 that was typed over is a value", () => {
+    const impact = klassImpact(
+      [
+        step([
+          object("1", "Node", {
+            count: { dataType: "int", value: 7 },
+            done: { dataType: "boolean", value: true },
+          }),
+        ]),
+      ],
+      { Node: { attributes: {} } },
+    );
+
+    expect(impact.dropped.map((d) => d.field)).toEqual(["count", "done"]);
+  });
+
   test("an empty field takes nothing with it", () => {
     const impact = klassImpact(
       [step([object("1", "Node", { next: { dataType: "Node" } })])],
