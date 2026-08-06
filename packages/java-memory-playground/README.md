@@ -182,6 +182,20 @@ reported above the editor and the last readable classes stay.
 The **Class list** tab is the same classes as a table, for adding one field
 without touching the source. `parseJavaClasses` and `toJavaSource` are exported.
 
+### What applying them costs
+
+Classes belong to the whole diagram, so saving them reaches every step — pasting
+a new file over the old one can delete what the objects were holding. Save says
+what that is first, and only when there is something to say:
+
+- a field an object no longer has room for, and the value or reference it held
+- objects whose class is gone, which stay in the diagram but can never be made
+  again
+
+Adding a field, renaming nothing, or changing classes no object uses costs
+nothing and saves without asking — a dialog that always appears is one nobody
+reads. `klassImpact` computes the same report if you want it elsewhere.
+
 ## Strings
 
 A String is a reference type, so a String value lives on the heap like any other

@@ -83,6 +83,12 @@ export interface Translations {
   saved: string;
   unsavedChangesLeave: string;
   confirmDeleteClass: (name: string) => string;
+  applyClassesTitle: string;
+  applyClassesIntro: string;
+  applyClassesDropped: (klass: string, field: string, count: number) => string;
+  applyClassesOrphaned: (klass: string, count: number) => string;
+  applyClassesMore: (count: number) => string;
+  applyClassesConfirm: string;
 
   // Option labels
   optionLabels: {
@@ -184,6 +190,15 @@ const en: Translations = {
     "You have unsaved changes. Are you sure you want to leave?",
   confirmDeleteClass: (name) =>
     `Are you sure you want to delete class "${name}"?`,
+  applyClassesTitle: "Apply these classes?",
+  applyClassesIntro:
+    "Classes belong to the whole diagram, so this reaches every step. Objects already drawn lose what these classes no longer have room for:",
+  applyClassesDropped: (klass, field, count) =>
+    `${klass}.${field} — deleted from ${count} object${count === 1 ? "" : "s"}`,
+  applyClassesOrphaned: (klass, count) =>
+    `${count} object${count === 1 ? "" : "s"} of ${klass} — the class is gone, so no new ones can be made`,
+  applyClassesMore: (count) => `…and ${count} more`,
+  applyClassesConfirm: "Apply",
 
   optionLabels: {
     hideSidebar: "Hide sidebar",
@@ -285,6 +300,15 @@ const de: Translations = {
     "Du hast ungespeicherte Änderungen. Möchtest du die Seite wirklich verlassen?",
   confirmDeleteClass: (name) =>
     `Möchtest du die Klasse „${name}“ wirklich löschen?`,
+  applyClassesTitle: "Klassen übernehmen?",
+  applyClassesIntro:
+    "Klassen gehören zum ganzen Diagramm, das betrifft also jeden Schritt. Objekte, die es schon gibt, verlieren, wofür diese Klassen keinen Platz mehr haben:",
+  applyClassesDropped: (klass, field, count) =>
+    `${klass}.${field} — wird aus ${count} Objekt${count === 1 ? "" : "en"} gelöscht`,
+  applyClassesOrphaned: (klass, count) =>
+    `${count} Objekt${count === 1 ? "" : "e"} der Klasse ${klass} — die Klasse gibt es nicht mehr, es lassen sich keine neuen erstellen`,
+  applyClassesMore: (count) => `…und ${count} weitere`,
+  applyClassesConfirm: "Übernehmen",
 
   optionLabels: {
     hideSidebar: "Seitenleiste ausblenden",

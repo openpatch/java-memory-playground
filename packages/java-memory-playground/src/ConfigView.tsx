@@ -6,19 +6,26 @@ import { DataType, builtInDataTypes } from "./memory";
 import { SimpleInputDialog } from "./SimpleInputDialog";
 import { optionPresets } from "./presets";
 import { ClassSource } from "./ClassSource";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { hasImpact, klassImpact, KlassImpact } from "./klassImpact";
 
 const selector = (state: RFState) => ({
   storedKlasses: state.klasses,
   storedOptions: state.options,
+  steps: state.steps,
   applyKlasses: state.applyKlasses,
   setRoute: state.setRoute,
   t: state.getTranslations(),
 });
 
+/** How many consequences are worth listing before the rest are a number. */
+const MAX_LISTED = 8;
+
 export const ConfigView = () => {
   const {
     storedKlasses,
     storedOptions,
+    steps,
     applyKlasses,
     setRoute,
     t,
@@ -39,6 +46,7 @@ export const ConfigView = () => {
   const [showAddClassDialog, setShowAddClassDialog] = useState(false);
   // Source first: a teacher usually has the classes written down already.
   const [classTab, setClassTab] = useState<"source" | "list">("source");
+  const [pendingImpact, setPendingImpact] = useState<KlassImpact | null>(null);
 
   // Get available data types: primitives + Array + defined classes
   const availableDataTypes = [
@@ -54,14 +62,27 @@ export const ConfigView = () => {
     setHasUnsavedChanges(klassesChanged || optionsChanged);
   }, [klasses, options, storedKlasses, storedOptions]);
 
-  const onSave = useCallback(() => {
+  const commit = useCallback(() => {
     // Class definitions belong to the whole diagram, so the store reconciles
     // every step's objects rather than only the one on screen.
     applyKlasses(klasses, options);
+    setPendingImpact(null);
     setHasUnsavedChanges(false);
     setShowSaveSuccess(true);
     setTimeout(() => setShowSaveSuccess(false), 2000);
   }, [applyKlasses, klasses, options]);
+
+  const onSave = useCallback(() => {
+    // Only ask when there is something to lose — pasting a whole file over the
+    // old classes can quietly delete what the objects were holding, but adding
+    // a field cannot, and a dialog that always appears is one nobody reads.
+    const impact = klassImpact(steps, klasses);
+    if (hasImpact(impact)) {
+      setPendingImpact(impact);
+      return;
+    }
+    commit();
+  }, [commit, klasses, steps]);
 
   const onView = useCallback(() => {
     if (hasUnsavedChanges) {
@@ -983,6 +1004,52 @@ export const ConfigView = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* What applying these classes costs the objects already drawn */}
+      {pendingImpact && (
+        <ConfirmDialog
+          title={t.applyClassesTitle}
+          confirmLabel={t.applyClassesConfirm}
+          cancelLabel={t.cancel}
+          destructive
+          onConfirm={commit}
+          onCancel={() => setPendingImpact(null)}
+        >
+          <p style={{ margin: "0 0 12px 0" }}>{t.applyClassesIntro}</p>
+          {(() => {
+            const lines = [
+              ...pendingImpact.orphaned.map(({ klass, count }) =>
+                t.applyClassesOrphaned(klass, count),
+              ),
+              ...pendingImpact.dropped.map(({ klass, field, count }) =>
+                t.applyClassesDropped(klass, field, count),
+              ),
+            ];
+            const shown = lines.slice(0, MAX_LISTED);
+            return (
+              <ul
+                style={{
+                  margin: 0,
+                  padding: "12px 12px 12px 32px",
+                  backgroundColor: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  borderRadius: "6px",
+                  color: "#991b1b",
+                }}
+              >
+                {shown.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+                {lines.length > shown.length && (
+                  <li style={{ listStyle: "none", marginLeft: "-16px" }}>
+                    {t.applyClassesMore(lines.length - shown.length)}
+                  </li>
+                )}
+              </ul>
+            );
+          })()}
+        </ConfirmDialog>
       )}
 
       {/* Add Class Dialog */}

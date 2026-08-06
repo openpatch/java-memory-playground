@@ -562,10 +562,26 @@ export const createMemoryStore = (
             set({
               klasses,
               options,
-              steps: get().steps.map((step) => ({
-                ...step,
-                nodes: step.nodes.map(reconcile),
-              })),
+              steps: get().steps.map((step) => {
+                const nodes = step.nodes.map(reconcile);
+                const byId = new Map(nodes.map((node) => [node.id, node]));
+
+                // A reference lives on the edge rather than in the attribute,
+                // so a field that is gone has to take its edge with it —
+                // otherwise the reference survives with nothing to draw it
+                // from and comes back if the field ever returns.
+                const edges = step.edges.filter((edge) => {
+                  const source = byId.get(edge.source);
+                  if (!source || source.type !== "object") return true;
+                  if (!edge.sourceHandle) return true;
+                  // An unknown class keeps its objects as they were, and an
+                  // array's slots are not attributes of a class.
+                  if (!klasses[source.data.klass]) return true;
+                  return edge.sourceHandle in source.data.attributes;
+                });
+
+                return { ...step, nodes, edges };
+              }),
             });
           },
 
