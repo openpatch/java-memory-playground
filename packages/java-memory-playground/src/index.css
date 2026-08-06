@@ -401,6 +401,26 @@ path.react-flow__edge-path:hover {
   min-width: 0;
 }
 
+/* React Flow centres this panel with `left: 50%`, which caps how wide it can
+   shrink-to-fit at half the canvas — so the bottom row wrapped with the whole
+   right half of the screen still empty. Percentages resolve against the flow
+   container, so an embedded playground gets its own width, not the page's. */
+.react-flow__panel.bottom.center {
+  width: max-content;
+  max-width: calc(100% - 30px);
+}
+
+/* Everything pinned along the bottom, in one row that wraps rather than two
+   panels that slide over each other when the canvas gets narrow. */
+.bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--jmp-space);
+  max-width: 100%;
+}
+
 .step-bar {
   display: flex;
   align-items: center;
@@ -412,8 +432,13 @@ path.react-flow__edge-path:hover {
   background: rgba(255, 255, 255, 0.92);
   border-radius: var(--jmp-radius);
   box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
-  flex-wrap: nowrap;
-  max-width: min(92vw, 940px);
+  /* Wrapping is a last resort — see `.step-bar > *`, which keeps the controls
+     at full size — but a second line beats a "Delete step" that has been
+     pushed off the edge of a phone. */
+  flex-wrap: wrap;
+  justify-content: center;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .step-bar__count {
@@ -422,8 +447,12 @@ path.react-flow__edge-path:hover {
   font-variant-numeric: tabular-nums;
 }
 
+/* The only part of the bar worth narrowing, so the row stays one row for as
+   long as it can. Everything else is a control that has to stay readable. */
 .java-memory-playground input.step-bar__label {
   width: 150px;
+  flex: 0 1 150px;
+  min-width: 64px;
 }
 
 .step-bar__label-text {
@@ -434,7 +463,8 @@ path.react-flow__edge-path:hover {
   max-width: 260px;
 }
 
-/* The bar is one row of controls; nothing in it should wrap into a column. */
+/* Controls keep their size rather than squeezing; when there is genuinely no
+   room the bar wraps and they move to a second line intact. */
 .step-bar > * {
   flex: none;
 }
@@ -496,8 +526,15 @@ path.react-flow__edge-path:hover {
   z-index: 2;
 }
 
+/* A sibling of the step bar in the bottom row, so it is dressed like one. */
 .gc-panel {
+  display: flex;
   align-items: center;
+  gap: var(--jmp-space);
+  padding: var(--jmp-space);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--jmp-radius);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
 }
 
 .gc-hint,

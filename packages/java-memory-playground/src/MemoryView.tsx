@@ -820,40 +820,46 @@ export const MemoryView = () => {
             )}
           </div>
         </Panel>
-        {!options.hideSteps && (
+        {/* One row along the bottom. The step bar and the collector used to be
+            their own panels, pinned to the centre and the right, which meant
+            they slid into each other on a narrow screen and the collector
+            covered "Add step". Sharing a row, they cannot overlap. */}
+        {(!options.hideSteps || !options.disableGarbageCollector) && (
           <Panel position="bottom-center">
-            <div className="button-group">
-              <StepBar editable={mode === "edit"} />
-            </div>
-          </Panel>
-        )}
-        {!options.disableGarbageCollector && (
-          <Panel position="bottom-right">
-            <div className="button-group gc-panel">
-              {gcResult && (
-                <span className="gc-result">
-                  {t.gcScore(gcResult.found, gcResult.missed, gcResult.wrong)}
-                </span>
-              )}
-              {options.gcPrediction && gcPrediction === null && (
-                <button className="button-gc" onClick={startGcPrediction}>
-                  {t.predictGarbage}
-                </button>
-              )}
-              {gcPrediction !== null && (
-                <>
-                  <span className="gc-hint">
-                    {t.predictGarbageHint(gcPrediction.length)}
-                  </span>
-                  <button onClick={cancelGcPrediction}>{t.cancel}</button>
-                </>
-              )}
-              {(!options.gcPrediction || gcPrediction !== null) && (
-                <button className="button-gc" onClick={collectGarbage}>
-                  {gcPrediction !== null
-                    ? t.checkAndCollect
-                    : t.runGarbageCollector}
-                </button>
+            <div className="bottom-bar">
+              {!options.hideSteps && <StepBar editable={mode === "edit"} />}
+              {!options.disableGarbageCollector && (
+                <div className="button-group gc-panel">
+                  {gcResult && (
+                    <span className="gc-result">
+                      {t.gcScore(
+                        gcResult.found,
+                        gcResult.missed,
+                        gcResult.wrong,
+                      )}
+                    </span>
+                  )}
+                  {options.gcPrediction && gcPrediction === null && (
+                    <button className="button-gc" onClick={startGcPrediction}>
+                      {t.predictGarbage}
+                    </button>
+                  )}
+                  {gcPrediction !== null && (
+                    <>
+                      <span className="gc-hint">
+                        {t.predictGarbageHint(gcPrediction.length)}
+                      </span>
+                      <button onClick={cancelGcPrediction}>{t.cancel}</button>
+                    </>
+                  )}
+                  {(!options.gcPrediction || gcPrediction !== null) && (
+                    <button className="button-gc" onClick={collectGarbage}>
+                      {gcPrediction !== null
+                        ? t.checkAndCollect
+                        : t.runGarbageCollector}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </Panel>
