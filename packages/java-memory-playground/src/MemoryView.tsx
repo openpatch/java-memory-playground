@@ -11,7 +11,7 @@ import {
   MarkerType,
   useReactFlow,
 } from "@xyflow/react";
-import { downloadAllSteps, downloadStep } from "./exportSteps";
+import { captureDiagram, downloadAllSteps } from "./exportSteps";
 import useStore, { useMemoryStore } from "./storeContext";
 import { useUndoRedo } from "./useUndoRedo";
 import { RFState } from "./store";
@@ -119,7 +119,8 @@ export const MemoryView = () => {
     collectGarbage,
     t,
   } = useStore(useShallow(selector));
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, getViewport, setViewport, fitView } =
+    useReactFlow();
   const store = useMemoryStore();
   const connectingNode = useRef<OnConnectStartParams | null>(null);
   // Scoped to this instance so that exporting works when a page embeds more
@@ -410,24 +411,49 @@ export const MemoryView = () => {
     setRoute("config");
   };
 
-  const onDownloadPng = () => {
-    if (!flowRef.current) return;
-    downloadStep(flowRef.current, nodes, "java-memory-playground.png");
+  const settle = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  /**
+   * Photographs the step on screen, framing the whole diagram first so that
+   * nothing scrolled out of view is missing from the picture, and putting the
+   * view back afterwards.
+   */
+  const captureCurrentStep = async () => {
+    if (!flowRef.current) return null;
+    const before = getViewport();
+    fitView({ padding: 0.12, duration: 0 });
+    await settle(120);
+    const dataUrl = await captureDiagram(
+      flowRef.current,
+      store.getState().getNodes(),
+      getViewport(),
+    );
+    setViewport(before);
+    return dataUrl;
+  };
+
+  const onDownloadPng = async () => {
+    const dataUrl = await captureCurrentStep();
+    if (!dataUrl) return;
+    const a = document.createElement("a");
+    a.setAttribute("download", "java-memory-playground.png");
+    a.setAttribute("href", dataUrl);
+    a.click();
   };
 
   const onDownloadAllPng = async () => {
     if (!flowRef.current) return;
     const back = currentStep;
     await downloadAllSteps({
-      flowElement: flowRef.current,
       stepCount: steps.length,
       labelFor: (i) => steps[i]?.label ?? "",
       showStep: async (i) => {
         goToStep(i);
         // Let the step render and be measured before it is photographed.
-        await new Promise((resolve) => setTimeout(resolve, 320));
+        await settle(320);
       },
-      nodesNow: () => store.getState().getNodes(),
+      captureNow: captureCurrentStep,
     });
     goToStep(back);
   };
@@ -720,12 +746,21 @@ export const MemoryView = () => {
           const source = nodes.find((n) => n.id == e.source);
           const stack = stackClass.get(e.source) ?? "";
           const live = stack === "last-method-call" || source?.type === "variable";
+          const changed = showChanges && diff.edges.has(e.id);
           const classes = [live ? "last-method-call" : stack];
-          if (showChanges && diff.edges.has(e.id)) classes.push("step-changed");
+          if (changed) classes.push("step-changed");
           return {
             ...e,
             className: classes.filter(Boolean).join(" "),
             deletable: live,
+            // Inline rather than left to the stylesheet: exporting deep-clones
+            // the edge SVG, which drops anything a stylesheet contributed, and
+            // a reference with no stroke is an invisible one.
+            style: {
+              stroke: changed ? "#f59e0b" : "grey",
+              strokeWidth: 4,
+              opacity: changed || live ? 1 : stack ? 0.6 : 0.2,
+            },
           };
         })}
         elevateEdgesOnSelect={true}

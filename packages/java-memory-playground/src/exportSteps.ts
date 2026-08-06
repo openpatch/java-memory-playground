@@ -1,7 +1,22 @@
-import { getNodesBounds, getViewportForBounds } from "@xyflow/react";
+import { getNodesBounds, Viewport } from "@xyflow/react";
 import { toPng } from "html-to-image";
 
 import { CustomNodeType } from "./types";
+
+/**
+ * Everything floating over the diagram rather than part of it.
+ *
+ * `react-flow__panel` covers the palette, the toolbar, the step bar, the
+ * collector and React Flow's own zoom controls in one go, so a panel added
+ * later does not have to be remembered here.
+ */
+const excludeChrome = (node: HTMLElement) =>
+  !(
+    node?.classList?.contains("react-flow__panel") ||
+    node?.classList?.contains("react-flow__background") ||
+    node?.classList?.contains("react-flow__minimap") ||
+    node?.classList?.contains("react-flow__attribution")
+  );
 
 const loadImage = (src: string) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
@@ -18,47 +33,83 @@ const download = (dataUrl: string, name: string) => {
   a.click();
 };
 
+const PIXEL_RATIO = 2;
+const MARGIN = 28;
+
 /**
- * A picture of the diagram alone.
+ * A picture of the diagram alone, cropped to the nodes.
  *
- * Photographing the whole canvas loses the references: React Flow keeps them in
- * a transformed container that measures 0x0, which html-to-image drops. So the
- * viewport is captured instead, framed to the nodes — which also crops away the
- * empty canvas and every floating panel, none of which belong in a diagram.
+ * The whole flow is photographed rather than just its viewport, because the
+ * arrowheads are SVG markers defined outside the viewport and a reference
+ * without its arrowhead has lost which way it points. The empty canvas around
+ * the diagram is then cropped away.
+ *
+ * Callers are expected to have framed the diagram first — anything scrolled out
+ * of view was never photographed and cannot be cropped back in.
  */
 export const captureDiagram = async (
   flowElement: HTMLElement,
   nodes: CustomNodeType[],
+  viewport: Viewport,
 ): Promise<string | null> => {
-  const viewport = flowElement.querySelector<HTMLElement>(
-    ".react-flow__viewport",
-  );
-  if (!viewport || nodes.length === 0) return null;
+  if (nodes.length === 0) return null;
 
-  const bounds = getNodesBounds(nodes);
-  const margin = 40;
-  const width = Math.ceil(bounds.width) + margin * 2;
-  const height = Math.ceil(bounds.height) + margin * 2;
-  const framed = getViewportForBounds(bounds, width, height, 0.2, 4, 0.1);
-
-  return toPng(viewport, {
+  const dataUrl = await toPng(flowElement, {
+    filter: excludeChrome,
     backgroundColor: "#ffffff",
-    width,
-    height,
-    style: {
-      width: `${width}px`,
-      height: `${height}px`,
-      transform: `translate(${framed.x}px, ${framed.y}px) scale(${framed.zoom})`,
-    },
+    pixelRatio: PIXEL_RATIO,
   });
+  const shot = await loadImage(dataUrl);
+
+  // Where the nodes ended up on screen, in the flow element's own coordinates.
+  const bounds = getNodesBounds(nodes);
+  const left = bounds.x * viewport.zoom + viewport.x - MARGIN;
+  const top = bounds.y * viewport.zoom + viewport.y - MARGIN;
+  const width = bounds.width * viewport.zoom + MARGIN * 2;
+  const height = bounds.height * viewport.zoom + MARGIN * 2;
+
+  const clampedLeft = Math.max(0, Math.round(left));
+  const clampedTop = Math.max(0, Math.round(top));
+  const clampedWidth = Math.min(
+    Math.round(width),
+    Math.round(shot.width / PIXEL_RATIO) - clampedLeft,
+  );
+  const clampedHeight = Math.min(
+    Math.round(height),
+    Math.round(shot.height / PIXEL_RATIO) - clampedTop,
+  );
+  if (clampedWidth <= 0 || clampedHeight <= 0) return dataUrl;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = clampedWidth * PIXEL_RATIO;
+  canvas.height = clampedHeight * PIXEL_RATIO;
+  const context = canvas.getContext("2d");
+  if (!context) return dataUrl;
+
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(
+    shot,
+    clampedLeft * PIXEL_RATIO,
+    clampedTop * PIXEL_RATIO,
+    canvas.width,
+    canvas.height,
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  );
+
+  return canvas.toDataURL("image/png");
 };
 
 export const downloadStep = async (
   flowElement: HTMLElement,
   nodes: CustomNodeType[],
+  viewport: Viewport,
   name: string,
 ) => {
-  const dataUrl = await captureDiagram(flowElement, nodes);
+  const dataUrl = await captureDiagram(flowElement, nodes, viewport);
   if (dataUrl) download(dataUrl, name);
 };
 
@@ -69,27 +120,25 @@ export const downloadStep = async (
  * exporting the step on screen gives you.
  */
 export const downloadAllSteps = async ({
-  flowElement,
   stepCount,
   labelFor,
   showStep,
-  nodesNow,
+  captureNow,
   fileName = "java-memory-playground.png",
 }: {
-  flowElement: HTMLElement;
   stepCount: number;
   labelFor: (index: number) => string;
-  /** Puts a step on screen and resolves once it has been drawn and measured. */
+  /** Puts a step on screen, framed and measured, ready to be photographed. */
   showStep: (index: number) => Promise<void>;
-  /** The nodes of the step now on screen, measured. */
-  nodesNow: () => CustomNodeType[];
+  /** Photographs the step now on screen. */
+  captureNow: () => Promise<string | null>;
   fileName?: string;
 }) => {
   const shots: { image: HTMLImageElement; caption: string }[] = [];
 
   for (let i = 0; i < stepCount; i++) {
     await showStep(i);
-    const dataUrl = await captureDiagram(flowElement, nodesNow());
+    const dataUrl = await captureNow();
     if (!dataUrl) continue;
     shots.push({
       image: await loadImage(dataUrl),
@@ -99,8 +148,8 @@ export const downloadAllSteps = async ({
 
   if (shots.length === 0) return;
 
-  const captionHeight = 44;
-  const gap = 12;
+  const captionHeight = 44 * PIXEL_RATIO;
+  const gap = 12 * PIXEL_RATIO;
   const width = Math.max(...shots.map((s) => s.image.width));
   const height = shots.reduce(
     (total, s) => total + s.image.height + captionHeight + gap,
@@ -121,9 +170,9 @@ export const downloadAllSteps = async ({
     context.fillStyle = "#f1f5f9";
     context.fillRect(0, y, width, captionHeight);
     context.fillStyle = "#0f172a";
-    context.font = "600 20px system-ui, sans-serif";
+    context.font = `600 ${20 * PIXEL_RATIO}px system-ui, sans-serif`;
     context.textBaseline = "middle";
-    context.fillText(caption, 16, y + captionHeight / 2);
+    context.fillText(caption, 16 * PIXEL_RATIO, y + captionHeight / 2);
     y += captionHeight;
 
     context.drawImage(image, 0, y);

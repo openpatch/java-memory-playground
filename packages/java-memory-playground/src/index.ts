@@ -15,7 +15,7 @@ export { canonicalRoots, checkAgainst } from "./canonical";
 export type { ExerciseResult } from "./canonical";
 export { optionPresets } from "./presets";
 export type { PresetName } from "./presets";
-export { downloadStep, downloadAllSteps } from "./exportSteps";
+export { captureDiagram, downloadAllSteps } from "./exportSteps";
 export type { StepDiff } from "./stepDiff";
 
 export {
