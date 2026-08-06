@@ -28,6 +28,7 @@ export interface Translations {
   // Nodes
   declareLocalVariable: string;
   returnMethod: string;
+  returnOnlyTopOfStack: string;
 
   // Dialogs
   ok: string;
@@ -71,6 +72,7 @@ export interface Translations {
     createNewOnEdgeDrop: string;
     inlineStrings: string;
     hideSteps: string;
+    hideStepChanges: string;
   };
 }
 
@@ -98,6 +100,8 @@ const en: Translations = {
 
   declareLocalVariable: "Declare Local Variable",
   returnMethod: "Return",
+  returnOnlyTopOfStack:
+    "Only the method on top of the stack can return — the calls above it have to finish first",
 
   ok: "OK",
   cancel: "Cancel",
@@ -140,6 +144,7 @@ const en: Translations = {
     createNewOnEdgeDrop: "Create a new object when an edge is dropped",
     inlineStrings: "Show String values inside their object",
     hideSteps: "Hide the step bar",
+    hideStepChanges: "Do not mark what changed in a step",
   },
 };
 
@@ -167,6 +172,8 @@ const de: Translations = {
 
   declareLocalVariable: "Lokale Variable deklarieren",
   returnMethod: "Zurückkehren",
+  returnOnlyTopOfStack:
+    "Nur die oberste Methode auf dem Stapel kann zurückkehren — die Aufrufe darüber müssen zuerst beendet werden",
 
   ok: "OK",
   cancel: "Abbrechen",
@@ -209,6 +216,7 @@ const de: Translations = {
     createNewOnEdgeDrop: "Neues Objekt erstellen, wenn eine Kante abgelegt wird",
     inlineStrings: "String-Werte im Objekt anzeigen",
     hideSteps: "Schrittleiste ausblenden",
+    hideStepChanges: "Änderungen eines Schritts nicht hervorheben",
   },
 };
 

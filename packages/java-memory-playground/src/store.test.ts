@@ -179,6 +179,50 @@ describe("createMemoryStore", () => {
   });
 });
 
+describe("the call stack", () => {
+  const frame = (index: number) => ({
+    name: `f${index}`,
+    index,
+    localVariables: {},
+    position: { x: 0, y: index * 40 },
+  });
+
+  const withFrames = (indices: number[]) => {
+    const store = createMemoryStore(false);
+    store.getState().loadMemory({
+      ...emptyMemory,
+      methodCalls: Object.fromEntries(indices.map((i) => [i, frame(i)])),
+    });
+    return store;
+  };
+
+  test("a new frame goes on top of the deepest one", () => {
+    const store = withFrames([0, 1, 2]);
+    const nodes = store.getState().getNodes();
+    const deepest = Math.max(
+      ...nodes.filter((n: any) => n.type === "method-call").map((n: any) => n.data.index),
+    );
+
+    expect(deepest).toBe(2);
+  });
+
+  test("frame indices stay unique after one returns", () => {
+    // Counting the frames to pick the next index handed out one a surviving
+    // frame already had, as soon as a frame in the middle was gone.
+    const store = withFrames([0, 2]);
+    const indices = store
+      .getState()
+      .getNodes()
+      .filter((n: any) => n.type === "method-call")
+      .map((n: any) => n.data.index);
+
+    const next = Math.max(...indices, -1) + 1;
+
+    expect(indices).toEqual([0, 2]);
+    expect(indices).not.toContain(next);
+  });
+});
+
 describe("mode", () => {
   test("a playground is the student's unless asked otherwise", () => {
     expect(createMemoryStore(false).getState().mode).toBe("view");

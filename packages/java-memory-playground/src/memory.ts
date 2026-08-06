@@ -136,6 +136,11 @@ export type Memory = {
     inlineStrings?: boolean;
     /** Hide the step bar, for lessons that are about one picture. */
     hideSteps?: boolean;
+    /**
+     * Stop marking what a step changed compared with the one before it. The
+     * marking is usually the point of a trace, so it is on by default.
+     */
+    hideStepChanges?: boolean;
   };
   klasses: Klasses;
   /**

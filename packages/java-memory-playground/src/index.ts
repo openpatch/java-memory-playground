@@ -10,6 +10,8 @@ export { ConfigView } from "./ConfigView";
 export { KeyboardShortcuts, defaultKeyBindings } from "./KeyboardShortcuts";
 export { InlineString } from "./InlineString";
 export { StepBar } from "./StepBar";
+export { diffSteps, emptyDiff } from "./stepDiff";
+export type { StepDiff } from "./stepDiff";
 
 export {
   createMemoryStore,

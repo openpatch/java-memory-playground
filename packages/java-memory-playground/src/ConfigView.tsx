@@ -414,6 +414,28 @@ export const ConfigView = () => {
             />
             {t.optionLabels.inlineStrings}
           </label>
+          <label style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "14px",
+            color: "#374151",
+            cursor: "pointer"
+          }}>
+            <input
+              type="checkbox"
+              checked={options.hideStepChanges || false}
+              onChange={(e) =>
+                handleOptionChange("hideStepChanges", e.target.checked)
+              }
+              style={{
+                width: "16px",
+                height: "16px",
+                cursor: "pointer"
+              }}
+            />
+            {t.optionLabels.hideStepChanges}
+          </label>
         </div>
       </div>
 

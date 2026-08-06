@@ -371,6 +371,11 @@ path.react-flow__edge-path:hover {
   gap: 8px;
   padding: 8px;
   font-size: 14px;
+  /* The bar floats over the canvas, so it needs to stay legible when a node
+     happens to sit underneath it. */
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
 }
 
 .step-bar__count {
@@ -385,4 +390,34 @@ path.react-flow__edge-path:hover {
 
 .step-bar__label-text {
   padding: 0 4px;
+}
+
+/* What a step changed, compared with the step before it. The marks sit on top
+   of the fading that shows how far down the call stack a node hangs, so they
+   have to stay visible on a faded node. */
+.react-flow__node.step-added,
+.react-flow__node.step-changed {
+  opacity: 1;
+}
+
+.react-flow__node.step-added::after,
+.react-flow__node.step-changed::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.react-flow__node.step-added::after {
+  border: 3px solid #22c55e;
+}
+
+.react-flow__node.step-changed::after {
+  border: 3px dashed #f59e0b;
+}
+
+.react-flow__edge.step-changed .react-flow__edge-path {
+  stroke: #f59e0b !important;
+  opacity: 1;
 }

@@ -5,6 +5,7 @@ import {
   NodeProps,
   Position,
   useEdges,
+  useNodes,
   useReactFlow,
 } from "@xyflow/react";
 import {
@@ -148,15 +149,27 @@ function MethodCallNode({
   data,
   onDeclareVariable,
 }: NodeProps<MethodCallNodeType> & { onDeclareVariable?: (nodeId: string) => void }) {
-  const { setNodes } = useReactFlow<CustomNodeType, CustomEdgeType>();
+  const { setNodes, setEdges } = useReactFlow<CustomNodeType, CustomEdgeType>();
   const edges = useEdges<CustomEdgeType>();
+  const nodes = useNodes<CustomNodeType>();
   const t = useStore((state) => state.getTranslations());
   const inlineStrings = useStore((state) => state.options.inlineStrings);
 
   const localVariablesEdges = edges.filter((e) => e.source == id);
 
+  // Only the frame on top of the stack can return. Popping one from the middle
+  // is the one thing a stack cannot do, so the button says so rather than
+  // disappearing — that a call has to finish first is the lesson.
+  const isTopOfStack = !nodes.some(
+    (n) => isMethodCallNode(n) && n.data.index > data.index,
+  );
+
   const handleReturn = () => {
+    if (!isTopOfStack) return;
     setNodes((nds) => nds.filter((n) => n.id != id));
+    // The references the frame held go with it; the objects they pointed at may
+    // now be unreachable, which is exactly what the garbage collector shows.
+    setEdges((eds) => eds.filter((e) => e.source != id));
   };
 
   const handleDeclareLocaleVariable = () => {
@@ -197,7 +210,12 @@ function MethodCallNode({
           >
             {t.declareLocalVariable}
           </button>
-          <button className="method-call-node__return" onClick={handleReturn}>
+          <button
+            className="method-call-node__return"
+            onClick={handleReturn}
+            disabled={!isTopOfStack}
+            title={isTopOfStack ? undefined : t.returnOnlyTopOfStack}
+          >
             {t.returnMethod}
           </button>
         </div>

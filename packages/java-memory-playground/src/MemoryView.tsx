@@ -21,6 +21,7 @@ import VariableNode from "./VariableNode";
 import { useCallback, useState, useRef, useMemo } from "react";
 import { Sidebar } from "./Sidebar";
 import { StepBar } from "./StepBar";
+import { diffSteps } from "./stepDiff";
 import {
   Attribute,
   builtInDataTypes,
@@ -56,6 +57,7 @@ const selector = (state: RFState) => ({
   onEdgesChange: state.onEdgesChange,
   save: state.save,
   mode: state.mode,
+  previousStep: state.steps[state.currentStep - 1],
   t: state.getTranslations(),
 });
 
@@ -97,6 +99,7 @@ export const MemoryView = () => {
     onEdgesChange,
     save,
     mode,
+    previousStep,
     t,
   } = useStore(useShallow(selector));
   const { screenToFlowPosition } = useReactFlow();
@@ -431,7 +434,10 @@ export const MemoryView = () => {
         t.createMethodCall,
         t.methodName,
         (name) => {
-          const index = nodes.filter((n) => n.type === "method-call").length;
+          // One past the deepest frame. Counting the frames instead used to
+          // hand out an index that a surviving frame already had.
+          const index =
+            nodes.filter(isMethodCallNode).reduce((max, n) => Math.max(max, n.data.index), -1) + 1;
           const newNode: CustomNodeType = {
             id: getId(),
             type: "method-call",
@@ -634,6 +640,40 @@ export const MemoryView = () => {
     },
     [createNodeAtPosition]);
 
+  // How far down the call stack a node hangs, for the fading of older frames.
+  // Computed once rather than assigned onto the store's nodes while rendering,
+  // which the edges below then read back.
+  const stackClass = useMemo(() => {
+    const classes = new Map<string, string>();
+    nodes.forEach((n) => {
+      let c = "";
+      if (
+        previousMethodCall !== undefined &&
+        isConnectedTo(n.id, previousMethodCall.id, nodes, edges)
+      ) {
+        c = "previous-method-call";
+      }
+      if (n.id === previousMethodCall?.id) c = "previous-method-call";
+      if (
+        (lastMethodCall !== undefined &&
+          isConnectedTo(n.id, lastMethodCall.id, nodes, edges)) ||
+        isConnectedToVariable(n.id, nodes, edges)
+      ) {
+        c = "last-method-call";
+      }
+      if (n.id === lastMethodCall?.id) c = "last-method-call";
+      classes.set(n.id, c);
+    });
+    return classes;
+  }, [nodes, edges, previousMethodCall, lastMethodCall]);
+
+  // What this step changed. The first step of a story changed nothing.
+  const showChanges = !options.hideStepChanges;
+  const diff = useMemo(
+    () => diffSteps(previousStep, { nodes, edges }),
+    [previousStep, nodes, edges],
+  );
+
   // While Strings are inlined they are still real objects with real references
   // — they are only left out of the drawing, and out of it as edge targets.
   const { visibleNodes, visibleEdges } = useMemo(() => {
@@ -658,47 +698,29 @@ export const MemoryView = () => {
         ref={flowRef}
         className="memory"
         nodes={visibleNodes.map((n) => {
-          n.className = "";
-          n.deletable = options.disableGarbageCollector;
-          if (
-            previousMethodCall !== undefined &&
-            isConnectedTo(n.id, previousMethodCall.id, nodes, edges)
-          ) {
-            n.className = "previous-method-call";
+          const classes = [stackClass.get(n.id) ?? ""];
+          if (showChanges) {
+            if (diff.added.has(n.id)) classes.push("step-added");
+            else if (diff.changed.has(n.id)) classes.push("step-changed");
           }
-          if (n.id === previousMethodCall?.id) {
-            n.className = "previous-method-call";
-          }
-          if (
-            (lastMethodCall !== undefined &&
-              isConnectedTo(n.id, lastMethodCall.id, nodes, edges)) ||
-            isConnectedToVariable(n.id, nodes, edges)
-          ) {
-            n.className = "last-method-call";
-          }
-          if (n.id === lastMethodCall?.id) {
-            n.className = "last-method-call";
-          }
-          if (n.type === "variable") {
-            n.deletable = true;
-          }
-          return { ...n };
+          return {
+            ...n,
+            className: classes.filter(Boolean).join(" "),
+            deletable:
+              n.type === "variable" ? true : options.disableGarbageCollector,
+          };
         })}
         edges={visibleEdges.map((e) => {
-          const node = nodes.find((n) => n.id == e.source);
-          e.className = "";
-          e.deletable = false;
-          if (node && node.className?.includes("previous-method-call")) {
-            e.className = "previous-method-call";
-          }
-          if (
-            (node && node.className?.includes("last-method-call")) ||
-            node?.type === "variable"
-          ) {
-            e.className = "last-method-call";
-            e.deletable = true;
-          }
-          return { ...e };
+          const source = nodes.find((n) => n.id == e.source);
+          const stack = stackClass.get(e.source) ?? "";
+          const live = stack === "last-method-call" || source?.type === "variable";
+          const classes = [live ? "last-method-call" : stack];
+          if (showChanges && diff.edges.has(e.id)) classes.push("step-changed");
+          return {
+            ...e,
+            className: classes.filter(Boolean).join(" "),
+            deletable: live,
+          };
         })}
         elevateEdgesOnSelect={true}
         defaultEdgeOptions={{

@@ -108,9 +108,26 @@ stepping through.
 <MemoryPlayground step={step} onStepChange={setStep} />
 ```
 
+### What a step changed
+
+Walking a trace is only useful if you can see what moved, so each step marks
+itself against the one before it: a green outline for what appeared, a dashed
+amber one for what changed, and an amber reference for one that was assigned or
+repointed. The first step of a story marks nothing, because nothing has happened
+yet. Set `hideStepChanges` to turn the marking off.
+
+`diffSteps` is exported if you want the same comparison elsewhere.
+
 A diagram with one step is just a picture, and is still saved in the shape it
 always had, so a link to a single diagram stays readable by older versions. Set
 `hideSteps` to hide the bar entirely.
+
+### The call stack
+
+Only the frame on top of the stack can return; the others say so rather than
+hiding the button, because a call having to finish before the one below it
+resumes is the lesson. Returning takes the frame's references with it, which is
+what leaves an object unreachable for the garbage collector to find.
 
 ## Strings
 
