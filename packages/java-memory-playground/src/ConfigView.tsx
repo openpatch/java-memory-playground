@@ -5,6 +5,7 @@ import { useCallback, useState, useEffect } from "react";
 import { DataType, builtInDataTypes } from "./memory";
 import { SimpleInputDialog } from "./SimpleInputDialog";
 import { optionPresets } from "./presets";
+import { ClassSource } from "./ClassSource";
 
 const selector = (state: RFState) => ({
   storedKlasses: state.klasses,
@@ -36,6 +37,8 @@ export const ConfigView = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [showAddClassDialog, setShowAddClassDialog] = useState(false);
+  // Source first: a teacher usually has the classes written down already.
+  const [classTab, setClassTab] = useState<"source" | "list">("source");
 
   // Get available data types: primitives + Array + defined classes
   const availableDataTypes = [
@@ -490,28 +493,66 @@ export const ConfigView = () => {
             marginBottom: "16px",
           }}
         >
-          <h2 style={{
-            margin: "0",
-            color: "#111827",
-            fontSize: "18px",
-            fontWeight: "600"
-          }}>{t.classes}</h2>
-          <button
-            onClick={handleAddKlass}
-            style={{
-              backgroundColor: "#111827",
-              color: "white",
-              padding: "8px 16px",
-              fontSize: "14px",
-              fontWeight: "500",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer"
-            }}
-          >{t.addClass}</button>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <h2 style={{
+              margin: "0",
+              color: "#111827",
+              fontSize: "18px",
+              fontWeight: "600"
+            }}>{t.classes}</h2>
+            <div style={{ display: "flex", gap: "4px" }}>
+              {(
+                [
+                  ["source", t.classSource],
+                  ["list", t.classList],
+                ] as const
+              ).map(([name, label]) => (
+                <button
+                  key={name}
+                  onClick={() => setClassTab(name)}
+                  aria-pressed={classTab === name}
+                  style={{
+                    backgroundColor: classTab === name ? "#111827" : "white",
+                    color: classTab === name ? "white" : "#374151",
+                    padding: "6px 12px",
+                    fontSize: "13px",
+                    fontWeight: "500",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {classTab === "list" && (
+            <button
+              onClick={handleAddKlass}
+              style={{
+                backgroundColor: "#111827",
+                color: "white",
+                padding: "8px 16px",
+                fontSize: "14px",
+                fontWeight: "500",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer"
+              }}
+            >{t.addClass}</button>
+          )}
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {classTab === "source" && (
+          <ClassSource klasses={klasses} onChange={setKlasses} t={t} />
+        )}
+
+        <div style={{
+          display: classTab === "list" ? "flex" : "none",
+          flexDirection: "column",
+          gap: "16px",
+        }}>
           {Object.entries(klasses).map(([klassName, klass]) => (
             <div
               key={klassName}

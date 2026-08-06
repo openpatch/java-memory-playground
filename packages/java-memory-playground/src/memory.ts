@@ -1,4 +1,12 @@
-export const numericDataTypes = ["int", "float", "double", "char"];
+export const numericDataTypes = [
+  "int",
+  "long",
+  "short",
+  "byte",
+  "float",
+  "double",
+  "char",
+];
 
 /**
  * The eight-ish types whose value really is stored in the variable itself.
@@ -9,7 +17,7 @@ export const numericDataTypes = ["int", "float", "double", "char"];
  * collapses them by default — but that is a display choice (`options.
  * inlineStrings`), not a claim about how memory works.
  */
-export const primitveDataTypes = ["int", "float", "double", "char", "boolean"];
+export const primitveDataTypes = [...numericDataTypes, "boolean"];
 
 /** The class name of the heap objects that hold String values. */
 export const STRING_KLASS = "String";
@@ -19,6 +27,9 @@ export const builtInDataTypes = [...primitveDataTypes, STRING_KLASS];
 
 export type DataType =
   | "int"
+  | "long"
+  | "short"
+  | "byte"
   | "float"
   | "char"
   | "double"

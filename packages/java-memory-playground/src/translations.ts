@@ -70,6 +70,10 @@ export interface Translations {
   addAttribute: string;
   attributeName: string;
   dataType: string;
+  classSource: string;
+  classList: string;
+  classSourceHint: string;
+  classSourcePlaceholder: string;
   options: string;
   presets: string;
   presetReferences: string;
@@ -164,6 +168,11 @@ const en: Translations = {
   addAttribute: "Add Attribute",
   attributeName: "Attribute Name",
   dataType: "Data Type",
+  classSource: "Java source",
+  classList: "Class list",
+  classSourceHint:
+    "Paste the classes of your example. Only their structure is read — class names and the name and type of each field. Method bodies are ignored and nothing is executed.",
+  classSourcePlaceholder: "class Node {\n    int value;\n    Node next;\n}",
   options: "Options",
   presets: "Presets",
   presetReferences: "References only",
@@ -260,6 +269,11 @@ const de: Translations = {
   addAttribute: "Attribut hinzufügen",
   attributeName: "Attributname",
   dataType: "Datentyp",
+  classSource: "Java-Quelltext",
+  classList: "Klassenliste",
+  classSourceHint:
+    "Füge die Klassen deines Beispiels ein. Gelesen wird nur ihre Struktur — die Klassennamen und Name und Typ jedes Attributs. Methodenrümpfe werden übersprungen, ausgeführt wird nichts.",
+  classSourcePlaceholder: "class Node {\n    int value;\n    Node next;\n}",
   options: "Optionen",
   presets: "Voreinstellungen",
   presetReferences: "Nur Referenzen",

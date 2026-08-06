@@ -155,6 +155,33 @@ hiding the button, because a call having to finish before the one below it
 resumes is the lesson. Returning takes the frame's references with it, which is
 what leaves an object unreachable for the garbage collector to find.
 
+## Classes from Java source
+
+A teacher usually has the classes already — in a worksheet, in an IDE, on a
+slide — so the config view takes them as Java rather than asking for them field
+by field:
+
+```java
+class Node {
+    int value;
+    Node next;
+}
+```
+
+Only the structure is read: class names, and the name and type of each field.
+Method bodies are skipped whole, initialisers are dropped, and **nothing is
+executed or interpreted** — the source describes the shape of the objects a
+diagram will contain, not a program the playground runs. Comments, generics
+(`List<Node>` is a `List`), qualified names (`java.lang.String` is a `String`),
+arrays either way round (`int[] a` and `int a[]`), records, and several names in
+one declaration are all understood.
+
+Half-written source does not throw the classes away: what cannot be read is
+reported above the editor and the last readable classes stay.
+
+The **Class list** tab is the same classes as a table, for adding one field
+without touching the source. `parseJavaClasses` and `toJavaSource` are exported.
+
 ## Strings
 
 A String is a reference type, so a String value lives on the heap like any other
