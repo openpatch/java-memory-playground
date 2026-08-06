@@ -59,7 +59,7 @@ export function InlineString({
     // First keystroke into a null reference: allocate the String object.
     const owner = nodes.find((n) => n.id === nodeId);
     const position = {
-      x: (owner?.position.x ?? 0) + 280,
+      x: (owner?.position.x ?? 0) + 220,
       y: (owner?.position.y ?? 0) + 40,
     };
     const id = getRanMemoryAdress(16, new Set(nodes.map((n) => n.id)));
@@ -98,6 +98,9 @@ export function InlineString({
           type="text"
           value={literal}
           onChange={onChange}
+          // Sized to what it holds: an empty String should not reserve room
+          // for a sentence, and a long one should not be cut off mid-word.
+          size={Math.min(Math.max(literal.length + 1, 4), 18)}
           className="object-node__attribute-value inline-string__input"
         />
       )}

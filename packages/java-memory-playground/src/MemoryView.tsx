@@ -12,6 +12,7 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { captureDiagram, downloadAllSteps } from "./exportSteps";
+import { fitPaddingFor } from "./fitPadding";
 import useStore, { useMemoryStore } from "./storeContext";
 import { useUndoRedo } from "./useUndoRedo";
 import { RFState } from "./store";
@@ -773,6 +774,7 @@ export const MemoryView = () => {
           hideAttribution: true,
         }}
         fitView
+        fitViewOptions={{ padding: fitPaddingFor(options) }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         minZoom={0.1}

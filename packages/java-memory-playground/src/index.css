@@ -7,12 +7,23 @@
   height: 100%;
   background: white;
   color: #222;
+
+  /* How tightly the canvas is packed, in one place. A diagram is read as a
+     whole — a list of five nodes, a stack three frames deep — so every pixel
+     of padding inside a node is a pixel of diagram that has to go somewhere
+     else. Raise these to loosen everything at once. */
+  --jmp-space: 4px;
+  --jmp-space-lg: 8px;
+  --jmp-radius: 6px;
+  /* Handles are drag targets as well as dots, so they stay well above React
+     Flow's own 6px default. */
+  --jmp-handle: 14px;
 }
 
 .button-group {
   display: flex;
-  gap: 8px;
-  padding: 8px;
+  gap: var(--jmp-space);
+  padding: var(--jmp-space);
 }
 
 .java-memory-playground button {
@@ -20,8 +31,8 @@
   color: grey;
   cursor: pointer;
   border: 0;
-  border-radius: 10px;
-  padding: 8px;
+  border-radius: var(--jmp-radius);
+  padding: 5px 9px;
   font-family: inherit;
 }
 
@@ -47,13 +58,14 @@
 .java-memory-playground input {
   display: inline-block;
   border-width: 1px;
-  margin-left: 4px;
+  margin-left: 3px;
   border-style: solid;
-  border-radius: 8px;
+  border-radius: var(--jmp-radius);
   border-color: grey;
-  width: 80px;
-  padding: 4px;
+  width: 64px;
+  padding: 2px 4px;
   font-family: inherit;
+  font-size: 12px;
 }
 
 .memory {
@@ -70,50 +82,44 @@
 /* The palette floats over the canvas like the other controls rather than
    taking a column out of it, so a small embed keeps its width for the diagram. */
 .sidebar {
-  width: 170px;
+  width: 132px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 8px;
+  gap: var(--jmp-space);
+  padding: var(--jmp-space);
   background: rgba(255, 255, 255, 0.92);
-  border-radius: 10px;
+  border-radius: var(--jmp-radius);
   box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
   /* Never taller than the canvas: a class-heavy diagram scrolls instead. */
   max-height: calc(100% - 30px);
   overflow-y: auto;
 }
 
-.sidebar-class {
-  font-size: 14px;
+.sidebar-class,
+.sidebar-variable,
+.sidebar-method-call {
+  font-size: 13px;
   border: 1px solid #000;
-  padding: 8px;
-  background: white;
-  border-radius: 8px;
+  padding: 5px 8px;
+  border-radius: var(--jmp-radius);
   text-align: center;
   cursor: grab;
   user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-class {
+  background: white;
 }
 
 .sidebar-variable {
-  font-size: 14px;
-  border: 1px solid #000;
   background: #9fe2bf;
-  padding: 8px;
-  border-radius: 8px;
-  text-align: center;
-  cursor: grab;
-  user-select: none;
 }
 
 .sidebar-method-call {
-  font-size: 14px;
-  border: 1px solid #000;
   background: #faffba;
-  padding: 8px;
-  border-radius: 8px;
-  text-align: center;
-  cursor: grab;
-  user-select: none;
 }
 
 .react-flow__edge-path {
@@ -151,7 +157,7 @@
 }
 
 .react-flow__node-variable {
-  border-radius: 8px;
+  border-radius: var(--jmp-radius);
 }
 
 .react-flow__node-method-call,
@@ -163,7 +169,7 @@
   box-shadow:
     0 4px 6px -1px rgb(0 0 0 / 15%),
     0 2px 4px -1px rgb(0 0 0 / 8%);
-  border-radius: 8px;
+  border-radius: var(--jmp-radius);
 }
 
 .react-flow__node-method-call {
@@ -175,23 +181,22 @@
 .react-flow__node-variable .react-flow__handle,
 .react-flow__node-object .react-flow__handle {
   position: unset;
-  width: 20px;
-  height: 20px;
+  width: var(--jmp-handle);
+  height: var(--jmp-handle);
+  flex: none;
   border-radius: 50%;
   background-color: #778899;
 }
 
+/* Half the handle hangs outside the node, so a reference visibly leaves it. */
 .react-flow__node-object .react-flow__handle-left {
-  transform: translate(-8px, 0);
+  transform: translate(calc(var(--jmp-handle) / -2), 0);
 }
 
 .react-flow__node-method-call .react-flow__handle-right,
-.react-flow__node-object .react-flow__handle-right {
-  transform: translate(8px, 0);
-}
-
+.react-flow__node-object .react-flow__handle-right,
 .react-flow__node-variable .react-flow__handle-right {
-  transform: translate(8px, 0);
+  transform: translate(calc(var(--jmp-handle) / 2), 0);
 }
 
 .variable-node {
@@ -203,25 +208,38 @@
   box-shadow:
     0 4px 6px -1px rgb(0 0 0 / 15%),
     0 2px 4px -1px rgb(0 0 0 / 8%);
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: var(--jmp-radius);
+  padding: var(--jmp-space) var(--jmp-space-lg);
 }
 
 .variable-node__name {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .method-call-node__buttons {
   display: flex;
-  margin-top: 8px;
+  margin-top: var(--jmp-space);
   flex-direction: column;
-  gap: 8px;
+  gap: var(--jmp-space);
 }
 
+/* A small mark rather than a button: it repeats on every reference in the
+   frame, so at full size it competes with the variable names for attention. */
 .method-call-node__delete {
-  flex: unset;
-  padding-top: 0;
-  padding-bottom: 0;
+  flex: none;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: var(--jmp-radius);
+  background: transparent;
+  color: #94a3b8;
+}
+
+.method-call-node__delete:hover {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 .method-call-node__variable {
@@ -231,8 +249,12 @@
 .method-call-node__variable,
 .object-node__attribute {
   display: flex;
-  padding-bottom: 8px;
-  padding-top: 8px;
+  align-items: center;
+  gap: var(--jmp-space);
+  padding: 3px 0;
+  /* Keeps a row of plain text the same height as one holding a handle, so
+     the fields of an object line up as a column. */
+  min-height: calc(var(--jmp-handle) + 6px);
   justify-content: center;
 }
 
@@ -242,20 +264,21 @@
   display: flex;
   align-items: center;
   justify-content: end;
+  white-space: nowrap;
 }
 
 .method-call-node__header,
 .object-node__header {
   display: flex;
   align-items: center;
-  padding: 8px 10px;
+  padding: var(--jmp-space) var(--jmp-space-lg);
   border-bottom: 1px solid #e2e8f0;
 }
 
 .object-node__header.gc {
   background: #ff9c9c;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  border-top-left-radius: var(--jmp-radius);
+  border-top-right-radius: var(--jmp-radius);
   opacity: 0.7;
 }
 
@@ -266,8 +289,8 @@
 
 .object-node__body.gc {
   background: #ff9c9c;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-bottom-left-radius: var(--jmp-radius);
+  border-bottom-right-radius: var(--jmp-radius);
   opacity: 0.7;
 }
 
@@ -275,16 +298,20 @@
 .object-node__name {
   flex: 1;
   text-align: center;
-  font-size: 14px;
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .method-call-node__body,
 .object-node__body {
-  padding: 10px;
+  padding: var(--jmp-space) var(--jmp-space-lg);
 }
 
-.spacer-10 {
-  width: 10px;
+/* Balances the handle hanging off the left of a header, so the class name
+   sits in the middle of the node rather than the middle of what is left. */
+.node-header-spacer {
+  flex: none;
+  width: calc(var(--jmp-handle) / 2);
 }
 
 path.react-flow__edge-path {
@@ -360,40 +387,43 @@ path.react-flow__edge-path:hover {
 
 .inline-string__quote {
   color: #94a3b8;
-  padding: 0 2px;
+  padding: 0 1px;
 }
 
 .inline-string__value {
-  padding: 4px;
+  padding: 2px;
 }
 
+/* Width comes from the `size` attribute, which tracks the value's length. */
 .java-memory-playground input.inline-string__input {
   margin-left: 0;
+  width: auto;
+  min-width: 0;
 }
 
 .step-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px;
-  font-size: 14px;
+  gap: var(--jmp-space);
+  padding: var(--jmp-space);
+  font-size: 13px;
   /* The bar floats over the canvas, so it needs to stay legible when a node
      happens to sit underneath it. */
   background: rgba(255, 255, 255, 0.92);
-  border-radius: 10px;
+  border-radius: var(--jmp-radius);
   box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
   flex-wrap: nowrap;
   max-width: min(92vw, 940px);
 }
 
 .step-bar__count {
-  min-width: 56px;
+  min-width: 44px;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
 .java-memory-playground input.step-bar__label {
-  width: 180px;
+  width: 150px;
 }
 
 .step-bar__label-text {
@@ -472,15 +502,15 @@ path.react-flow__edge-path:hover {
 
 .gc-hint,
 .gc-result {
-  font-size: 14px;
-  padding: 0 4px;
+  font-size: 13px;
+  padding: 0 var(--jmp-space);
 }
 
 .step-bar__exercise {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 14px;
+  gap: var(--jmp-space);
+  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -490,8 +520,8 @@ path.react-flow__edge-path:hover {
 }
 
 .step-bar__result {
-  padding: 4px 8px;
-  border-radius: 8px;
+  padding: 2px var(--jmp-space-lg);
+  border-radius: var(--jmp-radius);
   white-space: nowrap;
 }
 

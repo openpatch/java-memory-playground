@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useReactFlow } from "@xyflow/react";
 
+import { fitPaddingFor } from "./fitPadding";
 import useStore from "./storeContext";
 import { useUndoRedo } from "./useUndoRedo";
 import { KeyBinding, KeyBindings } from "./types";
@@ -58,6 +59,7 @@ export const KeyboardShortcuts = ({
   const route = useStore((state) => state.route);
   const setRoute = useStore((state) => state.setRoute);
   const mode = useStore((state) => state.mode);
+  const options = useStore((state) => state.options);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -89,7 +91,7 @@ export const KeyboardShortcuts = ({
         zoomTo(1);
       } else if (matchesKeyBinding(e, keyBindings.fitView)) {
         e.preventDefault();
-        fitView({ padding: 0.2 });
+        fitView({ padding: fitPaddingFor(options) });
       }
     };
 

@@ -294,7 +294,7 @@ export const initialMemory: Memory = {
         },
       },
       position: {
-        x: 600,
+        x: 560,
         y: 100,
       },
     },

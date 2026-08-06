@@ -218,6 +218,30 @@ and a String value is an `Obj` with `klass === "String"` holding a `literal`.
 Diagrams saved before Strings were modelled this way are converted when read, so
 existing links keep working.
 
+## Density
+
+A diagram is read as a whole — a list of five nodes, a stack three frames deep
+— so padding inside a node is diagram that has to go somewhere else. The canvas
+is packed tightly on purpose, and how tightly is four custom properties on the
+container rather than a number repeated down the stylesheet:
+
+```css
+.java-memory-playground {
+  --jmp-space: 4px;
+  --jmp-space-lg: 8px;
+  --jmp-radius: 6px;
+  --jmp-handle: 14px; /* also a drag target, so well above React Flow's 6px */
+}
+```
+
+Override them to loosen everything at once, for a projector at the back of a
+room or a touch screen.
+
+The palette, toolbar and step bar float over the canvas rather than sitting
+beside it, so framing the diagram reserves the space each one occupies —
+otherwise fitting the nodes edge to edge parks the first of them underneath a
+panel. A hidden panel gives its side back.
+
 ## Undo and redo
 
 Undo/redo is backed by [zundo](https://github.com/charkour/zundo). Only the

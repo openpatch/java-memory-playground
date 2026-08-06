@@ -184,7 +184,7 @@ function MethodCallNode({
         <div className="method-call-node__name">
           {data.index}: {data.name}()
         </div>
-        <div className="spacer-10"></div>
+        <div className="node-header-spacer"></div>
       </div>
       <div className={`method-call-node__body`}>
         {Object.entries(data.localVariables).map(([name, value]) => (

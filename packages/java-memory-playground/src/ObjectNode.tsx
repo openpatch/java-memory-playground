@@ -155,7 +155,7 @@ function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
             position={Position.Left}
           />
           <div className="object-node__name">{displayName}</div>
-          <div className="spacer-10"></div>
+          <div className="node-header-spacer"></div>
         </div>
         <div className={`object-node__body ${gc ? "gc" : ""}`}>
           <div className="object-node__attribute">
@@ -178,7 +178,7 @@ function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
           position={Position.Left}
         />
         <div className="object-node__name">{displayName}</div>
-        <div className="spacer-10"></div>
+        <div className="node-header-spacer"></div>
       </div>
       <div className={`object-node__body ${gc ? "gc" : ""}`}>
         {Object.entries(data.attributes).map(([name, value]) => (
