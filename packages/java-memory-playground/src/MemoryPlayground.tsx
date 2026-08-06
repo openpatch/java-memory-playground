@@ -9,7 +9,7 @@ import { KeyboardShortcuts } from "./KeyboardShortcuts";
 import { MemoryView } from "./MemoryView";
 import { parseMemory } from "./helper";
 import { Memory } from "./memory";
-import { RFState } from "./store";
+import { PlaygroundMode, RFState } from "./store";
 import useStore, { StoreProvider } from "./storeContext";
 import { KeyBindings } from "./types";
 import { DnDProvider } from "./useDnD";
@@ -46,6 +46,13 @@ export interface MemoryPlaygroundProps {
   step?: number;
   /** Called with the step index whenever the shown step changes. */
   onStepChange?: (step: number) => void;
+  /**
+   * Who this playground is for. `view`, the default, is the student's: the whole
+   * diagram and every edit, but no class configuration and no step authoring.
+   * `edit` adds those. Prefer the `MemoryPlaygroundEditor` component, which is
+   * this with `mode` already set.
+   */
+  mode?: PlaygroundMode;
   /**
    * Called with the full memory whenever the user saves. The web component
    * wrapper uses this to dispatch its `change` event.
@@ -150,15 +157,26 @@ function Playground({
  */
 export function MemoryPlayground({
   persistence,
+  mode,
   ...props
 }: MemoryPlaygroundProps) {
   return (
-    <StoreProvider persistence={persistence}>
+    <StoreProvider persistence={persistence} mode={mode}>
       <ReactFlowProvider>
         <Playground {...props} />
       </ReactFlowProvider>
     </StoreProvider>
   );
+}
+
+/**
+ * The playground with the teacher's tools: everything a student can do, plus
+ * configuring classes and options and authoring the steps of a trace.
+ */
+export function MemoryPlaygroundEditor(
+  props: Omit<MemoryPlaygroundProps, "mode">,
+) {
+  return <MemoryPlayground {...props} mode="edit" />;
 }
 
 export default MemoryPlayground;

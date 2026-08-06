@@ -20,6 +20,15 @@ import { CustomEdgeType, CustomNodeType } from "./types";
 
 export type Route = "view" | "config";
 
+/**
+ * Who the playground is for.
+ *
+ * `view` is the student's playground: the whole diagram, every edit, steps to
+ * walk through. `edit` adds the teacher's tools on top — configuring classes
+ * and options, and authoring the steps of a trace.
+ */
+export type PlaygroundMode = "view" | "edit";
+
 /** One step, in the shape React Flow wants. */
 export type StoreStep = {
   label?: string;
@@ -32,6 +41,7 @@ type Updater<T> = T[] | ((current: T[]) => T[]);
 
 export type RFState = {
   route: Route;
+  mode: PlaygroundMode;
   selectedNodeId: string;
   /** Whether this store mirrors its memory into `location.hash`. */
   persistence: boolean;
@@ -182,12 +192,16 @@ const undoableNode = (node: CustomNodeType) => {
  * One store per `MemoryPlayground` instance, so that a page can host several
  * playgrounds without them overwriting each other's diagrams.
  */
-export const createMemoryStore = (persistence: boolean = defaultPersistence) => {
+export const createMemoryStore = (
+  persistence: boolean = defaultPersistence,
+  mode: PlaygroundMode = "view",
+) => {
   const store = createStore<RFState>()(
     persist(
       temporal(
         (set, get) => ({
           route: "view" as Route,
+          mode,
           selectedNodeId: "",
           persistence,
 
@@ -250,7 +264,12 @@ export const createMemoryStore = (persistence: boolean = defaultPersistence) => 
                 label: label || undefined,
               })),
             }),
-          setRoute: (route) => set({ route }),
+          // Configuration belongs to the teacher, so a student's playground
+          // cannot be routed into it, by a shortcut or otherwise.
+          setRoute: (route) =>
+            set({
+              route: route === "config" && get().mode !== "edit" ? "view" : route,
+            }),
           selectNodeId: (selectedNodeId) => set({ selectedNodeId }),
           setDefaultLanguage: (defaultLanguage) => set({ defaultLanguage }),
 

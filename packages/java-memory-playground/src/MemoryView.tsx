@@ -55,6 +55,7 @@ const selector = (state: RFState) => ({
   onNodesChange: state.onNodesChange,
   onEdgesChange: state.onEdgesChange,
   save: state.save,
+  mode: state.mode,
   t: state.getTranslations(),
 });
 
@@ -95,6 +96,7 @@ export const MemoryView = () => {
     onNodesChange,
     onEdgesChange,
     save,
+    mode,
     t,
   } = useStore(useShallow(selector));
   const { screenToFlowPosition } = useReactFlow();
@@ -741,13 +743,15 @@ export const MemoryView = () => {
             </button>
             <button onClick={save}>{persistence ? t.saveUrl : t.save}</button>
             <button onClick={onDownloadPng}>{t.downloadPng}</button>
-            <button onClick={onConfig}>{t.config}</button>
+            {mode === "edit" && (
+              <button onClick={onConfig}>{t.config}</button>
+            )}
           </div>
         </Panel>
         {!options.hideSteps && (
           <Panel position="bottom-center">
             <div className="button-group">
-              <StepBar />
+              <StepBar editable={mode === "edit"} />
             </div>
           </Panel>
         )}

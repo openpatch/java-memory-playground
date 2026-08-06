@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student and teacher playgrounds</title>
+  <link rel="stylesheet" href="./dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    h2 {
+      margin: 8px 12px;
+      font-size: 16px;
+    }
+
+    java-memory-playground,
+    java-memory-playground-editor {
+      display: block;
+      width: 100vw;
+      height: 45vh;
+      border-bottom: 2px solid #333;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Student — <code>&lt;java-memory-playground&gt;</code></h2>
+  <java-memory-playground id="student"></java-memory-playground>
+
+  <h2>Teacher — <code>&lt;java-memory-playground-editor&gt;</code></h2>
+  <java-memory-playground-editor id="teacher"></java-memory-playground-editor>
+
+  <script src="./dist/index.umd.js"></script>
+  <script>
+    const diagram = JSON.stringify({
+      klasses: { Node: { attributes: { next: "Node" } } },
+      steps: [
+        {
+          label: "one node",
+          objects: {
+            "@a": {
+              klass: "Node",
+              attributes: { next: { dataType: "Node" } },
+              position: { x: 320, y: 40 }
+            }
+          },
+          variables: {
+            "@v": { name: "head", dataType: "Node", value: "@a", position: { x: 40, y: 40 } }
+          },
+          methodCalls: {}
+        },
+        {
+          label: "and a second",
+          objects: {
+            "@a": {
+              klass: "Node",
+              attributes: { next: { dataType: "Node", value: "@b" } },
+              position: { x: 320, y: 40 }
+            },
+            "@b": {
+              klass: "Node",
+              attributes: { next: { dataType: "Node" } },
+              position: { x: 620, y: 40 }
+            }
+          },
+          variables: {
+            "@v": { name: "head", dataType: "Node", value: "@a", position: { x: 40, y: 40 } }
+          },
+          methodCalls: {}
+        }
+      ]
+    });
+
+    document.getElementById('student').setAttribute('memory', diagram);
+    document.getElementById('teacher').setAttribute('memory', diagram);
+  </script>
+</body>
+
+</html>

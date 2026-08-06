@@ -179,6 +179,41 @@ describe("createMemoryStore", () => {
   });
 });
 
+describe("mode", () => {
+  test("a playground is the student's unless asked otherwise", () => {
+    expect(createMemoryStore(false).getState().mode).toBe("view");
+    expect(createMemoryStore(false, "edit").getState().mode).toBe("edit");
+  });
+
+  test("a student's playground cannot be routed into the configuration", () => {
+    const store = createMemoryStore(false, "view");
+
+    store.getState().setRoute("config");
+
+    expect(store.getState().route).toBe("view");
+  });
+
+  test("the editor can", () => {
+    const store = createMemoryStore(false, "edit");
+
+    store.getState().setRoute("config");
+    expect(store.getState().route).toBe("config");
+
+    store.getState().setRoute("view");
+    expect(store.getState().route).toBe("view");
+  });
+
+  test("mode is per playground, like everything else", () => {
+    const student = createMemoryStore(false, "view");
+    const teacher = createMemoryStore(false, "edit");
+
+    teacher.getState().setRoute("config");
+
+    expect(student.getState().route).toBe("view");
+    expect(teacher.getState().route).toBe("config");
+  });
+});
+
 describe("steps", () => {
   test("a diagram without steps is a one-step story", () => {
     const store = createMemoryStore(false);

@@ -1,6 +1,8 @@
-import MemoryPlayground from "./MemoryPlayground";
+import MemoryPlayground, {
+  MemoryPlaygroundEditor,
+} from "./MemoryPlayground";
 
-export { MemoryPlayground };
+export { MemoryPlayground, MemoryPlaygroundEditor };
 export type { MemoryPlaygroundProps } from "./MemoryPlayground";
 
 export { MemoryView } from "./MemoryView";
@@ -14,7 +16,13 @@ export {
   setPersistence,
   isPersistenceEnabled,
 } from "./store";
-export type { RFState, Route, MemoryStore, StoreStep } from "./store";
+export type {
+  RFState,
+  Route,
+  PlaygroundMode,
+  MemoryStore,
+  StoreStep,
+} from "./store";
 export {
   useStore,
   useMemoryStore,

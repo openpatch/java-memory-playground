@@ -4,6 +4,17 @@ The [Java Memory Playground](https://jmp.openpatch.org) as a framework agnostic
 web component. Drop it into any page — plain HTML, a CMS, Hyperbook, an LMS — and
 visualize the Java stack and heap.
 
+## Two elements
+
+`<java-memory-playground>` is the student's: the whole diagram, every edit, and
+the steps of a trace to walk through.
+
+`<java-memory-playground-editor>` is the teacher's: all of that, plus
+configuring classes and options and authoring the steps.
+
+Both take the same attributes and fire the same events, so a page can hand the
+same diagram to either.
+
 ## Usage
 
 ```html
@@ -181,5 +192,5 @@ can host as many playgrounds as it needs.
 pnpm build     # writes dist/index.umd.js and dist/index.css
 ```
 
-`index.html`, `multi.html`, `de.html`, `strings.html` and `steps.html` in this
-package are demo pages for the built bundle — serve the package directory and open them in a browser.
+`index.html`, `multi.html`, `de.html`, `strings.html`, `steps.html` and
+`modes.html` in this package are demo pages for the built bundle — serve the package directory and open them in a browser.

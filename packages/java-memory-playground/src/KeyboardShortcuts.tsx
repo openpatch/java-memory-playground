@@ -57,6 +57,7 @@ export const KeyboardShortcuts = ({
   const save = useStore((state) => state.save);
   const route = useStore((state) => state.route);
   const setRoute = useStore((state) => state.setRoute);
+  const mode = useStore((state) => state.mode);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -73,6 +74,8 @@ export const KeyboardShortcuts = ({
         e.preventDefault();
         redo();
       } else if (matchesKeyBinding(e, keyBindings.toggleConfig)) {
+        // The student's playground has no configuration to toggle into.
+        if (mode !== "edit") return;
         e.preventDefault();
         setRoute(route === "config" ? "view" : "config");
       } else if (matchesKeyBinding(e, keyBindings.zoomIn)) {

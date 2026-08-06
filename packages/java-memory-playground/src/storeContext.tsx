@@ -2,21 +2,28 @@ import { createContext, ReactNode, useContext, useRef } from "react";
 import type { TemporalState } from "zundo";
 import { useStore as useZustandStore } from "zustand";
 
-import { createMemoryStore, MemoryStore, RFState } from "./store";
+import {
+  createMemoryStore,
+  MemoryStore,
+  PlaygroundMode,
+  RFState,
+} from "./store";
 
 const StoreContext = createContext<MemoryStore | null>(null);
 
 export const StoreProvider = ({
   persistence,
+  mode,
   children,
 }: {
   persistence?: boolean;
+  mode?: PlaygroundMode;
   children: ReactNode;
 }) => {
   // Created once per mounted playground, never shared between instances.
   const storeRef = useRef<MemoryStore | null>(null);
   if (!storeRef.current) {
-    storeRef.current = createMemoryStore(persistence);
+    storeRef.current = createMemoryStore(persistence, mode);
   }
 
   return (

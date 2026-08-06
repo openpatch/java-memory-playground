@@ -14,6 +14,25 @@ npm install @openpatch/java-memory-playground
 
 `react` and `react-dom` are peer dependencies.
 
+## Two playgrounds
+
+`MemoryPlayground` is the student's: the whole diagram, every edit, and the steps
+of a trace to walk through.
+
+`MemoryPlaygroundEditor` is the teacher's: all of that, plus configuring classes
+and options and authoring the steps.
+
+```tsx
+import {
+  MemoryPlayground,       // student
+  MemoryPlaygroundEditor, // teacher
+} from "@openpatch/java-memory-playground";
+```
+
+Both take the same props. The split is about which tools are on screen, not
+about what a student is allowed to touch — a student still builds objects,
+connects references and runs the garbage collector.
+
 ## Usage
 
 ```tsx
@@ -58,6 +77,7 @@ export function Example() {
 | `step`        | `number`                     | The step to show, zero based. Set it to drive the diagram from the page around it.             |
 | `onStepChange`| `(step: number) => void`     | Called whenever the shown step changes.                                                       |
 | `onChange`    | `(memory: Memory) => void`   | Called when the user presses **Save**.                                                        |
+| `mode`        | `"view" \| "edit"`           | Which tools to show. Prefer picking the component; this is what it sets.                       |
 
 Every `MemoryPlayground` creates its own store, so several playgrounds can live
 on the same page without sharing state.
@@ -129,7 +149,7 @@ const { undo, redo, canUndo, canRedo, clear } = useUndoRedo();
 | `Ctrl/Cmd + S` | Save                       |
 | `Ctrl/Cmd + Z` | Undo                       |
 | `Ctrl/Cmd + Y` | Redo                       |
-| `Ctrl/Cmd + ,` | Toggle the config view     |
+| `Ctrl/Cmd + ,` | Toggle the config view (editor only) |
 | `Ctrl/Cmd + +` | Zoom in                    |
 | `Ctrl/Cmd + -` | Zoom out                   |
 | `Ctrl/Cmd + 0` | Reset zoom                 |

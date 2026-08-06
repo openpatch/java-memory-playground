@@ -48,6 +48,10 @@ Besides the hosted app, the playground ships as two packages:
 - **Web component** — use it in any page, no framework required
   (see [packages/web-component](packages/web-component))
 
+There are two elements: `<java-memory-playground>` for students, and
+`<java-memory-playground-editor>` for teachers, which adds class configuration
+and step authoring on top.
+
 ```html
 <java-memory-playground id="playground"></java-memory-playground>
 
@@ -78,6 +82,12 @@ git clone https://github.com/openpatch/java-memory-playground.git
 cd java-memory-playground
 pnpm install
 ```
+
+### Routes
+
+The app at [jmp.openpatch.org](https://jmp.openpatch.org) is the student's
+playground. Append `?edit` for the teacher's, which adds class configuration and
+step authoring.
 
 ### Development
 
