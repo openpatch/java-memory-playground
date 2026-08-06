@@ -26,6 +26,18 @@
   padding: var(--jmp-space);
 }
 
+/* The toolbar shares the top row with the palette in the opposite corner. On
+   a narrow canvas it wraps onto a second line rather than sliding underneath
+   it — 15px of panel margin, 140px of palette, and a gap. */
+.with-palette .react-flow__panel.top.right {
+  max-width: calc(100% - 170px);
+}
+
+.react-flow__panel.top.right .button-group {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .java-memory-playground button {
   background: whitesmoke;
   color: grey;
@@ -421,7 +433,11 @@ path.react-flow__edge-path:hover {
    container, so an embedded playground gets its own width, not the page's. */
 .react-flow__panel.bottom.center {
   width: max-content;
-  max-width: calc(100% - 30px);
+  /* Stops short of React Flow's zoom controls, which sit in the bottom-left
+     corner: 15px of panel margin, 26px of buttons, and a gap. Reserved on
+     both sides, because the panel is centred and would otherwise have to
+     stop being centred to avoid them. */
+  max-width: calc(100% - 2 * 56px);
 }
 
 /* Everything pinned along the bottom, in one row that wraps rather than two

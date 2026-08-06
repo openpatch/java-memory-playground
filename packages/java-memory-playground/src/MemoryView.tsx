@@ -717,7 +717,10 @@ export const MemoryView = () => {
     <div className="memory-view">
       <ReactFlow
         ref={flowRef}
-        className="memory"
+        // The palette is a floating panel, so the toolbar opposite it has to
+        // know whether that corner is occupied before it decides how wide it
+        // may be. See `.with-palette` in index.css.
+        className={`memory${options.hideSidebar ? "" : " with-palette"}`}
         nodes={visibleNodes.map((n) => {
           const classes = [stackClass.get(n.id) ?? ""];
           if (showChanges) {
