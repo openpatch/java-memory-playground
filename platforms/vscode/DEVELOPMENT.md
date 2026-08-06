@@ -75,6 +75,28 @@ cd platforms/vscode
 pnpm vscode:package
 ```
 
+## Releasing
+
+`.github/workflows/changeset-version.yml` does it on a push to `main`.
+
+The extension is a private package, but the changesets config versions and tags
+private packages, so a changeset naming `java-memory-playground-studio` bumps it
+along with everything else. The vsix is built *before* the changesets step on
+purpose: on the run that publishes, `package.json` already carries the new
+version, because that run is the merge of the "Version Packages" pull request
+that bumped it.
+
+Publishing needs two repository secrets:
+
+| Secret        | For                                          |
+| ------------- | -------------------------------------------- |
+| `VSCE_TOKEN`  | the Visual Studio Marketplace                 |
+| `OVSX_TOKEN`  | [Open VSX](https://open-vsx.org), for VSCodium and friends |
+
+Without them the npm release still happens and only the extension step fails.
+`skipDuplicate` is on, so a run where the extension version did not change skips
+its upload instead of failing.
+
 ## Known gaps
 
 - **No `.jmp` schema.** The JSON is validated only by the playground's tolerant

@@ -1,0 +1,68 @@
+name: Create Pull Request or Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  # Changesets pushes the "Version Packages" branch and opens the pull request.
+  contents: write
+  pull-requests: write
+  # npm trusted publishing.
+  id-token: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          # Changesets needs the history to write changelogs against the right
+          # commits.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test packages
+        run: pnpm test
+
+      - name: Build packages
+        run: pnpm build
+
+      # Before the changesets step on purpose. On the run that publishes, the
+      # version in package.json is already the new one — it was bumped in the
+      # "Version Packages" pull request that this run is the merge of — so the
+      # vsix is built with the version that is about to be released.
+      - name: Build vscode package
+        run: pnpm --filter "java-memory-playground-studio" vscode:package
+
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: pnpm release
+          version: pnpm version-packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish VS Code extension
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          pnpm --filter "java-memory-playground-studio" vscode:publish
+          pnpm --filter "java-memory-playground-studio" ovsx:publish
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_TOKEN }}
+          OVSX_PAT: ${{ secrets.OVSX_TOKEN }}

@@ -144,6 +144,15 @@ Add one describing your change:
 pnpm changeset
 ```
 
+Merging to `main` opens a "Version Packages" pull request; merging that one
+publishes. The npm packages go to npm, and the VS Code extension goes to the
+Visual Studio Marketplace and Open VSX in the same run — it is a private
+package, but changesets versions and tags private packages, so a changeset
+naming `java-memory-playground-studio` releases it too.
+
+Publishing the extension needs the `VSCE_TOKEN` and `OVSX_TOKEN` repository
+secrets; see [platforms/vscode/DEVELOPMENT.md](platforms/vscode/DEVELOPMENT.md).
+
 ### Technologies
 
 - **React** - UI framework
