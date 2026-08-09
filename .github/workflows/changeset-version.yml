@@ -36,11 +36,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Test packages
-        run: pnpm test
-
+      # Build first, for the same reason as the pull request workflow: the
+      # packages typecheck against each other's built declarations.
       - name: Build packages
         run: pnpm build
+
+      - name: Test packages
+        run: pnpm test
 
       # Before the changesets step on purpose. On the run that publishes, the
       # version in package.json is already the new one — it was bumped in the

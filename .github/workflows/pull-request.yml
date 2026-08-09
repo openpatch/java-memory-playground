@@ -20,9 +20,12 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      # Build first: the packages depend on each other through their built
+      # `dist/index.d.ts`, so typechecking a dependent before its dependency is
+      # built cannot resolve it. `pnpm -r build` goes in topological order.
+      - name: Build packages
+        run: pnpm build
       - name: Lint packages
         run: pnpm lint
       - name: Test packages
         run: pnpm test
-      - name: Build packages
-        run: pnpm build
