@@ -45,6 +45,16 @@ import { CustomEdgeType, CustomNodeType } from "./types";
 import { ArrayCreationDialog } from "./ArrayCreationDialog";
 import { SimpleInputDialog } from "./SimpleInputDialog";
 
+/**
+ * Where the help button goes.
+ *
+ * Absolute rather than a path, because most playgrounds are not served from
+ * the app: a course page embedding the web component and a VS Code webview
+ * both resolve a relative link against somewhere else entirely.
+ */
+export const DOCUMENTATION_URL =
+  "https://jmp.openpatch.org/documentation.html";
+
 const selector = (state: RFState) => ({
   selectedNodeId: state.selectedNodeId,
   klasses: state.klasses,
@@ -823,6 +833,20 @@ export const MemoryView = () => {
             {mode === "edit" && (
               <button onClick={onConfig}>{t.config}</button>
             )}
+            {/* A link rather than a button, so that whatever owns navigation
+                around the playground opens it the way it opens any link: a new
+                tab in a browser, the external browser from a VS Code webview.
+                `window.open` is blocked in some of those hosts. */}
+            <a
+              className="button-icon"
+              href={DOCUMENTATION_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              title={t.help}
+              aria-label={t.help}
+            >
+              ?
+            </a>
           </div>
         </Panel>
         {/* One row along the bottom. The step bar and the collector used to be

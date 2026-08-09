@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <title>Documentation — Java Memory Playground</title>
+    <meta
+      name="description"
+      content="How to read and build stack and heap diagrams with the Java Memory Playground: steps, the garbage collector, the teacher's playground, sharing, and embedding."
+    />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --fg: #1f2328;
+        --muted: #57606a;
+        --rule: #d8dee4;
+        --accent: #0b62d0;
+        --code-bg: #f5f6f8;
+        --note-bg: #f3f7fd;
+        --note-rule: #a9c9f5;
+        --max: 46rem;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #14171a;
+          --fg: #e6e6e6;
+          --muted: #9aa4ae;
+          --rule: #2d333b;
+          --accent: #6cb0ff;
+          --code-bg: #1c2126;
+          --note-bg: #182230;
+          --note-rule: #2b4a72;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0 1.25rem 5rem;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Helvetica,
+          Arial, sans-serif;
+        line-height: 1.65;
+        font-size: 17px;
+      }
+
+      header,
+      main,
+      footer {
+        max-width: var(--max);
+        margin: 0 auto;
+      }
+
+      header {
+        padding: 3rem 0 1.5rem;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      h1 {
+        font-size: 2rem;
+        line-height: 1.2;
+        margin: 0 0 0.5rem;
+      }
+
+      header p {
+        color: var(--muted);
+        margin: 0 0 1.25rem;
+      }
+
+      h2 {
+        font-size: 1.4rem;
+        margin: 3rem 0 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--rule);
+      }
+
+      h3 {
+        font-size: 1.1rem;
+        margin: 2rem 0 0.5rem;
+      }
+
+      a {
+        color: var(--accent);
+      }
+
+      code {
+        background: var(--code-bg);
+        border-radius: 4px;
+        padding: 0.1em 0.35em;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.9em;
+      }
+
+      pre {
+        background: var(--code-bg);
+        border-radius: 8px;
+        padding: 1rem;
+        overflow-x: auto;
+      }
+
+      pre code {
+        background: none;
+        padding: 0;
+        font-size: 0.85em;
+        line-height: 1.5;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 1rem 0;
+        font-size: 0.94em;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 0.5rem 0.7rem;
+        border-bottom: 1px solid var(--rule);
+        vertical-align: top;
+      }
+
+      th {
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      td code {
+        white-space: nowrap;
+      }
+
+      .note {
+        background: var(--note-bg);
+        border-left: 3px solid var(--note-rule);
+        border-radius: 0 6px 6px 0;
+        padding: 0.85rem 1rem;
+        margin: 1.25rem 0;
+      }
+
+      .note p {
+        margin: 0;
+      }
+
+      .toc {
+        margin: 1.5rem 0 0;
+        padding: 0;
+        list-style: none;
+        columns: 2;
+        column-gap: 2rem;
+        font-size: 0.95em;
+      }
+
+      .toc li {
+        margin: 0 0 0.35rem;
+        break-inside: avoid;
+      }
+
+      @media (max-width: 34rem) {
+        .toc {
+          columns: 1;
+        }
+      }
+
+      .back {
+        display: inline-block;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      footer {
+        margin-top: 4rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--rule);
+        color: var(--muted);
+        font-size: 0.92em;
+      }
+
+      footer a {
+        margin-right: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a class="back" href="/">← Back to the playground</a>
+      <h1>Java Memory Playground</h1>
+      <p>
+        Draw what a Java program has in memory: the call stack on one side, the
+        objects on the heap on the other, and the references between them.
+        Nothing here runs your code — you build the picture, which is what makes
+        it a thinking tool rather than a debugger.
+      </p>
+      <ul class="toc">
+        <li><a href="#reading">Reading a diagram</a></li>
+        <li><a href="#building">Building one</a></li>
+        <li><a href="#values">Values and references</a></li>
+        <li><a href="#steps">Steps and traces</a></li>
+        <li><a href="#gc">The garbage collector</a></li>
+        <li><a href="#edit">The teacher's playground</a></li>
+        <li><a href="#classes">Classes from Java source</a></li>
+        <li><a href="#options">Options</a></li>
+        <li><a href="#shortcuts">Keyboard shortcuts</a></li>
+        <li><a href="#sharing">Sharing a diagram</a></li>
+        <li><a href="#embedding">Embedding</a></li>
+        <li><a href="#files">.jmp files and VS Code</a></li>
+      </ul>
+    </header>
+
+    <main>
+      <h2 id="reading">Reading a diagram</h2>
+      <p>
+        A diagram has two kinds of box. A <strong>stack frame</strong> is one
+        method call, labelled with its depth and name, holding that call's local
+        variables. An <strong>object</strong> is one instance on the heap,
+        labelled <code>:ClassName</code> and holding its fields.
+      </p>
+      <p>
+        An arrow is a <strong>reference</strong>. It leaves the exact variable
+        or field that holds it, so you can see which field of which object
+        points where. A variable with no arrow holds <code>null</code>.
+      </p>
+      <p>
+        Frames stack in call order, and only the frame on top can return — the
+        <code>return</code> button on the others is disabled, because a call in
+        the middle of the stack cannot finish before the ones above it. That
+        restriction is the lesson, so the button stays visible rather than
+        disappearing.
+      </p>
+
+      <h2 id="building">Building one</h2>
+      <p>
+        The palette in the top left corner is the source of new things. Drag one
+        onto the canvas:
+      </p>
+      <ul>
+        <li>
+          <strong>new <em>ClassName</em></strong> — an instance of one of your
+          configured classes, with a field for each attribute.
+        </li>
+        <li><strong>new Array</strong> — pick a length and an element type.</li>
+        <li>
+          <strong>Call Method</strong> — a new frame on top of the stack.
+        </li>
+        <li>
+          <strong>Declare Global Variable</strong> — a variable belonging to no
+          frame. Java has no globals; this is scaffolding for the lessons that
+          come before methods do.
+        </li>
+      </ul>
+      <p>
+        To make a reference, drag from the handle on the right of a variable or
+        field to the object it should point at. Drag the arrow away again to set
+        it back to <code>null</code>. Inside a frame,
+        <strong>Declare Local Variable</strong> adds a variable, and
+        <code>return</code> pops the frame — along with the references it held,
+        which is often what makes something garbage.
+      </p>
+
+      <h2 id="values">Values and references</h2>
+      <p>
+        Primitive fields are edited in place: a number field for the numeric
+        types, a checkbox for <code>boolean</code>. Reference fields get a
+        handle to drag an arrow from instead.
+      </p>
+      <p>
+        A <code>String</code> is shown inside the thing that references it, in
+        quotes, rather than as its own box on the heap. A diagram about a linked
+        list should not sprout a box for every name. When the point of the
+        lesson <em>is</em> that a String is an object like any other —
+        <code>==</code> against <code>.equals()</code>, the string pool — turn
+        <code>inlineStrings</code> off and it gets a box and an arrow like
+        everything else. The object is there either way; only the drawing
+        changes.
+      </p>
+
+      <h2 id="steps">Steps and traces</h2>
+      <p>
+        A diagram can be a single picture or a sequence of them. The bar along
+        the bottom moves between steps, and each step can carry a label saying
+        what happens there — <em>head = new Node(1)</em>.
+      </p>
+      <p>
+        <strong>Add step</strong> duplicates the current step and continues from
+        it, so a trace is built by changing one thing at a time. What changed
+        since the previous step is marked, which is usually the whole point of a
+        trace; <code>hideStepChanges</code> turns that off.
+      </p>
+      <p>
+        A step can be marked as an <strong>exercise</strong>. The student is
+        handed the previous step and builds this one themselves, then checks
+        their answer against what the step actually contains.
+      </p>
+
+      <h2 id="gc">The garbage collector</h2>
+      <p>
+        <strong>Run Garbage Collector</strong> removes every object that cannot
+        be reached from a variable or a stack frame. Unreachable objects are
+        already tinted before you press it, so you can see what is about to go.
+      </p>
+      <p>
+        With the <code>gcPrediction</code> option on, you commit first: click
+        the objects you believe are unreachable, then
+        <strong>Check and collect</strong> scores what you found, what you
+        missed, and what you marked that was still reachable. Committing to an
+        answer before seeing it is where the learning is.
+      </p>
+
+      <h2 id="edit">The teacher's playground — the <code>?edit</code> URL</h2>
+      <p>
+        There are two playgrounds, and which one you get is decided by the URL.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>URL</th>
+              <th>What you get</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>jmp.openpatch.org</code></td>
+              <td>
+                The student's playground: the whole diagram, every edit, and the
+                steps of a trace to walk through.
+              </td>
+            </tr>
+            <tr>
+              <td><code>jmp.openpatch.org/?edit</code></td>
+              <td>
+                The teacher's: the same, plus class configuration and step
+                authoring.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <code>/edit</code> as a path works too, where the host has a rewrite
+        rule for it. The query flag <code>?edit</code> always works, because the
+        app is served as static files.
+      </p>
+      <div class="note">
+        <p>
+          The split is about which tools are on screen, not about what a student
+          is allowed to touch. A student still builds objects, connects
+          references, walks the steps and runs the collector. What the teacher's
+          playground adds is deciding <em>which classes exist</em> and
+          <em>what the steps are</em> — the setup for an exercise, not the
+          working of it.
+        </p>
+      </div>
+      <p>
+        The diagram itself lives in the part of the URL after the
+        <code>#</code>, and the mode is deliberately kept out of it. That means
+        one diagram has both an editing link and a working link: take a link you
+        saved from the teacher's playground, drop the <code>?edit</code>, and
+        you have the student's view of the same picture.
+      </p>
+
+      <h2 id="classes">Classes from Java source</h2>
+      <p>
+        The teacher's playground asks for your classes instead of making you
+        describe each field through a dialog. Paste the Java:
+      </p>
+      <pre><code>class Node {
+    int value;
+    Node next;
+}</code></pre>
+      <p>
+        Only the structure is read — the class names, and the name and type of
+        each field. Method bodies are skipped and
+        <strong>nothing is executed</strong>. Records work too, and their
+        components are read as fields.
+      </p>
+      <p>
+        Applying classes reaches every step of the diagram, so when a change
+        would cost something already drawn, you are told what before it happens:
+        which field is about to be deleted from how many objects, and which
+        objects belong to a class that no longer exists. A field that holds
+        nothing — an untouched <code>int</code> still at <code>0</code>, a
+        reference still <code>null</code> — is not counted, because losing it
+        costs nothing.
+      </p>
+
+      <h2 id="options">Options</h2>
+      <p>
+        Options are part of the diagram, so they travel with a shared link. The
+        configuration view has presets — <em>References only</em>,
+        <em>With the stack</em>, <em>Everything</em> — for the common shapes of
+        lesson. The individual switches:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Option</th>
+              <th>Default</th>
+              <th>Effect</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>hideSidebar</code></td>
+              <td>off</td>
+              <td>Hide the palette, for a diagram meant only to be read.</td>
+            </tr>
+            <tr>
+              <td><code>hideCallMethod</code></td>
+              <td>off</td>
+              <td>Drop <em>Call Method</em> from the palette.</td>
+            </tr>
+            <tr>
+              <td><code>hideDeclareGlobalVariable</code></td>
+              <td><strong>on</strong></td>
+              <td>
+                Drop <em>Declare Global Variable</em>. On by default, because
+                Java has no globals.
+              </td>
+            </tr>
+            <tr>
+              <td><code>hideNewArray</code></td>
+              <td>off</td>
+              <td>Drop <em>new Array</em>.</td>
+            </tr>
+            <tr>
+              <td><code>disableGarbageCollector</code></td>
+              <td>off</td>
+              <td>No collector button, and no tinting of unreachable objects.</td>
+            </tr>
+            <tr>
+              <td><code>gcPrediction</code></td>
+              <td>off</td>
+              <td>Ask which objects are unreachable before collecting them.</td>
+            </tr>
+            <tr>
+              <td><code>createNewOnEdgeDrop</code></td>
+              <td>off</td>
+              <td>
+                Dropping an arrow on empty canvas creates the object it points
+                at.
+              </td>
+            </tr>
+            <tr>
+              <td><code>inlineStrings</code></td>
+              <td><strong>on</strong></td>
+              <td>
+                Draw a <code>String</code> inside its holder instead of as its
+                own heap box.
+              </td>
+            </tr>
+            <tr>
+              <td><code>hideSteps</code></td>
+              <td>off</td>
+              <td>Hide the step bar, for a lesson about one picture.</td>
+            </tr>
+            <tr>
+              <td><code>hideStepChanges</code></td>
+              <td>off</td>
+              <td>Stop marking what a step changed since the one before it.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="shortcuts">Keyboard shortcuts</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Shortcut</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>Ctrl/Cmd + S</code></td><td>Save</td></tr>
+            <tr><td><code>Ctrl/Cmd + Z</code></td><td>Undo</td></tr>
+            <tr><td><code>Ctrl/Cmd + Y</code></td><td>Redo</td></tr>
+            <tr><td><code>Ctrl/Cmd + ,</code></td><td>Toggle the configuration view</td></tr>
+            <tr><td><code>Ctrl/Cmd + +</code></td><td>Zoom in</td></tr>
+            <tr><td><code>Ctrl/Cmd + -</code></td><td>Zoom out</td></tr>
+            <tr><td><code>Ctrl/Cmd + 0</code></td><td>Reset the zoom</td></tr>
+            <tr><td><code>Shift + !</code></td><td>Fit the diagram to the window</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        A shortcut is never taken from someone typing into a field. In an
+        embedded playground the bindings can be changed, or unbound, through the
+        <code>keyBindings</code> attribute.
+      </p>
+
+      <h2 id="sharing">Sharing a diagram</h2>
+      <p>
+        <strong>Save (URL)</strong> writes the whole diagram — classes, options,
+        every step — into the address bar, compressed and encoded after the
+        <code>#</code>. The link is the document: send it to a class, put it in
+        a worksheet, or bookmark it. There is no account and nothing is stored
+        on a server.
+      </p>
+      <p>
+        Because the state is in the fragment, it never reaches the server, and a
+        very large diagram makes a very long link. <strong>Download (PNG)</strong>
+        exports the picture, and with more than one step,
+        <strong>Download all steps</strong> gives one image containing the whole
+        trace for a printed worksheet.
+      </p>
+
+      <h2 id="embedding">Embedding</h2>
+      <p>
+        The playground is published as a framework-agnostic web component. Two
+        elements are defined, matching the two playgrounds:
+      </p>
+      <pre><code>&lt;script src="path/to/index.umd.js"&gt;&lt;/script&gt;
+
+&lt;!-- the student's --&gt;
+&lt;java-memory-playground id="playground"&gt;&lt;/java-memory-playground&gt;
+
+&lt;!-- the teacher's --&gt;
+&lt;java-memory-playground-editor&gt;&lt;/java-memory-playground-editor&gt;
+
+&lt;script&gt;
+  const playground = document.getElementById("playground");
+  playground.setAttribute("memory", JSON.stringify(diagram));
+  playground.addEventListener("change", (e) =&gt; console.log(e.detail));
+&lt;/script&gt;</code></pre>
+      <p>
+        The bundle is published as
+        <code>@openpatch/java-memory-playground-web-component</code>. An
+        embedded playground never touches the URL of its host page, and several
+        of them can share one page. Both elements take the same attributes:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Type</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>memory</code></td>
+              <td>string</td>
+              <td>The diagram, as JSON or as a saved link's fragment.</td>
+            </tr>
+            <tr>
+              <td><code>options</code></td>
+              <td>JSON</td>
+              <td>The options above, overriding what the diagram carries.</td>
+            </tr>
+            <tr>
+              <td><code>language</code></td>
+              <td>string</td>
+              <td>
+                <code>en</code> or <code>de</code>. Follows the browser
+                otherwise.
+              </td>
+            </tr>
+            <tr>
+              <td><code>step</code></td>
+              <td>number</td>
+              <td>
+                Which step to show, counted from zero, so prose around the
+                diagram can walk a reader through a trace.
+              </td>
+            </tr>
+            <tr>
+              <td><code>persistence</code></td>
+              <td>boolean</td>
+              <td>
+                Off for an embedded playground: it must not take over the URL of
+                the page hosting it.
+              </td>
+            </tr>
+            <tr>
+              <td><code>keyBindings</code></td>
+              <td>JSON</td>
+              <td>Overrides for the shortcuts above.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        It reports back with two events: <code>change</code>, carrying the whole
+        diagram when the user saves, and <code>stepchange</code>, carrying the
+        step index whenever the shown step moves.
+      </p>
+      <p>
+        For a React application, the component is also published on its own as
+        <code>@openpatch/java-memory-playground</code>.
+      </p>
+
+      <h2 id="files">.jmp files and VS Code</h2>
+      <p>
+        A <code>.jmp</code> file is exactly the JSON that a shared link carries,
+        so a diagram moves between the app, an embedded playground and a file
+        unchanged. It is an ordinary text file: diffable, reviewable, and fine
+        to keep in a repository next to the code it illustrates.
+      </p>
+      <p>
+        <strong>Java Memory Playground Studio</strong> opens those files in
+        VS Code as diagrams rather than as JSON, with the editor's own undo and
+        save. <em>Show Source</em> switches to the JSON and
+        <em>Show Diagram</em> switches back.
+      </p>
+    </main>
+
+    <footer>
+      <a href="/">Playground</a>
+      <a href="https://github.com/openpatch/java-memory-playground">GitHub</a>
+      <a href="https://openpatch.org">OpenPatch</a>
+    </footer>
+  </body>
+</html>

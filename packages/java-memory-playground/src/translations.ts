@@ -15,6 +15,7 @@ export interface Translations {
   gcScore: (found: number, missed: number, wrong: number) => string;
   undo: string;
   redo: string;
+  help: string;
 
   // Sidebar
   newInstanceOf: (klass: string) => string;
@@ -141,6 +142,7 @@ const en: Translations = {
     }`,
   undo: "Undo",
   redo: "Redo",
+  help: "Help",
 
   newInstanceOf: (klass) => `new ${klass}`,
   newArray: "new Array",
@@ -164,7 +166,7 @@ const en: Translations = {
   exerciseExtra: (extra) => `Not part of this step: ${extra.join(", ")}`,
 
   declareLocalVariable: "Declare Local Variable",
-  returnMethod: "Return",
+  returnMethod: "return",
   returnOnlyTopOfStack:
     "Only the method on top of the stack can return — the calls above it have to finish first",
 
@@ -265,6 +267,7 @@ const de: Translations = {
     }`,
   undo: "Rückgängig",
   redo: "Wiederholen",
+  help: "Hilfe",
 
   newInstanceOf: (klass) => `neues ${klass}`,
   newArray: "neues Array",
@@ -289,7 +292,7 @@ const de: Translations = {
   exerciseExtra: (extra) => `Gehört nicht zu diesem Schritt: ${extra.join(", ")}`,
 
   declareLocalVariable: "Lokale Variable deklarieren",
-  returnMethod: "Zurückkehren",
+  returnMethod: "return",
   returnOnlyTopOfStack:
     "Nur die oberste Methode auf dem Stapel kann zurückkehren — die Aufrufe darüber müssen zuerst beendet werden",
 

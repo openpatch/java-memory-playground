@@ -67,6 +67,26 @@
   line-height: 1;
 }
 
+/* The help button is a link, so it has to be told to look like the buttons it
+   sits with — `.java-memory-playground button` does not reach an anchor. */
+.java-memory-playground a.button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background: whitesmoke;
+  color: grey;
+  border-radius: var(--jmp-radius);
+  padding: 5px 9px;
+  font-family: inherit;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+}
+.java-memory-playground a.button-icon:hover {
+  background: lightgrey;
+}
+
 /* Every control in the bottom bar is the same height, so a row of them reads
    as a row rather than as a skyline. */
 .bottom-bar button {

@@ -98,6 +98,10 @@ The app at [jmp.openpatch.org](https://jmp.openpatch.org) is the student's
 playground. Append `?edit` for the teacher's, which adds class configuration and
 step authoring.
 
+[documentation.html](https://jmp.openpatch.org/documentation.html) is the page
+the playground's help button opens; it lives in
+[platforms/web/public](platforms/web/public).
+
 ### Development
 
 Start the standalone app with hot reload:
