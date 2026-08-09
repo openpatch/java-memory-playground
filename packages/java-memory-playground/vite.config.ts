@@ -25,5 +25,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    // So that `index.css?raw` is the stylesheet rather than the empty string
+    // Vitest substitutes for CSS by default. `palette.test.ts` reads it.
+    css: true,
   },
 });

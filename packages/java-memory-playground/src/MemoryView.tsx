@@ -14,6 +14,7 @@ import {
 import { ariaLabelsFor } from "./ariaLabels";
 import { captureDiagram, downloadAllSteps } from "./exportSteps";
 import { fitPaddingFor } from "./fitPadding";
+import { TEXT_MUTED, WARNING } from "./palette";
 import useStore, { useMemoryStore } from "./storeContext";
 import { useUndoRedo } from "./useUndoRedo";
 import { RFState } from "./store";
@@ -756,11 +757,12 @@ export const MemoryView = () => {
             ...e,
             className: classes.filter(Boolean).join(" "),
             deletable: live,
-            // Inline rather than left to the stylesheet: exporting deep-clones
-            // the edge SVG, which drops anything a stylesheet contributed, and
-            // a reference with no stroke is an invisible one.
+            // Inline rather than left to the stylesheet, and a literal rather
+            // than a `var()`: exporting deep-clones the edge SVG and renders it
+            // where neither the stylesheet nor the custom properties reach. A
+            // reference with no stroke is an invisible one. See `palette.ts`.
             style: {
-              stroke: changed ? "var(--jmp-warning)" : "var(--jmp-text-muted)",
+              stroke: changed ? WARNING : TEXT_MUTED,
               strokeWidth: 4,
               opacity: changed || live ? 1 : stack ? 0.6 : 0.2,
             },
@@ -771,9 +773,11 @@ export const MemoryView = () => {
           type: "smoothstep",
           markerEnd: {
             type: MarkerType.ArrowClosed,
-            // React Flow puts this in the marker's inline style, so a custom
-            // property resolves; the arrowhead then matches the line it caps.
-            color: "var(--jmp-text-muted)",
+            // React Flow puts this in the marker's inline style, which the
+            // export carries along unread — so a literal, for the same reason
+            // the line above it is one. The head then matches its line both on
+            // screen and in the picture.
+            color: TEXT_MUTED,
           },
         }}
         onNodeClick={(_, node) => {

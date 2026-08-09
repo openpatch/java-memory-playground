@@ -1,6 +1,7 @@
 import { getNodesBounds, Viewport } from "@xyflow/react";
 import { toPng } from "html-to-image";
 
+import { SURFACE, SURFACE_SUNKEN, TEXT } from "./palette";
 import { CustomNodeType } from "./types";
 
 /**
@@ -33,13 +34,9 @@ const download = (dataUrl: string, name: string) => {
   a.click();
 };
 
-/**
- * The OpenPatch palette, spelled out because a canvas has no stylesheet to
- * read it from. Keep in step with the tokens in `index.css`.
- */
-const EXPORT_BACKGROUND = "#ffffff"; /* White */
-const EXPORT_CAPTION_BACKGROUND = "#f5f5f5"; /* Whitesmoke */
-const EXPORT_CAPTION_TEXT = "#242428"; /* Coal */
+const EXPORT_BACKGROUND = SURFACE;
+const EXPORT_CAPTION_BACKGROUND = SURFACE_SUNKEN;
+const EXPORT_CAPTION_TEXT = TEXT;
 
 const PIXEL_RATIO = 2;
 const MARGIN = 28;
