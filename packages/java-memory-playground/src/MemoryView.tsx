@@ -760,7 +760,7 @@ export const MemoryView = () => {
             // the edge SVG, which drops anything a stylesheet contributed, and
             // a reference with no stroke is an invisible one.
             style: {
-              stroke: changed ? "var(--jmp-warning)" : "grey",
+              stroke: changed ? "var(--jmp-warning)" : "var(--jmp-text-muted)",
               strokeWidth: 4,
               opacity: changed || live ? 1 : stack ? 0.6 : 0.2,
             },

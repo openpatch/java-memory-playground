@@ -329,7 +329,13 @@
 
 /* A small mark rather than a button: it repeats on every reference in the
    frame, so at full size it competes with the variable names for attention. */
-.method-call-node__delete {
+/* Scoped through the container for the same reason `.button-gc` is: a bare
+   class loses to `.java-memory-playground button`, which is one class plus one
+   type. Unscoped, the 9px of side padding meant for a full-size button
+   survived here and — the button being only 16px wide — left no room for the
+   glyph, which then started at the padding edge and overflowed to the right of
+   its own box. The background and the red hover were lost the same way. */
+.java-memory-playground button.method-call-node__delete {
   flex: none;
   padding: 0;
   width: 16px;
@@ -338,10 +344,13 @@
   line-height: 1;
   border-radius: var(--jmp-radius);
   background: transparent;
-  color: var(--jmp-text-faint);
+  /* Muted rather than faint: with the background gone there is nothing behind
+     the glyph to lift it off a Fresh Mint frame, and faint on mint is a
+     contrast ratio of about 1.7. */
+  color: var(--jmp-text-muted);
 }
 
-.method-call-node__delete:hover {
+.java-memory-playground button.method-call-node__delete:hover {
   background: var(--jmp-danger-soft);
   color: var(--jmp-danger);
 }
