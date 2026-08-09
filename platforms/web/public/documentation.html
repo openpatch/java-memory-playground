@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="icon" type="image/svg+xml" href="./logo.svg" />
     <title>Documentation — Java Memory Playground</title>
     <meta
       name="description"
@@ -11,27 +11,40 @@
     />
     <style>
       :root {
-        --bg: #ffffff;
-        --fg: #1f2328;
-        --muted: #57606a;
-        --rule: #d8dee4;
-        --accent: #0b62d0;
-        --code-bg: #f5f6f8;
-        --note-bg: #f3f7fd;
-        --note-rule: #a9c9f5;
+        /* The OpenPatch palette, from the branding repository. */
+        --green: #007864;
+        --deep-forest: #004c45;
+        --mint: #b5e3d8;
+        --coal: #242428;
+        --charcoal: #3c3c3c;
+        --quicksilver: #a4a4a4;
+        --silver: #d6d6d6;
+        --whitesmoke: #f5f5f5;
+        --white: #ffffff;
+
+        --bg: var(--white);
+        --fg: var(--coal);
+        --muted: var(--charcoal);
+        --rule: var(--silver);
+        --accent: var(--green);
+        --code-bg: var(--whitesmoke);
+        --note-bg: var(--mint);
+        --note-rule: var(--green);
         --max: 46rem;
       }
 
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #14171a;
-          --fg: #e6e6e6;
-          --muted: #9aa4ae;
-          --rule: #2d333b;
-          --accent: #6cb0ff;
-          --code-bg: #1c2126;
-          --note-bg: #182230;
-          --note-rule: #2b4a72;
+          --bg: var(--coal);
+          --fg: var(--whitesmoke);
+          --muted: var(--quicksilver);
+          --rule: var(--charcoal);
+          /* The brand green is too dark to read on Coal, so on a dark ground
+             the accent is Fresh Mint, which is the same hue lightened. */
+          --accent: var(--mint);
+          --code-bg: #1b1b1f;
+          --note-bg: var(--deep-forest);
+          --note-rule: var(--mint);
         }
       }
 
@@ -192,7 +205,7 @@
   </head>
   <body>
     <header>
-      <a class="back" href="/">← Back to the playground</a>
+      <a class="back" href="./">← Back to the playground</a>
       <h1>Java Memory Playground</h1>
       <p>
         Draw what a Java program has in memory: the call stack on one side, the
@@ -329,14 +342,14 @@
           </thead>
           <tbody>
             <tr>
-              <td><code>jmp.openpatch.org</code></td>
+              <td>the app&rsquo;s address</td>
               <td>
                 The student's playground: the whole diagram, every edit, and the
                 steps of a trace to walk through.
               </td>
             </tr>
             <tr>
-              <td><code>jmp.openpatch.org/?edit</code></td>
+              <td>the same, with <code>?edit</code></td>
               <td>
                 The teacher's: the same, plus class configuration and step
                 authoring.
@@ -617,7 +630,7 @@
     </main>
 
     <footer>
-      <a href="/">Playground</a>
+      <a href="./">Playground</a>
       <a href="https://github.com/openpatch/java-memory-playground">GitHub</a>
       <a href="https://openpatch.org">OpenPatch</a>
     </footer>

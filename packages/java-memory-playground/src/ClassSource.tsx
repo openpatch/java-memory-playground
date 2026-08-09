@@ -51,7 +51,7 @@ export const ClassSource = ({
         style={{
           margin: "0 0 12px 0",
           fontSize: "14px",
-          color: "#6b7280",
+          color: "var(--jmp-text-muted)",
         }}
       >
         {t.classSourceHint}
@@ -66,7 +66,7 @@ export const ClassSource = ({
           minHeight: "260px",
           padding: "12px",
           borderRadius: "6px",
-          border: "1px solid #d1d5db",
+          border: "1px solid var(--jmp-border)",
           fontFamily:
             "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
           fontSize: "13px",
@@ -81,10 +81,10 @@ export const ClassSource = ({
           style={{
             margin: "12px 0 0 0",
             padding: "12px 12px 12px 32px",
-            backgroundColor: "#fffbeb",
-            border: "1px solid #fde68a",
+            backgroundColor: "var(--jmp-warning-soft)",
+            border: "1px solid var(--jmp-warning-soft)",
             borderRadius: "6px",
-            color: "#92400e",
+            color: "var(--jmp-warning-text)",
             fontSize: "13px",
           }}
         >

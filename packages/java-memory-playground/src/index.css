@@ -5,8 +5,8 @@
   line-height: 1.2;
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   height: 100%;
-  background: white;
-  color: #222;
+  background: var(--jmp-surface);
+  color: var(--jmp-text);
 
   /* How tightly the canvas is packed, in one place. A diagram is read as a
      whole — a list of five nodes, a stack three frames deep — so every pixel
@@ -18,6 +18,57 @@
   /* Handles are drag targets as well as dots, so they stay well above React
      Flow's own 6px default. */
   --jmp-handle: 14px;
+
+  /* The OpenPatch palette, from the branding repository. These are the only
+     colours with names of their own; everything below is a role filled by one
+     of them, so a diagram can be restyled by reassigning roles rather than by
+     hunting hex codes through the stylesheet. */
+  --jmp-green: #007864;
+  --jmp-deep-forest: #004c45;
+  --jmp-mint: #b5e3d8;
+  --jmp-black: #000000;
+  --jmp-coal: #242428;
+  --jmp-charcoal: #3c3c3c;
+  --jmp-quicksilver: #a4a4a4;
+  --jmp-silver: #d6d6d6;
+  --jmp-whitesmoke: #f5f5f5;
+  --jmp-white: #ffffff;
+
+  /* Roles */
+  --jmp-surface: var(--jmp-white);
+  --jmp-surface-sunken: var(--jmp-whitesmoke);
+  --jmp-text: var(--jmp-coal);
+  --jmp-text-muted: var(--jmp-charcoal);
+  --jmp-text-faint: var(--jmp-quicksilver);
+  --jmp-border: var(--jmp-silver);
+  --jmp-accent: var(--jmp-green);
+  /* Panels float over the canvas, so they are the surface with a little of it
+     showing through. */
+  --jmp-panel: rgb(255 255 255 / 92%);
+  --jmp-shadow: rgb(0 0 0 / 15%);
+  --jmp-shadow-soft: rgb(0 0 0 / 8%);
+  --jmp-scrim: rgb(0 0 0 / 50%);
+
+  /* What the three kinds of box are made of. The palette has one accent, and
+     it goes to the stack: a frame is Fresh Mint and the heap stays neutral, so
+     the split the diagram is about is the one carried by colour. */
+  --jmp-frame: var(--jmp-mint);
+  --jmp-variable: var(--jmp-silver);
+  --jmp-object: var(--jmp-whitesmoke);
+
+  /* Success is the brand green. Danger and warning are not in the palette and
+     cannot be: a diagram has to be able to say "unreachable, about to be
+     collected" and "changed since the last step", and neither reads as green.
+     They are kept to one hue each. */
+  --jmp-success: var(--jmp-green);
+  --jmp-success-soft: var(--jmp-mint);
+  --jmp-success-text: var(--jmp-deep-forest);
+  --jmp-danger: #c0392b;
+  --jmp-danger-soft: #f7d7d3;
+  --jmp-danger-text: #7f2419;
+  --jmp-warning: #b7791f;
+  --jmp-warning-soft: #f6e6c4;
+  --jmp-warning-text: #6b4711;
 }
 
 .button-group {
@@ -39,8 +90,8 @@
 }
 
 .java-memory-playground button {
-  background: whitesmoke;
-  color: grey;
+  background: var(--jmp-surface-sunken);
+  color: var(--jmp-text-muted);
   cursor: pointer;
   border: 0;
   border-radius: var(--jmp-radius);
@@ -49,7 +100,7 @@
 }
 
 .java-memory-playground button:hover {
-  background: lightgrey;
+  background: var(--jmp-silver);
 }
 
 .java-memory-playground button:disabled {
@@ -58,7 +109,7 @@
 }
 
 .java-memory-playground button:disabled:hover {
-  background: whitesmoke;
+  background: var(--jmp-surface-sunken);
 }
 
 .button-icon {
@@ -74,8 +125,8 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  background: whitesmoke;
-  color: grey;
+  background: var(--jmp-surface-sunken);
+  color: var(--jmp-text-muted);
   border-radius: var(--jmp-radius);
   padding: 5px 9px;
   font-family: inherit;
@@ -84,7 +135,7 @@
   cursor: pointer;
 }
 .java-memory-playground a.button-icon:hover {
-  background: lightgrey;
+  background: var(--jmp-silver);
 }
 
 /* Every control in the bottom bar is the same height, so a row of them reads
@@ -93,13 +144,19 @@
   min-height: 26px;
 }
 
+/* Otherwise a boolean field is painted in the browser's own accent, which is
+   the one colour on the canvas nobody chose. */
+.java-memory-playground input[type="checkbox"] {
+  accent-color: var(--jmp-accent);
+}
+
 .java-memory-playground input {
   display: inline-block;
   border-width: 1px;
   margin-left: 3px;
   border-style: solid;
   border-radius: var(--jmp-radius);
-  border-color: grey;
+  border-color: var(--jmp-quicksilver);
   width: 64px;
   padding: 2px 4px;
   font-family: inherit;
@@ -107,7 +164,7 @@
 }
 
 .memory {
-  background: white;
+  background: var(--jmp-surface);
 }
 
 .memory-view {
@@ -134,9 +191,9 @@
   flex-direction: column;
   gap: var(--jmp-space);
   padding: var(--jmp-space);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--jmp-panel);
   border-radius: var(--jmp-radius);
-  box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
+  box-shadow: 0 2px 6px var(--jmp-shadow);
   /* Never taller than the canvas: a class-heavy diagram scrolls instead. */
   max-height: calc(100% - 30px);
   overflow-y: auto;
@@ -146,7 +203,7 @@
 .sidebar-variable,
 .sidebar-method-call {
   font-size: 13px;
-  border: 1px solid #000;
+  border: 1px solid var(--jmp-black);
   padding: 5px 8px;
   border-radius: var(--jmp-radius);
   text-align: center;
@@ -158,15 +215,15 @@
 }
 
 .sidebar-class {
-  background: white;
+  background: var(--jmp-surface);
 }
 
 .sidebar-variable {
-  background: #9fe2bf;
+  background: var(--jmp-variable);
 }
 
 .sidebar-method-call {
-  background: #faffba;
+  background: var(--jmp-frame);
 }
 
 .react-flow__edge-path {
@@ -174,15 +231,15 @@
 }
 
 .react-flow__edge .react-flow__edge-path {
-  stroke: grey;
+  stroke: var(--jmp-text-muted);
 }
 
 .react-flow__edge.selected .react-flow__edge-path {
-  stroke: red !important;
+  stroke: var(--jmp-accent) !important;
 }
 
 .react-flow__node.selected {
-  outline: 2px solid red !important;
+  outline: 2px solid var(--jmp-accent) !important;
 }
 
 .react-flow__edge.previous-method-call .react-flow__edge-path {
@@ -210,17 +267,17 @@
 .react-flow__node-method-call,
 .react-flow__node-object {
   font-size: 12px;
-  background: #f5f5f6;
+  background: var(--jmp-object);
   opacity: 0.4;
-  color: #222;
+  color: var(--jmp-text);
   box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 15%),
-    0 2px 4px -1px rgb(0 0 0 / 8%);
+    0 4px 6px -1px var(--jmp-shadow),
+    0 2px 4px -1px var(--jmp-shadow-soft);
   border-radius: var(--jmp-radius);
 }
 
 .react-flow__node-method-call {
-  background: #faffba;
+  background: var(--jmp-frame);
   border-radius: 0px;
 }
 
@@ -232,7 +289,7 @@
   height: var(--jmp-handle);
   flex: none;
   border-radius: 50%;
-  background-color: #778899;
+  background-color: var(--jmp-accent);
 }
 
 /* Half the handle hangs outside the node, so a reference visibly leaves it. */
@@ -250,11 +307,11 @@
   display: flex;
   align-items: center;
   font-size: 10px;
-  background: #9fe2bf;
-  color: #222;
+  background: var(--jmp-variable);
+  color: var(--jmp-text);
   box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 15%),
-    0 2px 4px -1px rgb(0 0 0 / 8%);
+    0 4px 6px -1px var(--jmp-shadow),
+    0 2px 4px -1px var(--jmp-shadow-soft);
   border-radius: var(--jmp-radius);
   padding: var(--jmp-space) var(--jmp-space-lg);
 }
@@ -281,16 +338,16 @@
   line-height: 1;
   border-radius: var(--jmp-radius);
   background: transparent;
-  color: #94a3b8;
+  color: var(--jmp-text-faint);
 }
 
 .method-call-node__delete:hover {
-  background: #fee2e2;
-  color: #dc2626;
+  background: var(--jmp-danger-soft);
+  color: var(--jmp-danger);
 }
 
 .method-call-node__variable {
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--jmp-border);
 }
 
 .method-call-node__variable,
@@ -319,11 +376,11 @@
   display: flex;
   align-items: center;
   padding: var(--jmp-space) var(--jmp-space-lg);
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--jmp-border);
 }
 
 .object-node__header.gc {
-  background: #ff9c9c;
+  background: var(--jmp-danger-soft);
   border-top-left-radius: var(--jmp-radius);
   border-top-right-radius: var(--jmp-radius);
   opacity: 0.7;
@@ -334,16 +391,16 @@
    Scoped through the container because `.java-memory-playground button` is
    one class plus one type, and beat a bare `.button-gc`. */
 .java-memory-playground button.button-gc {
-  color: #000;
-  background: #ff9c9c;
+  color: var(--jmp-black);
+  background: var(--jmp-danger-soft);
 }
 
 .java-memory-playground button.button-gc:hover {
-  background: #ff8080;
+  background: var(--jmp-danger);
 }
 
 .object-node__body.gc {
-  background: #ff9c9c;
+  background: var(--jmp-danger-soft);
   border-bottom-left-radius: var(--jmp-radius);
   border-bottom-right-radius: var(--jmp-radius);
   opacity: 0.7;
@@ -386,13 +443,13 @@ path.react-flow__edge-path:hover {
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: #ffd700;
-  color: #000;
+  background: var(--jmp-warning-soft);
+  color: var(--jmp-black);
   padding: 12px 20px;
   border-radius: 8px;
   font-size: 16px;
   font-weight: bold;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px var(--jmp-shadow);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -413,14 +470,14 @@ path.react-flow__edge-path:hover {
 }
 
 .cancel-placement {
-  background: #ff4444;
-  color: white;
+  background: var(--jmp-danger);
+  color: var(--jmp-white);
   font-size: 14px;
   padding: 6px 12px;
 }
 
 .cancel-placement:hover {
-  background: #cc0000;
+  background: var(--jmp-danger-text);
 }
 
 .dndnode {
@@ -441,7 +498,7 @@ path.react-flow__edge-path:hover {
 }
 
 .inline-string__quote {
-  color: #94a3b8;
+  color: var(--jmp-text-faint);
   padding: 0 1px;
 }
 
@@ -481,9 +538,9 @@ path.react-flow__edge-path:hover {
   gap: var(--jmp-space) var(--jmp-space-lg);
   max-width: 100%;
   padding: var(--jmp-space);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--jmp-panel);
   border-radius: var(--jmp-radius);
-  box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
+  box-shadow: 0 2px 6px var(--jmp-shadow);
 }
 
 /* The groups inside it are not cards of their own. `.step-bar` keeps its own
@@ -504,9 +561,9 @@ path.react-flow__edge-path:hover {
   font-size: 13px;
   /* The bar floats over the canvas, so it needs to stay legible when a node
      happens to sit underneath it. */
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--jmp-panel);
   border-radius: var(--jmp-radius);
-  box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
+  box-shadow: 0 2px 6px var(--jmp-shadow);
   /* Wrapping is a last resort — see `.step-bar > *`, which keeps the controls
      at full size — but a second line beats a "Delete step" that has been
      pushed off the edge of a phone. */
@@ -566,15 +623,15 @@ path.react-flow__edge-path:hover {
 }
 
 .react-flow__node.step-added::after {
-  border: 3px solid #22c55e;
+  border: 3px solid var(--jmp-success);
 }
 
 .react-flow__node.step-changed::after {
-  border: 3px dashed #f59e0b;
+  border: 3px dashed var(--jmp-warning);
 }
 
 .react-flow__edge.step-changed .react-flow__edge-path {
-  stroke: #f59e0b !important;
+  stroke: var(--jmp-warning) !important;
   opacity: 1;
 }
 
@@ -591,8 +648,8 @@ path.react-flow__edge-path:hover {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #ef4444;
-  color: white;
+  background: var(--jmp-danger);
+  color: var(--jmp-white);
   font-size: 18px;
   font-weight: bold;
   display: flex;
@@ -607,9 +664,9 @@ path.react-flow__edge-path:hover {
   align-items: center;
   gap: var(--jmp-space);
   padding: var(--jmp-space);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--jmp-panel);
   border-radius: var(--jmp-radius);
-  box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
+  box-shadow: 0 2px 6px var(--jmp-shadow);
 }
 
 .gc-hint,
@@ -638,11 +695,11 @@ path.react-flow__edge-path:hover {
 }
 
 .step-bar__result.correct {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--jmp-success-soft);
+  color: var(--jmp-success-text);
 }
 
 .step-bar__result.wrong {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--jmp-danger-soft);
+  color: var(--jmp-danger-text);
 }

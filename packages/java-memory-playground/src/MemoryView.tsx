@@ -46,14 +46,13 @@ import { ArrayCreationDialog } from "./ArrayCreationDialog";
 import { SimpleInputDialog } from "./SimpleInputDialog";
 
 /**
- * Where the help button goes.
+ * Where the help button goes: the documentation page served next to the app.
  *
- * Absolute rather than a path, because most playgrounds are not served from
- * the app: a course page embedding the web component and a VS Code webview
- * both resolve a relative link against somewhere else entirely.
+ * Relative on purpose. Naming a domain here would be guessing at where any
+ * given playground is deployed, and a guess that is wrong is a help button
+ * that 404s.
  */
-export const DOCUMENTATION_URL =
-  "https://jmp.openpatch.org/documentation.html";
+export const DOCUMENTATION_URL = "documentation.html";
 
 const selector = (state: RFState) => ({
   selectedNodeId: state.selectedNodeId,
@@ -761,7 +760,7 @@ export const MemoryView = () => {
             // the edge SVG, which drops anything a stylesheet contributed, and
             // a reference with no stroke is an invisible one.
             style: {
-              stroke: changed ? "#f59e0b" : "grey",
+              stroke: changed ? "var(--jmp-warning)" : "grey",
               strokeWidth: 4,
               opacity: changed || live ? 1 : stack ? 0.6 : 0.2,
             },
@@ -772,7 +771,9 @@ export const MemoryView = () => {
           type: "smoothstep",
           markerEnd: {
             type: MarkerType.ArrowClosed,
-            color: "#778899",
+            // React Flow puts this in the marker's inline style, so a custom
+            // property resolves; the arrowhead then matches the line it caps.
+            color: "var(--jmp-text-muted)",
           },
         }}
         onNodeClick={(_, node) => {

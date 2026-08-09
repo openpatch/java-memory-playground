@@ -31,7 +31,7 @@ export function ConfirmDialog({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backgroundColor: "var(--jmp-scrim)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -44,14 +44,14 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-label={title}
         style={{
-          backgroundColor: "white",
+          backgroundColor: "var(--jmp-surface)",
           padding: "24px",
           borderRadius: "8px",
           minWidth: "400px",
           maxWidth: "min(560px, 90vw)",
           maxHeight: "80vh",
           overflowY: "auto",
-          border: "1px solid #e5e7eb",
+          border: "1px solid var(--jmp-border)",
           margin: "20px",
         }}
         onClick={(e) => e.stopPropagation()}
@@ -61,12 +61,12 @@ export function ConfirmDialog({
             margin: "0 0 12px 0",
             fontSize: "18px",
             fontWeight: "600",
-            color: "#111827",
+            color: "var(--jmp-text)",
           }}
         >
           {title}
         </h3>
-        <div style={{ fontSize: "14px", color: "#374151", lineHeight: 1.6 }}>
+        <div style={{ fontSize: "14px", color: "var(--jmp-text-muted)", lineHeight: 1.6 }}>
           {children}
         </div>
         <div
@@ -81,12 +81,12 @@ export function ConfirmDialog({
             onClick={onCancel}
             autoFocus
             style={{
-              backgroundColor: "white",
-              color: "#374151",
+              backgroundColor: "var(--jmp-surface)",
+              color: "var(--jmp-text-muted)",
               padding: "8px 16px",
               fontSize: "14px",
               fontWeight: "500",
-              border: "1px solid #d1d5db",
+              border: "1px solid var(--jmp-border)",
               borderRadius: "6px",
               cursor: "pointer",
             }}
@@ -96,8 +96,8 @@ export function ConfirmDialog({
           <button
             onClick={onConfirm}
             style={{
-              backgroundColor: destructive ? "#dc2626" : "#111827",
-              color: "white",
+              backgroundColor: destructive ? "var(--jmp-danger)" : "var(--jmp-text)",
+              color: "var(--jmp-surface)",
               padding: "8px 16px",
               fontSize: "14px",
               fontWeight: "500",

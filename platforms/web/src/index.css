@@ -14,5 +14,7 @@ html, body, #root {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: white;
+  /* White, from the OpenPatch palette. The playground paints its own surface
+     on top; this is only what shows before it mounts. */
+  background: #ffffff;
 }

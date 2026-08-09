@@ -98,9 +98,9 @@ The app at [jmp.openpatch.org](https://jmp.openpatch.org) is the student's
 playground. Append `?edit` for the teacher's, which adds class configuration and
 step authoring.
 
-[documentation.html](https://jmp.openpatch.org/documentation.html) is the page
-the playground's help button opens; it lives in
-[platforms/web/public](platforms/web/public).
+The help button opens `documentation.html`, which is served beside the app from
+[platforms/web/public](platforms/web/public/documentation.html). The link is
+relative, so it follows the app wherever it is deployed.
 
 ### Development
 

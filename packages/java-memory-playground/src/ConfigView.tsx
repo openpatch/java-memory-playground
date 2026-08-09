@@ -217,15 +217,15 @@ export const ConfigView = () => {
       margin: "0 auto",
     }}>
       <div style={{
-        backgroundColor: "white",
+        backgroundColor: "var(--jmp-surface)",
         borderRadius: "8px",
         padding: "24px",
-        border: "1px solid #e5e7eb",
+        border: "1px solid var(--jmp-border)",
         marginBottom: "16px"
       }}>
         <h1 style={{
           margin: "0 0 16px 0",
-          color: "#111827",
+          color: "var(--jmp-text)",
           fontSize: "24px",
           fontWeight: "600"
         }}>{t.configuration}</h1>
@@ -234,8 +234,11 @@ export const ConfigView = () => {
           <button
             onClick={onSave}
             style={{
-              backgroundColor: hasUnsavedChanges ? "#111827" : "#6b7280",
-              color: "white",
+              // The one primary action on the page, so it gets the one accent.
+              backgroundColor: hasUnsavedChanges
+                ? "var(--jmp-accent)"
+                : "var(--jmp-text-faint)",
+              color: "var(--jmp-surface)",
               padding: "8px 16px",
               fontSize: "14px",
               fontWeight: "500",
@@ -247,19 +250,19 @@ export const ConfigView = () => {
           <button
             onClick={onView}
             style={{
-              backgroundColor: "white",
-              color: "#111827",
+              backgroundColor: "var(--jmp-surface)",
+              color: "var(--jmp-text)",
               padding: "8px 16px",
               fontSize: "14px",
               fontWeight: "500",
-              border: "1px solid #d1d5db",
+              border: "1px solid var(--jmp-border)",
               borderRadius: "6px",
               cursor: "pointer"
             }}
           >{t.backToDiagram}</button>
           {showSaveSuccess && (
             <span style={{
-              color: "#10b981",
+              color: "var(--jmp-success)",
               fontSize: "14px",
               fontWeight: "500"
             }}>
@@ -270,20 +273,20 @@ export const ConfigView = () => {
       </div>
 
       <div style={{
-        backgroundColor: "white",
+        backgroundColor: "var(--jmp-surface)",
         borderRadius: "8px",
         padding: "24px",
-        border: "1px solid #e5e7eb",
+        border: "1px solid var(--jmp-border)",
         marginBottom: "16px"
       }}>
         <h2 style={{
           margin: "0 0 16px 0",
-          color: "#111827",
+          color: "var(--jmp-text)",
           fontSize: "18px",
           fontWeight: "600"
         }}>{t.options}</h2>
         <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "12px" }}>
-          <span style={{ fontSize: "14px", color: "#374151" }}>{t.presets}:</span>
+          <span style={{ fontSize: "14px", color: "var(--jmp-text-muted)" }}>{t.presets}:</span>
           {(
             [
               ["references", t.presetReferences],
@@ -306,7 +309,7 @@ export const ConfigView = () => {
             alignItems: "center",
             gap: "8px",
             fontSize: "14px",
-            color: "#374151",
+            color: "var(--jmp-text-muted)",
             cursor: "pointer"
           }}>
             <input
@@ -328,7 +331,7 @@ export const ConfigView = () => {
             alignItems: "center",
             gap: "8px",
             fontSize: "14px",
-            color: "#374151",
+            color: "var(--jmp-text-muted)",
             cursor: "pointer"
           }}>
             <input
@@ -348,7 +351,7 @@ export const ConfigView = () => {
             alignItems: "center",
             gap: "8px",
             fontSize: "14px",
-            color: "#374151",
+            color: "var(--jmp-text-muted)",
             cursor: "pointer"
           }}>
             <input
@@ -370,7 +373,7 @@ export const ConfigView = () => {
             alignItems: "center",
             gap: "8px",
             fontSize: "14px",
-            color: "#374151",
+            color: "var(--jmp-text-muted)",
             cursor: "pointer"
           }}>
             <input
@@ -392,7 +395,7 @@ export const ConfigView = () => {
             alignItems: "center",
             gap: "8px",
             fontSize: "14px",
-            color: "#374151",
+            color: "var(--jmp-text-muted)",
             cursor: "pointer"
           }}>
             <input
@@ -414,7 +417,7 @@ export const ConfigView = () => {
             alignItems: "center",
             gap: "8px",
             fontSize: "14px",
-            color: "#374151",
+            color: "var(--jmp-text-muted)",
             cursor: "pointer"
           }}>
             <input
@@ -436,7 +439,7 @@ export const ConfigView = () => {
             alignItems: "center",
             gap: "8px",
             fontSize: "14px",
-            color: "#374151",
+            color: "var(--jmp-text-muted)",
             cursor: "pointer"
           }}>
             <input
@@ -458,7 +461,7 @@ export const ConfigView = () => {
             alignItems: "center",
             gap: "8px",
             fontSize: "14px",
-            color: "#374151",
+            color: "var(--jmp-text-muted)",
             cursor: "pointer"
           }}>
             <input
@@ -480,7 +483,7 @@ export const ConfigView = () => {
             alignItems: "center",
             gap: "8px",
             fontSize: "14px",
-            color: "#374151",
+            color: "var(--jmp-text-muted)",
             cursor: "pointer"
           }}>
             <input
@@ -501,10 +504,10 @@ export const ConfigView = () => {
       </div>
 
       <div style={{
-        backgroundColor: "white",
+        backgroundColor: "var(--jmp-surface)",
         borderRadius: "8px",
         padding: "24px",
-        border: "1px solid #e5e7eb"
+        border: "1px solid var(--jmp-border)"
       }}>
         <div
           style={{
@@ -517,7 +520,7 @@ export const ConfigView = () => {
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <h2 style={{
               margin: "0",
-              color: "#111827",
+              color: "var(--jmp-text)",
               fontSize: "18px",
               fontWeight: "600"
             }}>{t.classes}</h2>
@@ -533,12 +536,12 @@ export const ConfigView = () => {
                   onClick={() => setClassTab(name)}
                   aria-pressed={classTab === name}
                   style={{
-                    backgroundColor: classTab === name ? "#111827" : "white",
-                    color: classTab === name ? "white" : "#374151",
+                    backgroundColor: classTab === name ? "var(--jmp-text)" : "var(--jmp-surface)",
+                    color: classTab === name ? "var(--jmp-surface)" : "var(--jmp-text-muted)",
                     padding: "6px 12px",
                     fontSize: "13px",
                     fontWeight: "500",
-                    border: "1px solid #d1d5db",
+                    border: "1px solid var(--jmp-border)",
                     borderRadius: "6px",
                     cursor: "pointer",
                   }}
@@ -552,8 +555,8 @@ export const ConfigView = () => {
             <button
               onClick={handleAddKlass}
               style={{
-                backgroundColor: "#111827",
-                color: "white",
+                backgroundColor: "var(--jmp-text)",
+                color: "var(--jmp-surface)",
                 padding: "8px 16px",
                 fontSize: "14px",
                 fontWeight: "500",
@@ -578,10 +581,10 @@ export const ConfigView = () => {
             <div
               key={klassName}
               style={{
-                border: "1px solid #e5e7eb",
+                border: "1px solid var(--jmp-border)",
                 borderRadius: "8px",
                 padding: "16px",
-                backgroundColor: "#fafafa"
+                backgroundColor: "var(--jmp-surface-sunken)"
               }}
             >
               <div
@@ -591,14 +594,14 @@ export const ConfigView = () => {
                   alignItems: "center",
                   marginBottom: "12px",
                   paddingBottom: "12px",
-                  borderBottom: "1px solid #e5e7eb"
+                  borderBottom: "1px solid var(--jmp-border)"
                 }}
               >
                 <h3 style={{
                   margin: 0,
                   fontSize: "16px",
                   fontWeight: "600",
-                  color: "#111827"
+                  color: "var(--jmp-text)"
                 }}>
                   {klassName}
                 </h3>
@@ -606,12 +609,12 @@ export const ConfigView = () => {
                   <button
                     onClick={() => handleAddAttribute(klassName)}
                     style={{
-                      backgroundColor: "white",
-                      color: "#111827",
+                      backgroundColor: "var(--jmp-surface)",
+                      color: "var(--jmp-text)",
                       padding: "6px 12px",
                       fontSize: "13px",
                       fontWeight: "500",
-                      border: "1px solid #d1d5db",
+                      border: "1px solid var(--jmp-border)",
                       borderRadius: "6px",
                       cursor: "pointer"
                     }}
@@ -621,12 +624,12 @@ export const ConfigView = () => {
                   <button
                     onClick={() => handleRemoveKlass(klassName)}
                     style={{
-                      backgroundColor: "white",
-                      color: "#dc2626",
+                      backgroundColor: "var(--jmp-surface)",
+                      color: "var(--jmp-danger)",
                       padding: "6px 12px",
                       fontSize: "13px",
                       fontWeight: "500",
-                      border: "1px solid #fecaca",
+                      border: "1px solid var(--jmp-danger-soft)",
                       borderRadius: "6px",
                       cursor: "pointer"
                     }}
@@ -639,7 +642,7 @@ export const ConfigView = () => {
               <div>
                 {Object.keys(klass.attributes).length === 0 ? (
                   <p style={{
-                    color: "#6b7280",
+                    color: "var(--jmp-text-muted)",
                     fontStyle: "italic",
                     textAlign: "center",
                     padding: "16px",
@@ -653,22 +656,22 @@ export const ConfigView = () => {
                     style={{
                       width: "100%",
                       borderCollapse: "collapse",
-                      backgroundColor: "white",
+                      backgroundColor: "var(--jmp-surface)",
                       borderRadius: "6px",
                       overflow: "hidden",
-                      border: "1px solid #e5e7eb"
+                      border: "1px solid var(--jmp-border)"
                     }}
                   >
                     <thead>
                       <tr style={{
-                        backgroundColor: "#f9fafb",
-                        borderBottom: "1px solid #e5e7eb"
+                        backgroundColor: "var(--jmp-surface-sunken)",
+                        borderBottom: "1px solid var(--jmp-border)"
                       }}>
                         <th style={{
                           padding: "10px 12px",
                           textAlign: "left",
                           fontWeight: "600",
-                          color: "#374151",
+                          color: "var(--jmp-text-muted)",
                           fontSize: "13px"
                         }}>
                           {t.attributeName}
@@ -677,7 +680,7 @@ export const ConfigView = () => {
                           padding: "10px 12px",
                           textAlign: "left",
                           fontWeight: "600",
-                          color: "#374151",
+                          color: "var(--jmp-text-muted)",
                           fontSize: "13px"
                         }}>
                           {t.dataType}
@@ -686,7 +689,7 @@ export const ConfigView = () => {
                           padding: "10px 12px",
                           textAlign: "right",
                           fontWeight: "600",
-                          color: "#374151",
+                          color: "var(--jmp-text-muted)",
                           fontSize: "13px"
                         }}>
                           Actions
@@ -699,17 +702,17 @@ export const ConfigView = () => {
                           <tr
                             key={attrName}
                             style={{
-                              borderBottom: "1px solid #e5e7eb"
+                              borderBottom: "1px solid var(--jmp-border)"
                             }}
                           >
                             <td style={{
                               padding: "10px 12px",
-                              color: "#111827",
+                              color: "var(--jmp-text)",
                               fontSize: "14px"
                             }}>{attrName}</td>
                             <td style={{
                               padding: "10px 12px",
-                              color: "#6b7280",
+                              color: "var(--jmp-text-muted)",
                               fontSize: "14px"
                             }}>{dataType}</td>
                             <td
@@ -728,12 +731,12 @@ export const ConfigView = () => {
                                 }
                                 style={{
                                   marginRight: "8px",
-                                  backgroundColor: "white",
-                                  color: "#111827",
+                                  backgroundColor: "var(--jmp-surface)",
+                                  color: "var(--jmp-text)",
                                   padding: "4px 10px",
                                   fontSize: "12px",
                                   fontWeight: "500",
-                                  border: "1px solid #d1d5db",
+                                  border: "1px solid var(--jmp-border)",
                                   borderRadius: "4px",
                                   cursor: "pointer"
                                 }}
@@ -745,12 +748,12 @@ export const ConfigView = () => {
                                   handleRemoveAttribute(klassName, attrName)
                                 }
                                 style={{
-                                  backgroundColor: "white",
-                                  color: "#dc2626",
+                                  backgroundColor: "var(--jmp-surface)",
+                                  color: "var(--jmp-danger)",
                                   padding: "4px 10px",
                                   fontSize: "12px",
                                   fontWeight: "500",
-                                  border: "1px solid #fecaca",
+                                  border: "1px solid var(--jmp-danger-soft)",
                                   borderRadius: "4px",
                                   cursor: "pointer"
                                 }}
@@ -779,7 +782,7 @@ export const ConfigView = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "var(--jmp-scrim)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -789,12 +792,12 @@ export const ConfigView = () => {
         >
           <div
             style={{
-              backgroundColor: "white",
+              backgroundColor: "var(--jmp-surface)",
               padding: "24px",
               borderRadius: "8px",
               minWidth: "400px",
               maxWidth: "90vw",
-              border: "1px solid #e5e7eb"
+              border: "1px solid var(--jmp-border)"
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -802,7 +805,7 @@ export const ConfigView = () => {
               margin: "0 0 16px 0",
               fontSize: "18px",
               fontWeight: "600",
-              color: "#111827"
+              color: "var(--jmp-text)"
             }}>
               Add Attribute to {addingAttribute}
             </h3>
@@ -812,7 +815,7 @@ export const ConfigView = () => {
                 marginBottom: "6px",
                 fontSize: "14px",
                 fontWeight: "500",
-                color: "#374151"
+                color: "var(--jmp-text-muted)"
               }}>
                 {t.attributeName}
               </label>
@@ -824,7 +827,7 @@ export const ConfigView = () => {
                   width: "100%",
                   padding: "8px 12px",
                   borderRadius: "6px",
-                  border: "1px solid #d1d5db",
+                  border: "1px solid var(--jmp-border)",
                   fontSize: "14px",
                   boxSizing: "border-box"
                 }}
@@ -838,7 +841,7 @@ export const ConfigView = () => {
                 marginBottom: "6px",
                 fontSize: "14px",
                 fontWeight: "500",
-                color: "#374151"
+                color: "var(--jmp-text-muted)"
               }}>
                 {t.dataType}
               </label>
@@ -849,9 +852,9 @@ export const ConfigView = () => {
                   width: "100%",
                   padding: "8px 12px",
                   borderRadius: "6px",
-                  border: "1px solid #d1d5db",
+                  border: "1px solid var(--jmp-border)",
                   fontSize: "14px",
-                  backgroundColor: "white",
+                  backgroundColor: "var(--jmp-surface)",
                   cursor: "pointer",
                   boxSizing: "border-box"
                 }}
@@ -873,12 +876,12 @@ export const ConfigView = () => {
               <button
                 onClick={handleCancelAddAttribute}
                 style={{
-                  backgroundColor: "white",
-                  color: "#374151",
+                  backgroundColor: "var(--jmp-surface)",
+                  color: "var(--jmp-text-muted)",
                   padding: "8px 16px",
                   fontSize: "14px",
                   fontWeight: "500",
-                  border: "1px solid #d1d5db",
+                  border: "1px solid var(--jmp-border)",
                   borderRadius: "6px",
                   cursor: "pointer"
                 }}
@@ -886,8 +889,8 @@ export const ConfigView = () => {
               <button
                 onClick={handleConfirmAddAttribute}
                 style={{
-                  backgroundColor: "#111827",
-                  color: "white",
+                  backgroundColor: "var(--jmp-text)",
+                  color: "var(--jmp-surface)",
                   padding: "8px 16px",
                   fontSize: "14px",
                   fontWeight: "500",
@@ -910,7 +913,7 @@ export const ConfigView = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "var(--jmp-scrim)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -920,12 +923,12 @@ export const ConfigView = () => {
         >
           <div
             style={{
-              backgroundColor: "white",
+              backgroundColor: "var(--jmp-surface)",
               padding: "24px",
               borderRadius: "8px",
               minWidth: "400px",
               maxWidth: "90vw",
-              border: "1px solid #e5e7eb"
+              border: "1px solid var(--jmp-border)"
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -933,7 +936,7 @@ export const ConfigView = () => {
               margin: "0 0 16px 0",
               fontSize: "18px",
               fontWeight: "600",
-              color: "#111827"
+              color: "var(--jmp-text)"
             }}>
               Edit Attribute: {editingAttribute.attrName}
             </h3>
@@ -943,7 +946,7 @@ export const ConfigView = () => {
                 marginBottom: "6px",
                 fontSize: "14px",
                 fontWeight: "500",
-                color: "#374151"
+                color: "var(--jmp-text-muted)"
               }}>
                 {t.dataType}
               </label>
@@ -954,9 +957,9 @@ export const ConfigView = () => {
                   width: "100%",
                   padding: "8px 12px",
                   borderRadius: "6px",
-                  border: "1px solid #d1d5db",
+                  border: "1px solid var(--jmp-border)",
                   fontSize: "14px",
-                  backgroundColor: "white",
+                  backgroundColor: "var(--jmp-surface)",
                   cursor: "pointer",
                   boxSizing: "border-box"
                 }}
@@ -978,12 +981,12 @@ export const ConfigView = () => {
               <button
                 onClick={handleCancelEditAttribute}
                 style={{
-                  backgroundColor: "white",
-                  color: "#374151",
+                  backgroundColor: "var(--jmp-surface)",
+                  color: "var(--jmp-text-muted)",
                   padding: "8px 16px",
                   fontSize: "14px",
                   fontWeight: "500",
-                  border: "1px solid #d1d5db",
+                  border: "1px solid var(--jmp-border)",
                   borderRadius: "6px",
                   cursor: "pointer"
                 }}
@@ -991,8 +994,8 @@ export const ConfigView = () => {
               <button
                 onClick={handleConfirmEditAttribute}
                 style={{
-                  backgroundColor: "#111827",
-                  color: "white",
+                  backgroundColor: "var(--jmp-text)",
+                  color: "var(--jmp-surface)",
                   padding: "8px 16px",
                   fontSize: "14px",
                   fontWeight: "500",
@@ -1032,10 +1035,10 @@ export const ConfigView = () => {
                 style={{
                   margin: 0,
                   padding: "12px 12px 12px 32px",
-                  backgroundColor: "#fef2f2",
-                  border: "1px solid #fecaca",
+                  backgroundColor: "var(--jmp-danger-soft)",
+                  border: "1px solid var(--jmp-danger-soft)",
                   borderRadius: "6px",
-                  color: "#991b1b",
+                  color: "var(--jmp-danger-text)",
                 }}
               >
                 {shown.map((line) => (

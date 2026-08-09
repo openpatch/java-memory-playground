@@ -33,6 +33,14 @@ const download = (dataUrl: string, name: string) => {
   a.click();
 };
 
+/**
+ * The OpenPatch palette, spelled out because a canvas has no stylesheet to
+ * read it from. Keep in step with the tokens in `index.css`.
+ */
+const EXPORT_BACKGROUND = "#ffffff"; /* White */
+const EXPORT_CAPTION_BACKGROUND = "#f5f5f5"; /* Whitesmoke */
+const EXPORT_CAPTION_TEXT = "#242428"; /* Coal */
+
 const PIXEL_RATIO = 2;
 const MARGIN = 28;
 
@@ -56,7 +64,7 @@ export const captureDiagram = async (
 
   const dataUrl = await toPng(flowElement, {
     filter: excludeChrome,
-    backgroundColor: "#ffffff",
+    backgroundColor: EXPORT_BACKGROUND,
     pixelRatio: PIXEL_RATIO,
   });
   const shot = await loadImage(dataUrl);
@@ -86,7 +94,7 @@ export const captureDiagram = async (
   const context = canvas.getContext("2d");
   if (!context) return dataUrl;
 
-  context.fillStyle = "#ffffff";
+  context.fillStyle = EXPORT_BACKGROUND;
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.drawImage(
     shot,
@@ -162,14 +170,14 @@ export const downloadAllSteps = async ({
   const context = canvas.getContext("2d");
   if (!context) return;
 
-  context.fillStyle = "#ffffff";
+  context.fillStyle = EXPORT_BACKGROUND;
   context.fillRect(0, 0, width, height);
 
   let y = gap;
   shots.forEach(({ image, caption }) => {
-    context.fillStyle = "#f1f5f9";
+    context.fillStyle = EXPORT_CAPTION_BACKGROUND;
     context.fillRect(0, y, width, captionHeight);
-    context.fillStyle = "#0f172a";
+    context.fillStyle = EXPORT_CAPTION_TEXT;
     context.font = `600 ${20 * PIXEL_RATIO}px system-ui, sans-serif`;
     context.textBaseline = "middle";
     context.fillText(caption, 16 * PIXEL_RATIO, y + captionHeight / 2);
