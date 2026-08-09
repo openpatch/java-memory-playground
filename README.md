@@ -79,7 +79,8 @@ them can share a page. The UI is available in English and German.
 ### Prerequisites
 
 - Node.js (v22 or higher)
-- pnpm (v11 or higher — the workspace uses pnpm 11's `allowBuilds`)
+- pnpm (v9 or higher — v9 is the floor because that is what the deployment
+  runs; 10 and 11 work too)
 
 ### Installation
 
