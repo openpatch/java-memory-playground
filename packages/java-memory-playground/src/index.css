@@ -97,6 +97,15 @@
   height: 100%;
 }
 
+/* The config view is taller than the frame as soon as a class has a few
+   fields. Without this it overflows a `height: 100%` box and whatever clips
+   the playground — a VS Code webview, an embedding page — takes the bottom of
+   the form with it. */
+.config-scroll {
+  height: 100%;
+  overflow-y: auto;
+}
+
 /* The palette floats over the canvas like the other controls rather than
    taking a column out of it, so a small embed keeps its width for the diagram. */
 .sidebar {

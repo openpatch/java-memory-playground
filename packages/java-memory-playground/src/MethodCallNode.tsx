@@ -98,7 +98,7 @@ function LocalVariableHandle({
 
   return !primitveDataTypes.includes(value.dataType) ? (
     <div className="method-call-node__variable">
-      <button onClick={onDelete} className="method-call-node__delete">
+      <button onClick={onDelete} className="method-call-node__delete nodrag">
         X
       </button>
       <div className="method-call-node__variable-name">{name} =</div>
@@ -121,7 +121,7 @@ function LocalVariableHandle({
               type="checkbox"
               onChange={onChange}
               checked={Boolean(value.value)}
-              className="method-call-node__variable-value"
+              className="method-call-node__variable-value nodrag"
             />
           )}
           {numericDataTypes.includes(value.dataType) && (
@@ -129,7 +129,7 @@ function LocalVariableHandle({
               onChange={onChange}
               type="number"
               value={(value.value as number) || 0}
-              className="method-call-node__variable-value"
+              className="method-call-node__variable-value nodrag"
             />
           )}
         </>
@@ -205,13 +205,13 @@ function MethodCallNode({
 
         <div className="method-call-node__buttons">
           <button
-            className="method-call-node__declare"
+            className="method-call-node__declare nodrag"
             onClick={handleDeclareLocaleVariable}
           >
             {t.declareLocalVariable}
           </button>
           <button
-            className="method-call-node__return"
+            className="method-call-node__return nodrag"
             onClick={handleReturn}
             disabled={!isTopOfStack}
             title={isTopOfStack ? undefined : t.returnOnlyTopOfStack}

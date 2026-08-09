@@ -202,7 +202,15 @@ function Playground({
       <DnDProvider>
         <KeyboardShortcuts keyBindings={keyBindings} />
         {route === "view" && <MemoryView />}
-        {route === "config" && <ConfigView />}
+        {route === "config" && (
+          // The configuration is a form, not a canvas: it is as tall as its
+          // content, so it needs to scroll where the diagram fills the frame
+          // exactly. Wrapped here rather than inside `ConfigView` so the bar
+          // scrolls with the form and the scrollbar sits at the frame edge.
+          <div className="config-scroll">
+            <ConfigView />
+          </div>
+        )}
       </DnDProvider>
     </div>
   );

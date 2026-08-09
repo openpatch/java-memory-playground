@@ -101,7 +101,7 @@ export function InlineString({
           // Sized to what it holds: an empty String should not reserve room
           // for a sentence, and a long one should not be cut off mid-word.
           size={Math.min(Math.max(literal.length + 1, 4), 18)}
-          className="object-node__attribute-value inline-string__input"
+          className="object-node__attribute-value inline-string__input nodrag"
         />
       )}
       <span className="inline-string__quote">&quot;</span>

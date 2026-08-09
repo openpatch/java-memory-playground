@@ -100,7 +100,7 @@ function AttributeHandle({
               type="checkbox"
               onChange={onChange}
               checked={Boolean(value.value)}
-              className="object-node__attribute-value"
+              className="object-node__attribute-value nodrag"
             />
           )}
           {numericDataTypes.includes(value.dataType) && (
@@ -108,7 +108,7 @@ function AttributeHandle({
               onChange={onChange}
               type="number"
               value={(value.value as number) || 0}
-              className="object-node__attribute-value"
+              className="object-node__attribute-value nodrag"
             />
           )}
         </>
