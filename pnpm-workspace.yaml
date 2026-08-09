@@ -3,7 +3,11 @@ packages:
   - platforms/*
   - '!**/test/**'
 
-onlyBuiltDependencies:
-  - esbuild
-  - '@vscode/vsce-sign'
-  - keytar
+# Which dependencies may run install scripts. pnpm 11 renamed pnpm 10's
+# `onlyBuiltDependencies` to this and takes a decision per package, so that a
+# new one added by a transitive dependency is refused until it is answered
+# here rather than running silently.
+allowBuilds:
+  '@vscode/vsce-sign': true
+  esbuild: true
+  keytar: true

@@ -79,7 +79,7 @@ them can share a page. The UI is available in English and German.
 ### Prerequisites
 
 - Node.js (v22 or higher)
-- pnpm (v8 or higher)
+- pnpm (v11 or higher — the workspace uses pnpm 11's `allowBuilds`)
 
 ### Installation
 
@@ -115,6 +115,10 @@ pnpm build   # build every package and the app
 pnpm test    # run the test suites
 pnpm lint    # type-check every package
 ```
+
+`build` comes first: the packages typecheck against each other through their
+built `dist/index.d.ts`, so `lint` cannot resolve them in a checkout that has
+never been built.
 
 ### Project Structure
 
