@@ -1,6 +1,6 @@
 {
   "name": "@java-memory-playground/java-memory-playground",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Mike Barkmin",
   "description": "React components for visualizing the Java stack and heap.",
   "homepage": "https://github.com/openpatch/java-memory-playground#readme",
