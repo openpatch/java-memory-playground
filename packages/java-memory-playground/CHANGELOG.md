@@ -1,5 +1,11 @@
 # @openpatch/java-memory-playground
 
+## 0.2.1
+
+### Patch Changes
+
+- [`eec5689`](https://github.com/openpatch/java-memory-playground/commit/eec5689e3a4dc4740d8302bf9e6e8ca9af5c3c8f) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Use java-memory-playground organization
+
 ## 0.2.0
 
 ### Minor Changes
