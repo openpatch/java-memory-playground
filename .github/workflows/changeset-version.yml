@@ -6,11 +6,8 @@ on:
       - main
 
 permissions:
-  # Changesets pushes the "Version Packages" branch and opens the pull request.
-  contents: write
-  pull-requests: write
-  # npm trusted publishing.
-  id-token: write
+  id-token: write  # Required for OIDC
+  contents: read
 
 jobs:
   release:
@@ -20,26 +17,24 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
-          # Changesets needs the history to write changelogs against the right
-          # commits.
+          # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
           fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 11.3.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v3
         with:
           node-version: 22
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
-      # Build first, for the same reason as the pull request workflow: the
-      # packages typecheck against each other's built declarations.
       - name: Build packages
-        run: pnpm build
+        run: |
+          pnpm build
 
       - name: Test packages
         run: pnpm test
