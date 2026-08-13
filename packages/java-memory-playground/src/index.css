@@ -138,6 +138,12 @@
   background: var(--jmp-silver);
 }
 
+/* A toggle reads as on by being filled in, the way a pressed key is. */
+.java-memory-playground button.button-toggle[aria-pressed="true"] {
+  background: var(--jmp-text);
+  color: var(--jmp-surface);
+}
+
 /* Every control in the bottom bar is the same height, so a row of them reads
    as a row rather than as a skyline. */
 .bottom-bar button {
@@ -711,4 +717,73 @@ path.react-flow__edge-path:hover {
 .step-bar__result.wrong {
   background: var(--jmp-danger-soft);
   color: var(--jmp-danger-text);
+}
+
+/* ---------------------------------------------------------------------------
+   Print mode
+
+   A diagram on paper has no colour, and a worksheet is usually run off on a
+   laser printer. Left alone, greyscale conversion turns the palette into four
+   light greys nobody can tell apart, and everything the diagram says with
+   colour — this frame is on the stack, this object is unreachable — is lost.
+
+   So print is its own assignment of the roles rather than a filter over the
+   normal one. Most of the palette is already grey; what changes is the accent,
+   the three kinds of box, and the three states. Where a state was carried by
+   hue alone it grows a line style instead, because a dashed border survives a
+   photocopier and a shade of grey does not.
+
+   The class goes on the flow itself, so the live view shows exactly what will
+   come out of the printer.
+   --------------------------------------------------------------------------- */
+.jmp-print {
+  /* Black, so a handle and a checkbox read at any print resolution. */
+  --jmp-accent: var(--jmp-black);
+
+  /* The three kinds of box, lightest to darkest: the heap is white — most of a
+     diagram is objects, and white is the one fill that costs no toner — the
+     stack is grey, and a global variable darker still. */
+  --jmp-object: var(--jmp-white);
+  --jmp-frame: #e6e6e6;
+  --jmp-variable: #cccccc;
+
+  /* No hue is left to separate these, so each keeps only its weight. What
+     tells them apart in print is the border style below. */
+  --jmp-success: var(--jmp-black);
+  --jmp-success-soft: #e6e6e6;
+  --jmp-success-text: var(--jmp-black);
+  --jmp-danger: var(--jmp-black);
+  --jmp-danger-soft: #e6e6e6;
+  --jmp-danger-text: var(--jmp-black);
+  --jmp-warning: var(--jmp-black);
+  --jmp-warning-soft: #ededed;
+  --jmp-warning-text: var(--jmp-black);
+
+  /* A drop shadow prints as a smudge. The nodes are given real borders
+     instead, which is what was holding them apart on screen. */
+  --jmp-shadow: transparent;
+  --jmp-shadow-soft: transparent;
+}
+
+.jmp-print .react-flow__node-method-call,
+.jmp-print .react-flow__node-object,
+.jmp-print .react-flow__node-variable {
+  border: 1px solid var(--jmp-black);
+}
+
+/* Unreachable, about to be collected. On screen that is the danger colour; on
+   paper it is the one box drawn with a dotted border.
+
+   Dotted rather than dashed, because dashed is already taken: the ring around
+   a node and the line of a reference use it for "this is what the step
+   changed", and two different things drawn the same way is exactly the loss of
+   meaning print mode exists to avoid. */
+.jmp-print .object-node__header.gc,
+.jmp-print .object-node__body.gc {
+  background: var(--jmp-white);
+}
+
+.jmp-print .react-flow__node-object:has(.gc) {
+  border-style: dotted;
+  border-width: 2px;
 }

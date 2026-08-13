@@ -16,6 +16,8 @@
  * only has to be changed in one place.
  */
 
+/** `--jmp-black`. What print mode draws its references in. */
+export const BLACK = "#000000";
 /** `--jmp-text` — Coal. */
 export const TEXT = "#242428";
 /** `--jmp-text-muted` — Charcoal. */

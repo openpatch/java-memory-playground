@@ -5,9 +5,20 @@ import { describe, expect, it } from "vitest";
 import css from "./index.css?raw";
 import * as palette from "./palette";
 
-/** Every `--jmp-*` declared in the stylesheet, as written. */
+/**
+ * The `.java-memory-playground` block, which is where the palette is declared.
+ *
+ * Only that block: `.jmp-print` reassigns several of the same tokens, and it is
+ * the everyday colours these constants have to agree with.
+ */
+const base = css.slice(
+  css.indexOf(".java-memory-playground {"),
+  css.indexOf("\n}", css.indexOf(".java-memory-playground {")),
+);
+
+/** Every `--jmp-*` declared there, as written. */
 const declared = new Map<string, string>();
-for (const [, name, value] of css.matchAll(/(--jmp-[a-z-]+)\s*:\s*([^;]+);/g)) {
+for (const [, name, value] of base.matchAll(/(--jmp-[a-z-]+)\s*:\s*([^;]+);/g)) {
   declared.set(name, value.trim());
 }
 
@@ -28,6 +39,7 @@ const resolve = (name: string, seen = new Set<string>()): string => {
  */
 describe("the palette in JavaScript", () => {
   it.each([
+    ["--jmp-black", palette.BLACK],
     ["--jmp-text", palette.TEXT],
     ["--jmp-text-muted", palette.TEXT_MUTED],
     ["--jmp-surface", palette.SURFACE],

@@ -14,7 +14,7 @@ import {
 import { ariaLabelsFor } from "./ariaLabels";
 import { captureDiagram, downloadAllSteps } from "./exportSteps";
 import { fitPaddingFor } from "./fitPadding";
-import { TEXT_MUTED, WARNING } from "./palette";
+import { BLACK, TEXT_MUTED, WARNING } from "./palette";
 import useStore, { useMemoryStore } from "./storeContext";
 import { useUndoRedo } from "./useUndoRedo";
 import { RFState } from "./store";
@@ -133,6 +133,17 @@ export const MemoryView = () => {
   // Scoped to this instance so that exporting works when a page embeds more
   // than one playground.
   const flowRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Whether the diagram is currently drawn for paper.
+   *
+   * The whole view switches, not just the download, so that what is on screen
+   * is what comes out of the printer — and because the PNG is a photograph of
+   * the live diagram, there is nothing else it could be. Deliberately not part
+   * of the saved memory: it is how you are looking at a diagram, not something
+   * about the diagram, and a link shared in print mode would arrive grey.
+   */
+  const [printMode, setPrintMode] = useState(false);
 
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
 
@@ -731,7 +742,13 @@ export const MemoryView = () => {
         // The palette is a floating panel, so the toolbar opposite it has to
         // know whether that corner is occupied before it decides how wide it
         // may be. See `.with-palette` in index.css.
-        className={`memory${options.hideSidebar ? "" : " with-palette"}`}
+        // `jmp-print` goes here rather than on the container so that it lands
+        // on the element the export photographs: html-to-image resolves the
+        // custom properties of everything inside the clone root, and this is
+        // the clone root.
+        className={`memory${options.hideSidebar ? "" : " with-palette"}${
+          printMode ? " jmp-print" : ""
+        }`}
         nodes={visibleNodes.map((n) => {
           const classes = [stackClass.get(n.id) ?? ""];
           if (showChanges) {
@@ -761,9 +778,14 @@ export const MemoryView = () => {
             // than a `var()`: exporting deep-clones the edge SVG and renders it
             // where neither the stylesheet nor the custom properties reach. A
             // reference with no stroke is an invisible one. See `palette.ts`.
+            // The print block in the stylesheet cannot reach an edge for the
+            // same reason: the state a colour was carrying has to become a
+            // line style here instead, so a changed reference is the dashed
+            // one on paper.
             style: {
-              stroke: changed ? WARNING : TEXT_MUTED,
+              stroke: printMode ? BLACK : changed ? WARNING : TEXT_MUTED,
               strokeWidth: 4,
+              strokeDasharray: printMode && changed ? "12 7" : undefined,
               opacity: changed || live ? 1 : stack ? 0.6 : 0.2,
             },
           };
@@ -777,7 +799,7 @@ export const MemoryView = () => {
             // export carries along unread — so a literal, for the same reason
             // the line above it is one. The head then matches its line both on
             // screen and in the picture.
-            color: TEXT_MUTED,
+            color: printMode ? BLACK : TEXT_MUTED,
           },
         }}
         onNodeClick={(_, node) => {
@@ -835,6 +857,16 @@ export const MemoryView = () => {
                 {t.downloadAllPng}
               </button>
             )}
+            {/* A toggle rather than a second download button: it changes the
+                diagram, and the two downloads beside it then follow. */}
+            <button
+              className="button-toggle"
+              onClick={() => setPrintMode((on) => !on)}
+              aria-pressed={printMode}
+              title={t.printModeHint}
+            >
+              {t.printMode}
+            </button>
             {mode === "edit" && (
               <button onClick={onConfig}>{t.config}</button>
             )}

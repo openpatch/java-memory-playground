@@ -7,6 +7,8 @@ export interface Translations {
   downloadPng: string;
   downloadAllPng: string;
   downloadAllPngHint: string;
+  printMode: string;
+  printModeHint: string;
   config: string;
   runGarbageCollector: string;
   predictGarbage: string;
@@ -130,6 +132,10 @@ const en: Translations = {
   downloadPng: "Download (PNG)",
   downloadAllPng: "Download all steps",
   downloadAllPngHint: "One image with every step, for a worksheet",
+  printMode: "B&W",
+  printModeHint:
+    "Black and white, for printing. A frame is grey and the heap is white; " +
+    "garbage is dotted and what a step changed is dashed.",
   config: "Config",
   runGarbageCollector: "Run Garbage Collector",
   predictGarbage: "Predict garbage",
@@ -255,6 +261,10 @@ const de: Translations = {
   downloadPng: "Herunterladen (PNG)",
   downloadAllPng: "Alle Schritte herunterladen",
   downloadAllPngHint: "Ein Bild mit allen Schritten, für ein Arbeitsblatt",
+  printMode: "S/W",
+  printModeHint:
+    "Schwarz-weiß, zum Drucken. Ein Rahmen ist grau und der Heap weiß; " +
+    "Müll ist gepunktet, was ein Schritt geändert hat gestrichelt.",
   config: "Einstellungen",
   runGarbageCollector: "Garbage Collector ausführen",
   predictGarbage: "Müll vorhersagen",

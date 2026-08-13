@@ -16,6 +16,8 @@ Visit **[jmp.openpatch.org](https://jmp.openpatch.org)** to start using the Java
 - **Class Definitions**: Define custom classes with attributes
 - **Garbage Collection**: Simulate garbage collection to see which objects would be removed
 - **Undo and Redo**: Step back through your edits, with keyboard shortcuts
+- **Black and White**: A print palette that says in line style what the diagram
+  otherwise says in colour, so a downloaded PNG survives a photocopier
 - **English and German**: The interface follows your browser language
 
 ### Saving and Sharing
