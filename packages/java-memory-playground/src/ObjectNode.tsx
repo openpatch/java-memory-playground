@@ -72,7 +72,10 @@ function AttributeHandle({
   if (value.dataType === STRING_KLASS && inlineStrings) {
     return (
       <div className="object-node__attribute">
-        <div className="object-node__attribute-name">{name} =</div>
+        <div className="object-node__attribute-name">{name}</div>
+        {/* The sign is its own element so that it can have its own column;
+            see the grid in `index.css`. */}
+        <div className="object-node__attribute-equals">=</div>
         <InlineString nodeId={nodeId} handleId={name} readOnly={isFinal} />
       </div>
     );
@@ -80,7 +83,8 @@ function AttributeHandle({
 
   return !primitveDataTypes.includes(value.dataType) ? (
     <div className="object-node__attribute">
-      <div className="object-node__attribute-name">{name} =</div>
+      <div className="object-node__attribute-name">{name}</div>
+      <div className="object-node__attribute-equals">=</div>
       <Handle
         type="source"
         isConnectable={isConnectable}
@@ -90,7 +94,8 @@ function AttributeHandle({
     </div>
   ) : (
     <div className="object-node__attribute">
-      <div className="object-node__attribute-name">{name} =</div>
+      <div className="object-node__attribute-name">{name}</div>
+      <div className="object-node__attribute-equals">=</div>
       {isFinal ? (
         <span className="object-node__attribute-value">{value.value}</span>
       ) : (
@@ -158,7 +163,9 @@ function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
           <div className="node-header-spacer"></div>
         </div>
         <div className={`object-node__body ${gc ? "gc" : ""}`}>
-          <div className="object-node__attribute">
+          {/* One centred run of text rather than a name and a value, so it
+              opts out of the column grid the other rows share. */}
+          <div className="object-node__attribute object-node__attribute--literal">
             <span className="inline-string__quote">&quot;</span>
             <span className="inline-string__value">{data.literal ?? ""}</span>
             <span className="inline-string__quote">&quot;</span>

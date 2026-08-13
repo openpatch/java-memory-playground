@@ -90,7 +90,10 @@ function LocalVariableHandle({
   if (value.dataType === STRING_KLASS && inlineStrings) {
     return (
       <div className="method-call-node__variable">
-        <div className="method-call-node__variable-name">{name} =</div>
+        <div className="method-call-node__variable-name">{name}</div>
+        {/* The sign is its own element so that it can have its own column;
+            see the grid in `index.css`. */}
+        <div className="method-call-node__variable-equals">=</div>
         <InlineString nodeId={nodeId} handleId={name} readOnly={isFinal} />
       </div>
     );
@@ -101,7 +104,8 @@ function LocalVariableHandle({
       <button onClick={onDelete} className="method-call-node__delete nodrag">
         X
       </button>
-      <div className="method-call-node__variable-name">{name} =</div>
+      <div className="method-call-node__variable-name">{name}</div>
+      <div className="method-call-node__variable-equals">=</div>
       <Handle
         type="source"
         isConnectable={isConnectable}
@@ -111,7 +115,8 @@ function LocalVariableHandle({
     </div>
   ) : (
     <div className="method-call-node__variable">
-      <div className="method-call-node__variable-name">{name} =</div>
+      <div className="method-call-node__variable-name">{name}</div>
+      <div className="method-call-node__variable-equals">=</div>
       {isFinal ? (
         <span className="method-call-node__variable-value">{value.value}</span>
       ) : (

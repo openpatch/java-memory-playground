@@ -327,6 +327,8 @@
 }
 
 .method-call-node__buttons {
+  /* Under the variables rather than in one of their columns. */
+  grid-column: 1 / -1;
   display: flex;
   margin-top: var(--jmp-space);
   flex-direction: column;
@@ -342,6 +344,10 @@
    glyph, which then started at the padding edge and overflowed to the right of
    its own box. The background and the red hover were lost the same way. */
 .java-memory-playground button.method-call-node__delete {
+  /* The first of the row's columns, which stays empty and zero wide in a node
+     that has nothing to delete. */
+  grid-column: 1;
+  margin-right: var(--jmp-space);
   flex: none;
   padding: 0;
   width: 16px;
@@ -365,25 +371,76 @@
   border-bottom: 1px solid var(--jmp-border);
 }
 
+/* Every row of a node is a subgrid of the four columns declared on the body —
+   delete mark, name, `=`, value — so the signs land on one vertical line down
+   the node, the way they do in the source it stands for. Without it the sign
+   follows the value beside it, and a frame holding a reference, an int and a
+   String is three sentences at three different indents.
+
+   Placed by hand rather than left to auto-flow: only a reference in a frame
+   carries a delete mark, and auto-placement would slide every other row a
+   column to the left. Counting from the right — `-2` being the last column —
+   lets one set of rules serve both kinds of node, only one of which has the
+   mark. */
 .method-call-node__variable,
 .object-node__attribute {
-  display: flex;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
-  gap: var(--jmp-space);
   padding: 3px 0;
   /* Keeps a row of plain text the same height as one holding a handle, so
      the fields of an object line up as a column. */
   min-height: calc(var(--jmp-handle) + 6px);
+}
+
+/* The literal in a String object is one centred run of text rather than a name
+   and a value, so it keeps the row layout the others have given up. */
+.object-node__attribute--literal {
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
 .method-call-node__variable-name,
 .object-node__attribute-name {
-  flex: 1;
+  grid-column: -4;
   display: flex;
   align-items: center;
+  /* Right up against the sign, so the name is as close to what it is worth as
+     the column allows. */
   justify-content: end;
   white-space: nowrap;
+}
+
+/* Spacing lives here rather than in a `gap` on the row: a gap would also fall
+   either side of the delete column, which is empty and zero wide on an object,
+   and would indent every attribute by a mark that is not there. */
+.method-call-node__variable-equals,
+.object-node__attribute-equals {
+  grid-column: -3;
+  padding: 0 var(--jmp-space);
+}
+
+/* The value column, whatever fills it. It is as wide as the widest row in the
+   node needs, and a value starts at its near edge, so that a checkbox stays
+   beside the sign it belongs to instead of drifting off to the far side of a
+   number field two rows down. */
+.method-call-node__variable-value,
+.object-node__attribute-value,
+.method-call-node__variable > .inline-string,
+.object-node__attribute > .inline-string,
+.method-call-node__variable > .react-flow__handle,
+.object-node__attribute > .react-flow__handle {
+  grid-column: -2;
+  justify-self: start;
+}
+
+/* Except a handle, which is where a reference leaves the node and so has to
+   stay on its border, whatever the widest value in the node is. */
+.method-call-node__variable > .react-flow__handle,
+.object-node__attribute > .react-flow__handle {
+  justify-self: end;
 }
 
 .method-call-node__header,
@@ -432,6 +489,11 @@
 .method-call-node__body,
 .object-node__body {
   padding: var(--jmp-space) var(--jmp-space-lg);
+  /* The columns the rows below share: delete mark, name, `=`, value. The name
+     takes the slack so that it — and with it the sign — stays hard against the
+     values, whatever else in the node is wider. */
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
 }
 
 /* Balances the handle hanging off the left of a header, so the class name
