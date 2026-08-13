@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { setPersistence } from '@openpatch/java-memory-playground';
-import '@openpatch/java-memory-playground/index.css';
+import { setPersistence } from '@java-memory-playground/java-memory-playground';
+import '@java-memory-playground/java-memory-playground/index.css';
 
 import App from './App';
 

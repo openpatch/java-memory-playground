@@ -1,4 +1,4 @@
-# @openpatch/java-memory-playground-web-component
+# @java-memory-playground/web-component
 
 The [Java Memory Playground](https://jmp.openpatch.org) as a framework agnostic
 web component. Drop it into any page — plain HTML, a CMS, Hyperbook, an LMS — and

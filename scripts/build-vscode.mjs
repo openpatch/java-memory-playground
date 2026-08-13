@@ -65,7 +65,7 @@ const copyStyles = async () => {
   } catch (error) {
     throw new Error(
       `Could not copy ${from}. Build the playground package first: ` +
-        `pnpm --filter @openpatch/java-memory-playground build\n${error.message}`,
+        `pnpm --filter @java-memory-playground/java-memory-playground build\n${error.message}`,
     );
   }
 };

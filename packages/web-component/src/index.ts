@@ -3,8 +3,8 @@ import {
   MemoryPlayground,
   MemoryPlaygroundEditor,
   setPersistence,
-} from "@openpatch/java-memory-playground";
-import "@openpatch/java-memory-playground/index.css";
+} from "@java-memory-playground/java-memory-playground";
+import "@java-memory-playground/java-memory-playground/index.css";
 
 // Explicit even though it is the default: an embedded playground must not
 // hijack the URL of the page hosting it. State comes in through the `memory`

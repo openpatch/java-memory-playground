@@ -1,15 +1,15 @@
-# @openpatch/java-memory-playground
+# @java-memory-playground/java-memory-playground
 
 React components behind the [Java Memory Playground](https://jmp.openpatch.org) —
 interactive diagrams of the Java stack and heap.
 
 Looking to embed the playground in a page that is not a React app? Use
-[`@openpatch/java-memory-playground-web-component`](../web-component) instead.
+[`@java-memory-playground/web-component`](../web-component) instead.
 
 ## Installation
 
 ```sh
-npm install @openpatch/java-memory-playground
+npm install @java-memory-playground/java-memory-playground
 ```
 
 `react` and `react-dom` are peer dependencies.
@@ -26,7 +26,7 @@ and options and authoring the steps.
 import {
   MemoryPlayground,       // student
   MemoryPlaygroundEditor, // teacher
-} from "@openpatch/java-memory-playground";
+} from "@java-memory-playground/java-memory-playground";
 ```
 
 Both take the same props. The split is about which tools are on screen, not
@@ -36,8 +36,8 @@ connects references and runs the garbage collector.
 ## Usage
 
 ```tsx
-import { MemoryPlayground } from "@openpatch/java-memory-playground";
-import "@openpatch/java-memory-playground/index.css";
+import { MemoryPlayground } from "@java-memory-playground/java-memory-playground";
+import "@java-memory-playground/java-memory-playground/index.css";
 
 export function Example() {
   return (
@@ -259,7 +259,7 @@ diagram is undoable — opening a dialog, selecting a node or switching views do
 not consume a step, and a single drag is one step rather than one per pixel.
 
 ```tsx
-import { useUndoRedo } from "@openpatch/java-memory-playground";
+import { useUndoRedo } from "@java-memory-playground/java-memory-playground";
 
 // Inside a MemoryPlayground subtree:
 const { undo, redo, canUndo, canRedo, clear } = useUndoRedo();
@@ -317,7 +317,7 @@ used to announce "Zoom In" and "Press enter or space to select a node" beside
 its own translated labels.
 
 ```tsx
-import { translations, getTranslations } from "@openpatch/java-memory-playground";
+import { translations, getTranslations } from "@java-memory-playground/java-memory-playground";
 ```
 
 ## URL persistence
@@ -328,7 +328,7 @@ an embedded playground must not take over the URL of the page hosting it. Turn
 it on once during bootstrap:
 
 ```tsx
-import { setPersistence } from "@openpatch/java-memory-playground";
+import { setPersistence } from "@java-memory-playground/java-memory-playground";
 
 setPersistence(true);
 ```

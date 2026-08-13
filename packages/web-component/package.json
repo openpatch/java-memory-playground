@@ -35,7 +35,7 @@
     "dev": "vite"
   },
   "dependencies": {
-    "@openpatch/java-memory-playground": "workspace:*",
+    "@java-memory-playground/java-memory-playground": "workspace:*",
     "@r2wc/react-to-web-component": "^2.1.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

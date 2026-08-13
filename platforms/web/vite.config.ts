@@ -8,12 +8,12 @@ export default defineConfig({
     watch: {
       // Pick up edits in the workspace package during development.
       ignored: [
-        "!**/node_modules/@openpatch/java-memory-playground/**",
+        "!**/node_modules/@java-memory-playground/java-memory-playground/**",
         "!**/packages/java-memory-playground/src/**",
       ],
     },
   },
   optimizeDeps: {
-    exclude: ["@openpatch/java-memory-playground"],
+    exclude: ["@java-memory-playground/java-memory-playground"],
   },
 });

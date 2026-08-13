@@ -2,8 +2,8 @@ import {
   Memory,
   MemoryPlaygroundEditor,
   KeyBindings,
-} from "@openpatch/java-memory-playground";
-import "@openpatch/java-memory-playground/index.css";
+} from "@java-memory-playground/java-memory-playground";
+import "@java-memory-playground/java-memory-playground/index.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 

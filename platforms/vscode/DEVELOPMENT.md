@@ -50,7 +50,7 @@ so opening a file does not mark it dirty.
 
 ```sh
 # The webview bundles the playground package, so build that first.
-pnpm --filter @openpatch/java-memory-playground build
+pnpm --filter @java-memory-playground/java-memory-playground build
 pnpm --filter java-memory-playground-studio build
 ```
 

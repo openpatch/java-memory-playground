@@ -1,7 +1,7 @@
 import {
   MemoryPlayground,
   MemoryPlaygroundEditor,
-} from "@openpatch/java-memory-playground";
+} from "@java-memory-playground/java-memory-playground";
 
 /**
  * Whether this is the teacher's playground.
