@@ -2,7 +2,7 @@
   "name": "java-memory-playground-studio",
   "displayName": "Java Memory Playground Studio",
   "description": "Visual editor for .jmp files — diagrams of the Java stack and heap",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "openpatch",
   "author": "Mike Barkmin",
   "license": "MIT",
