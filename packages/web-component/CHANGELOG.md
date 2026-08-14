@@ -1,5 +1,14 @@
 # @openpatch/java-memory-playground-web-component
 
+## 0.3.0
+
+### Minor Changes
+
+- [`c2096aa`](https://github.com/openpatch/java-memory-playground/commit/c2096aa29769b4039a723d94288ba2888b268ade) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Forward the React layer's `onEdit` as an `edit` event on both custom elements. `change` still fires
+  only when the user presses **Save**, which is what a host with a save of its own wants; `edit` fires
+  on every edit, which is what a host that keeps the diagram for the user needs — an embedded
+  playground in a book, for one, where nobody should have to press Save to keep their work.
+
 ## 0.2.1
 
 ### Patch Changes
