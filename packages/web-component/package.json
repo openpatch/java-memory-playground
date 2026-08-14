@@ -1,6 +1,6 @@
 {
   "name": "@java-memory-playground/web-component",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "author": "Mike Barkmin",
   "description": "Java Memory Playground as a framework agnostic web component.",
   "homepage": "https://github.com/openpatch/java-memory-playground#readme",
