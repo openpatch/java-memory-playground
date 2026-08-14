@@ -110,6 +110,21 @@ playground.addEventListener("change", (event) => {
 });
 ```
 
+An `edit` event fires on every edit instead — each node dragged, each value
+typed — with the same `event.detail`. A page that has a save of its own listens
+for `change`; a page that keeps the diagram for the user without asking them to
+think about saving listens for `edit`, and should debounce it, since a drag is a
+stream of edits. Loading a new `memory` is not an edit, and neither is panning
+or zooming, though the viewport travels with the next real one.
+
+```javascript
+let pending;
+playground.addEventListener("edit", (event) => {
+  clearTimeout(pending);
+  pending = setTimeout(() => save(event.detail), 300);
+});
+```
+
 ## Steps
 
 A diagram can be a sequence of steps rather than a single picture, which is what

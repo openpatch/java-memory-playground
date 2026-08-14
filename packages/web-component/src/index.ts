@@ -22,10 +22,13 @@ const props = {
 
 // r2wc keys events by prop name and dispatches on this element: `onChange`
 // becomes a `change` event carrying the memory, `onStepChange` a `stepchange`
-// event carrying the step index.
+// event carrying the step index, and `onEdit` an `edit` event carrying the
+// memory after every edit rather than only when the user saves — a host that
+// persists the diagram as the user works needs to hear about those.
 const events = {
   onChange: {},
   onStepChange: {},
+  onEdit: {},
 } as const;
 
 // The student's playground: the whole diagram and every edit, but no class
