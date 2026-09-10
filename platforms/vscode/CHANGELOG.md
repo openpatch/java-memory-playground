@@ -1,5 +1,12 @@
 # Java Memory Playground Studio
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`347cf8b`](https://github.com/openpatch/java-memory-playground/commit/347cf8b78b11074a430d976578bdf74e51293034)]:
+  - @java-memory-playground/java-memory-playground@0.2.2
+
 ## 0.1.2
 
 ### Patch Changes
