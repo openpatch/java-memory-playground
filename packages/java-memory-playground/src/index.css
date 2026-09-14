@@ -715,14 +715,25 @@ path.react-flow__edge-path:hover {
   max-width: 100%;
 }
 
-/* The strip of steps: a row of its own above the controls, so it reads as a map
-   of the walk rather than as another control in it. No cap on the measure — a
+/* Walking through the steps: the two arrows with the strip of dots between
+   them, on a row of its own above the controls. No cap on the measure — a
    `max-width` here would let the row share a line with the controls after all,
    because it is the capped size, not the basis, that decides whether the two
-   fit side by side. A trace long enough to need it wraps within the row, which
-   the panel around it has already capped against the width of the canvas. */
-.step-bar__steps {
+   fit side by side. */
+.step-bar__nav {
   flex: 0 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--jmp-space);
+}
+
+/* The dots are the only part of the row that gives up width: a trace long
+   enough to need it wraps them between the arrows, which stay put. */
+.step-bar__steps {
+  flex: 0 1 auto;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -730,9 +741,13 @@ path.react-flow__edge-path:hover {
   gap: 5px;
 }
 
-/* A dot, not a button: the row of controls sets a height for everything in the
-   bar, which is right for a button and four times too tall for this. */
-.java-memory-playground .step-bar__dot {
+/* A dot, not a button: the bottom bar sets a height for every button in it,
+   which is right for a button and too tall for this.
+   Two classes, and the scope is deliberately not written out — the build
+   prefixes it onto every selector, so naming it here would leave this rule at
+   the same weight as `.bottom-bar button` (a class and a type, once prefixed)
+   and the height would go on being the bar's. */
+.step-bar__steps .step-bar__dot {
   width: 16px;
   height: 16px;
   min-height: 0;
@@ -749,32 +764,32 @@ path.react-flow__edge-path:hover {
   cursor: pointer;
 }
 
-.java-memory-playground .step-bar__dot:hover {
+.step-bar__steps .step-bar__dot:hover {
   transform: scale(1.2);
 }
 
-.java-memory-playground .step-bar__dot:focus-visible {
+.step-bar__steps .step-bar__dot:focus-visible {
   outline: 2px solid var(--jmp-accent);
   outline-offset: 2px;
 }
 
 /* Nothing to do here: a step of the trace, which is read rather than built. */
-.java-memory-playground .step-bar__dot.none {
+.step-bar__steps .step-bar__dot.none {
   background: var(--jmp-text);
   color: var(--jmp-surface);
 }
 
-.java-memory-playground .step-bar__dot.untried {
+.step-bar__steps .step-bar__dot.untried {
   background: var(--jmp-warning);
   color: var(--jmp-warning-text);
 }
 
-.java-memory-playground .step-bar__dot.correct {
+.step-bar__steps .step-bar__dot.correct {
   background: var(--jmp-success);
   color: var(--jmp-white);
 }
 
-.java-memory-playground .step-bar__dot.wrong {
+.step-bar__steps .step-bar__dot.wrong {
   background: var(--jmp-danger);
   color: var(--jmp-white);
 }
@@ -783,15 +798,9 @@ path.react-flow__edge-path:hover {
    because where you are and how the step went are two different questions —
    and in the ink of the text rather than the accent, which is the green a
    correct step is already painted in. */
-.java-memory-playground .step-bar__dot.current {
+.step-bar__steps .step-bar__dot.current {
   outline: 2px solid var(--jmp-text);
   outline-offset: 2px;
-}
-
-.step-bar__count {
-  min-width: 44px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
 }
 
 /* The only part of the bar worth narrowing, so the row stays one row for as
@@ -1003,20 +1012,20 @@ path.react-flow__edge-path:hover {
    marks inside the dots do the work: a tick for a step that was got right, a
    cross for one that was not. The two without a mark are told apart by weight —
    a step with nothing to do is solid, one still to be checked is an outline. */
-.jmp-print .step-bar__dot {
+.jmp-print .step-bar__steps .step-bar__dot {
   border-color: var(--jmp-black);
   color: var(--jmp-black);
 }
 
-.jmp-print .step-bar__dot.none {
+.jmp-print .step-bar__steps .step-bar__dot.none {
   background: var(--jmp-black);
 }
 
-.jmp-print .step-bar__dot.untried {
+.jmp-print .step-bar__steps .step-bar__dot.untried {
   background: var(--jmp-white);
 }
 
-.jmp-print .step-bar__dot.correct,
-.jmp-print .step-bar__dot.wrong {
+.jmp-print .step-bar__steps .step-bar__dot.correct,
+.jmp-print .step-bar__steps .step-bar__dot.wrong {
   background: var(--jmp-white);
 }

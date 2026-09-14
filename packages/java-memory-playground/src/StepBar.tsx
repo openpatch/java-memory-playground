@@ -82,57 +82,61 @@ export function StepBar({ editable = true }: { editable?: boolean }) {
         </div>
       )}
 
-      {/* Where the reader is, and — on an exercise — how each step went. The
-          walk through the steps used to say only which one was on screen, so a
-          "That matches" left standing from the step before read as if the step
-          in front of you had already been answered. */}
+      {/* The walk through the steps: a dot for each, between the two arrows.
+          Where the reader is, and — on an exercise — how each step went. The
+          bar used to say only which step was on screen, so a "That matches"
+          left standing from the step before read as if the step in front of
+          you had already been answered. The dots carry the count as well, so
+          the "3 / 7" they replaced is gone. */}
       {!only && (
-        <div className="step-bar__steps" role="group" aria-label={t.stepOverview}>
-          {steps.map((_, i) => {
-            const status = getStepStatus(i);
-            const statusText = statusLabel(t, status, i + 1);
-            return (
-              <button
-                key={i}
-                type="button"
-                className={`step-bar__dot ${status}${
-                  i === currentStep ? " current" : ""
-                }`}
-                onClick={() => goToStep(i)}
-                aria-current={i === currentStep ? "step" : undefined}
-                aria-label={statusText}
-                title={statusText}
-              >
-                <span aria-hidden="true">{statusMark[status]}</span>
-              </button>
-            );
-          })}
+        <div className="step-bar__nav">
+          <button
+            className="button-icon"
+            onClick={() => goToStep(currentStep - 1)}
+            disabled={currentStep === 0}
+            title={t.previousStep}
+            aria-label={t.previousStep}
+          >
+            ◀
+          </button>
+          <div
+            className="step-bar__steps"
+            role="group"
+            aria-label={t.stepOverview}
+          >
+            {steps.map((_, i) => {
+              const status = getStepStatus(i);
+              const statusText = statusLabel(t, status, i + 1);
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  className={`step-bar__dot ${status}${
+                    i === currentStep ? " current" : ""
+                  }`}
+                  onClick={() => goToStep(i)}
+                  aria-current={i === currentStep ? "step" : undefined}
+                  aria-label={statusText}
+                  title={statusText}
+                >
+                  <span aria-hidden="true">{statusMark[status]}</span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            className="button-icon"
+            onClick={() => goToStep(currentStep + 1)}
+            disabled={currentStep === steps.length - 1}
+            title={t.nextStep}
+            aria-label={t.nextStep}
+          >
+            ▶
+          </button>
         </div>
       )}
 
       <div className="step-bar__controls">
-        <button
-          className="button-icon"
-          onClick={() => goToStep(currentStep - 1)}
-          disabled={currentStep === 0}
-          title={t.previousStep}
-          aria-label={t.previousStep}
-        >
-          ◀
-        </button>
-        <span className="step-bar__count">
-          {currentStep + 1} / {steps.length}
-        </span>
-        <button
-          className="button-icon"
-          onClick={() => goToStep(currentStep + 1)}
-          disabled={currentStep === steps.length - 1}
-          title={t.nextStep}
-          aria-label={t.nextStep}
-        >
-          ▶
-        </button>
-
         {editable && (
           <>
             <label className="step-bar__exercise" title={t.exerciseStepHint}>
