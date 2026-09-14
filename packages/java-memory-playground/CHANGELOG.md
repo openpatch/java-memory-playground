@@ -1,5 +1,36 @@
 # @openpatch/java-memory-playground
 
+## 0.2.4
+
+### Patch Changes
+
+- [`76690bb`](https://github.com/openpatch/java-memory-playground/commit/76690bbbd5a57e8aabd483202bd5b5f6b62aeee0) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Let a numeric attribute or local variable be cleared while typing.
+
+  The field rendered `value || 0`, so deleting the last digit put a `0` straight back. To enter `5`
+  you had to type it in front of that zero and then delete the zero — `50`, then backspace.
+
+  An emptied field now stays empty for as long as it has focus, and falls back to `0` on blur, so a
+  field left blank still holds a number.
+
+- [`4d10ddd`](https://github.com/openpatch/java-memory-playground/commit/4d10ddd1e9e21f0b9a3a8ab76b57567d0d961413) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Say how each step went, one dot per step.
+
+  There was one verdict for the whole diagram, and nothing cleared it: solving a step turned the bar
+  green, and walking on to the next step left the green standing under a step nobody had answered
+  yet. The same went for red.
+
+  A check now belongs to the step it judged, and the bar carries a dot for every step: black for a
+  step of the trace, with nothing to do; yellow for an exercise not checked yet; green for one that
+  was got right; red for one that was not. A tick and a cross inside the green and the red dots say
+  it again for anyone who cannot tell the two hues apart, and for the printer.
+
+  The dots are the walk through the steps as well: the arrows sit either side of the strip, clicking
+  a dot goes to that step, and the "3 / 7" count they replaced is gone.
+
+  A verdict is kept with a fingerprint of the diagram it judged, so changing the step puts it back to
+  not-checked rather than leaving a stale answer standing; moving a node, which changes nothing a
+  check looks at, leaves it alone. Being shown the solution is no longer scored as having got it
+  right.
+
 ## 0.2.3
 
 ### Patch Changes
