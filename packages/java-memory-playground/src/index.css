@@ -89,6 +89,21 @@
   justify-content: flex-end;
 }
 
+/* Form controls do not inherit `font-size`, so in a page of its own the
+   playground's controls sit at the browser's own ~13px default and the
+   container's 24px — which is the size the *diagram* is drawn at — never
+   reaches them. A host page with a normalize sheet (`button, input { font-size:
+   100% }`) makes them inherit after all, and the toolbar then comes out at
+   24px. Saying the size out loud keeps the chrome the size it was drawn at
+   wherever the playground is embedded. Rules further down override it; they
+   are all at least as specific. */
+.java-memory-playground button,
+.java-memory-playground input,
+.java-memory-playground select,
+.java-memory-playground textarea {
+  font-size: 13px;
+}
+
 .java-memory-playground button {
   background: var(--jmp-surface-sunken);
   color: var(--jmp-text-muted);
@@ -112,7 +127,9 @@
   background: var(--jmp-surface-sunken);
 }
 
-.button-icon {
+/* Scoped through the container so it beats the base control size above,
+   which is one class plus one type. */
+.java-memory-playground .button-icon {
   min-width: 32px;
   font-size: 16px;
   line-height: 1;
@@ -664,12 +681,31 @@ path.react-flow__edge-path:hover {
   min-width: 64px;
 }
 
+/* The label and the result are prose, not controls. A description that ends in
+   an ellipsis is a description the reader has lost — and on an exercise step
+   the label is the task — so these two wrap rather than being cut, and they are
+   the two things in the row that give up width when the bar is short of it: a
+   button cannot be read at half a word, a sentence reads fine over three lines.
+   The measure is capped so a long note breaks into lines instead of stretching
+   the bar the width of the canvas.
+
+   `>` plus the class beats `.step-bar > *`, which pins everything else. */
+.step-bar > .step-bar__label-text,
+.step-bar > .step-bar__result {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 44ch;
+  white-space: normal;
+  /* A Java identifier can be longer than the measure with nowhere to break;
+     breaking it mid-word beats it hanging out of the bar. */
+  overflow-wrap: anywhere;
+  text-align: center;
+  /* The container's 1.2 is set for single lines of diagram text. */
+  line-height: 1.35;
+}
+
 .step-bar__label-text {
   padding: 0 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 260px;
 }
 
 /* Controls keep their size rather than squeezing; when there is genuinely no
@@ -768,7 +804,6 @@ path.react-flow__edge-path:hover {
 .step-bar__result {
   padding: 2px var(--jmp-space-lg);
   border-radius: var(--jmp-radius);
-  white-space: nowrap;
 }
 
 .step-bar__result.correct {
