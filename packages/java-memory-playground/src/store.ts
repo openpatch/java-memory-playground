@@ -6,7 +6,7 @@ import { temporal } from "zundo";
 import { persist, StateStorage, createJSONStorage } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
-import { ExerciseResult, checkAgainst } from "./canonical";
+import { ExerciseResult, checkAgainst, fingerprintOf } from "./canonical";
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 import { parseMemory, stepsOf } from "./helper";
 import { Memory, Step, initialMemory } from "./memory";
@@ -38,6 +38,25 @@ export type StoreStep = {
   exercise?: boolean;
   nodes: CustomNodeType[];
   edges: CustomEdgeType[];
+};
+
+/**
+ * Where a step stands for the reader, as the strip of dots shows it.
+ *
+ * `none` is a step with nothing to do — a step of the trace, which is simply
+ * read. The other three are the life of an exercise step: `untried` until it is
+ * checked, then `correct` or `wrong` until the diagram is changed again.
+ */
+export type StepStatus = "none" | "untried" | "correct" | "wrong";
+
+/**
+ * A check, kept with the fingerprint of the diagram it judged, so that editing
+ * the step afterwards puts it back to `untried` instead of leaving a verdict
+ * standing over a diagram nobody has checked.
+ */
+export type CheckedAttempt = {
+  result: ExerciseResult;
+  fingerprint: string;
 };
 
 export type GcPredictionResult = {
@@ -74,7 +93,8 @@ export type RFState = {
    * playground so that their attempt can be compared with it.
    */
   solutions: Record<number, StoreStep>;
-  exerciseResult: ExerciseResult | null;
+  /** The last check of each exercise step, by step index. */
+  exerciseResults: Record<number, CheckedAttempt>;
 
   /** Ids of the objects a prediction has marked as unreachable, while running. */
   gcPrediction: string[] | null;
@@ -117,6 +137,9 @@ export type RFState = {
   checkExercise: () => void;
   revealSolution: () => void;
   clearExerciseResult: () => void;
+  /** The check of the step on screen, or null if it has none or it is stale. */
+  getExerciseResult: () => ExerciseResult | null;
+  getStepStatus: (index: number) => StepStatus;
 
   // Garbage collection
   startGcPrediction: () => void;
@@ -233,6 +256,35 @@ const withStep = (
 ): StoreStep[] =>
   steps.map((step, i) => (i === index ? update(step) : step));
 
+/** Drops one step's check, leaving every other step's alone. */
+const withoutResult = (
+  results: Record<number, CheckedAttempt>,
+  index: number,
+): Record<number, CheckedAttempt> => {
+  const { [index]: _dropped, ...rest } = results;
+  return rest;
+};
+
+/**
+ * Moves the checks along with the steps they judged.
+ *
+ * They are keyed by step index, as the solutions are, so inserting or deleting
+ * a step in front of them would otherwise leave each verdict pointing at its
+ * neighbour.
+ */
+const shiftResults = (
+  results: Record<number, CheckedAttempt>,
+  from: number,
+  by: 1 | -1,
+): Record<number, CheckedAttempt> => {
+  const shifted: Record<number, CheckedAttempt> = {};
+  Object.entries(results).forEach(([key, attempt]) => {
+    const index = Number(key);
+    shifted[index < from ? index : index + by] = attempt;
+  });
+  return shifted;
+};
+
 /**
  * Strips the fields React Flow maintains itself. What is left is the part of a
  * node the user actually authored, which is the only thing worth undoing.
@@ -269,7 +321,7 @@ export const createMemoryStore = (
           viewport: initialMemory.viewport,
           saveCount: 0,
           solutions: {},
-          exerciseResult: null,
+          exerciseResults: {},
           gcPrediction: null,
           gcResult: null,
 
@@ -304,6 +356,11 @@ export const createMemoryStore = (
                 ...steps.slice(currentStep + 1),
               ],
               currentStep: currentStep + 1,
+              exerciseResults: shiftResults(
+                get().exerciseResults,
+                currentStep + 1,
+                1,
+              ),
             });
           },
 
@@ -315,6 +372,11 @@ export const createMemoryStore = (
             set({
               steps: next,
               currentStep: Math.min(currentStep, next.length - 1),
+              exerciseResults: shiftResults(
+                withoutResult(get().exerciseResults, index),
+                index + 1,
+                -1,
+              ),
             });
           },
 
@@ -400,10 +462,19 @@ export const createMemoryStore = (
             }),
 
           checkExercise: () => {
-            const { steps, currentStep, solutions } = get();
+            const { steps, currentStep, solutions, exerciseResults } = get();
             const solution = solutions[currentStep];
             if (!solution) return;
-            set({ exerciseResult: checkAgainst(solution, steps[currentStep]) });
+            const attempt = steps[currentStep];
+            set({
+              exerciseResults: {
+                ...exerciseResults,
+                [currentStep]: {
+                  result: checkAgainst(solution, attempt),
+                  fingerprint: fingerprintOf(attempt),
+                },
+              },
+            });
           },
 
           revealSolution: () => {
@@ -416,11 +487,44 @@ export const createMemoryStore = (
                 label: step.label,
                 exercise: true,
               })),
-              exerciseResult: null,
+              // Being shown the answer is not having got it right, so the step
+              // goes back to untried rather than turning green.
+              exerciseResults: withoutResult(get().exerciseResults, currentStep),
             });
           },
 
-          clearExerciseResult: () => set({ exerciseResult: null }),
+          clearExerciseResult: () =>
+            set({
+              exerciseResults: withoutResult(
+                get().exerciseResults,
+                get().currentStep,
+              ),
+            }),
+
+          getExerciseResult: () => {
+            const { steps, currentStep, exerciseResults } = get();
+            const checked = exerciseResults[currentStep];
+            if (!checked) return null;
+            // A check describes one diagram. Once the step has been changed it
+            // describes nothing on screen, so it stops being shown.
+            if (fingerprintOf(steps[currentStep]) !== checked.fingerprint) {
+              return null;
+            }
+            return checked.result;
+          },
+
+          getStepStatus: (index) => {
+            const { steps, exerciseResults } = get();
+            const step = steps[index];
+            // The first step is where a trace starts from; there is nothing
+            // before it to build it out of, so it is never an exercise.
+            if (!step?.exercise || index === 0) return "none";
+
+            const checked = exerciseResults[index];
+            if (!checked) return "untried";
+            if (fingerprintOf(step) !== checked.fingerprint) return "untried";
+            return checked.result.correct ? "correct" : "wrong";
+          },
 
           startGcPrediction: () => set({ gcPrediction: [], gcResult: null }),
 
@@ -494,7 +598,7 @@ export const createMemoryStore = (
             set({
               steps,
               solutions,
-              exerciseResult: null,
+              exerciseResults: {},
               gcPrediction: null,
               gcResult: null,
               currentStep: 0,

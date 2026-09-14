@@ -281,8 +281,8 @@ describe("exercises", () => {
 
     store.getState().checkExercise();
 
-    expect(store.getState().exerciseResult?.correct).toBe(false);
-    expect(store.getState().exerciseResult?.wrong).toEqual(["head"]);
+    expect(store.getState().getExerciseResult()?.correct).toBe(false);
+    expect(store.getState().getExerciseResult()?.wrong).toEqual(["head"]);
   });
 
   test("revealing the solution makes the check pass", () => {
@@ -293,7 +293,56 @@ describe("exercises", () => {
     store.getState().revealSolution();
     store.getState().checkExercise();
 
-    expect(store.getState().exerciseResult?.correct).toBe(true);
+    expect(store.getState().getExerciseResult()?.correct).toBe(true);
+  });
+
+  test("each step keeps its own verdict", () => {
+    const store = createMemoryStore(false, "view");
+    store.getState().loadMemory(exerciseMemory);
+    store.getState().goToStep(1);
+
+    store.getState().checkExercise();
+    expect(store.getState().getStepStatus(1)).toBe("wrong");
+
+    // The step before it is a step of the trace: there is nothing to check, and
+    // walking back to it must not carry the verdict along.
+    store.getState().goToStep(0);
+    expect(store.getState().getStepStatus(0)).toBe("none");
+    expect(store.getState().getExerciseResult()).toBeNull();
+  });
+
+  test("a check stops standing once the step is changed", () => {
+    const store = createMemoryStore(false, "view");
+    store.getState().loadMemory(exerciseMemory);
+    store.getState().goToStep(1);
+
+    store.getState().revealSolution();
+    store.getState().checkExercise();
+    expect(store.getState().getStepStatus(1)).toBe("correct");
+
+    // Dragging a node changes the picture, not the answer.
+    store.getState().setNodes((nodes: any) =>
+      nodes.map((n: any) => ({ ...n, position: { x: 99, y: 99 } })),
+    );
+    expect(store.getState().getStepStatus(1)).toBe("correct");
+
+    // Deleting the object it asked for does change the answer.
+    store.getState().setNodes((nodes: any) =>
+      nodes.filter((n: any) => n.type !== "object"),
+    );
+    expect(store.getState().getStepStatus(1)).toBe("untried");
+    expect(store.getState().getExerciseResult()).toBeNull();
+  });
+
+  test("being shown the solution is not getting it right", () => {
+    const store = createMemoryStore(false, "view");
+    store.getState().loadMemory(exerciseMemory);
+    store.getState().goToStep(1);
+
+    store.getState().checkExercise();
+    store.getState().revealSolution();
+
+    expect(store.getState().getStepStatus(1)).toBe("untried");
   });
 
   test("saving from a student's playground keeps the exercise, not the attempt", () => {

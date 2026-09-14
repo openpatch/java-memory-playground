@@ -715,6 +715,79 @@ path.react-flow__edge-path:hover {
   max-width: 100%;
 }
 
+/* The strip of steps: a row of its own above the controls, so it reads as a map
+   of the walk rather than as another control in it. No cap on the measure — a
+   `max-width` here would let the row share a line with the controls after all,
+   because it is the capped size, not the basis, that decides whether the two
+   fit side by side. A trace long enough to need it wraps within the row, which
+   the panel around it has already capped against the width of the canvas. */
+.step-bar__steps {
+  flex: 0 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+/* A dot, not a button: the row of controls sets a height for everything in the
+   bar, which is right for a button and four times too tall for this. */
+.java-memory-playground .step-bar__dot {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  flex: none;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.java-memory-playground .step-bar__dot:hover {
+  transform: scale(1.2);
+}
+
+.java-memory-playground .step-bar__dot:focus-visible {
+  outline: 2px solid var(--jmp-accent);
+  outline-offset: 2px;
+}
+
+/* Nothing to do here: a step of the trace, which is read rather than built. */
+.java-memory-playground .step-bar__dot.none {
+  background: var(--jmp-text);
+  color: var(--jmp-surface);
+}
+
+.java-memory-playground .step-bar__dot.untried {
+  background: var(--jmp-warning);
+  color: var(--jmp-warning-text);
+}
+
+.java-memory-playground .step-bar__dot.correct {
+  background: var(--jmp-success);
+  color: var(--jmp-white);
+}
+
+.java-memory-playground .step-bar__dot.wrong {
+  background: var(--jmp-danger);
+  color: var(--jmp-white);
+}
+
+/* Which step is on screen. A ring around the dot rather than a fifth colour,
+   because where you are and how the step went are two different questions —
+   and in the ink of the text rather than the accent, which is the green a
+   correct step is already painted in. */
+.java-memory-playground .step-bar__dot.current {
+  outline: 2px solid var(--jmp-text);
+  outline-offset: 2px;
+}
+
 .step-bar__count {
   min-width: 44px;
   text-align: center;
@@ -924,4 +997,26 @@ path.react-flow__edge-path:hover {
 .jmp-print .react-flow__node-object:has(.gc) {
   border-style: dotted;
   border-width: 2px;
+}
+
+/* The strip of steps loses its four hues along with everything else, so the
+   marks inside the dots do the work: a tick for a step that was got right, a
+   cross for one that was not. The two without a mark are told apart by weight —
+   a step with nothing to do is solid, one still to be checked is an outline. */
+.jmp-print .step-bar__dot {
+  border-color: var(--jmp-black);
+  color: var(--jmp-black);
+}
+
+.jmp-print .step-bar__dot.none {
+  background: var(--jmp-black);
+}
+
+.jmp-print .step-bar__dot.untried {
+  background: var(--jmp-white);
+}
+
+.jmp-print .step-bar__dot.correct,
+.jmp-print .step-bar__dot.wrong {
+  background: var(--jmp-white);
 }

@@ -1,7 +1,8 @@
 import { useShallow } from "zustand/shallow";
 
-import { RFState } from "./store";
+import { RFState, StepStatus } from "./store";
 import useStore from "./storeContext";
+import { Translations } from "./translations";
 
 const selector = (state: RFState) => ({
   steps: state.steps,
@@ -12,11 +13,30 @@ const selector = (state: RFState) => ({
   setStepLabel: state.setStepLabel,
   setStepExercise: state.setStepExercise,
   hasSolution: state.solutions[state.currentStep] !== undefined,
-  exerciseResult: state.exerciseResult,
+  exerciseResult: state.getExerciseResult(),
+  getStepStatus: state.getStepStatus,
   checkExercise: state.checkExercise,
   revealSolution: state.revealSolution,
   t: state.getTranslations(),
 });
+
+/**
+ * A dot says what a step is; the mark inside it says the same thing again for
+ * anyone who cannot tell the red one from the green one, and for the printer.
+ */
+const statusMark: Record<StepStatus, string> = {
+  none: "",
+  untried: "",
+  correct: "✓",
+  wrong: "✕",
+};
+
+const statusLabel = (t: Translations, status: StepStatus, step: number) => {
+  if (status === "correct") return t.stepStatusCorrect(step);
+  if (status === "wrong") return t.stepStatusWrong(step);
+  if (status === "untried") return t.stepStatusUntried(step);
+  return t.stepStatusNone(step);
+};
 
 /**
  * Walks through the steps of a diagram.
@@ -35,6 +55,7 @@ export function StepBar({ editable = true }: { editable?: boolean }) {
     setStepExercise,
     hasSolution,
     exerciseResult,
+    getStepStatus,
     checkExercise,
     revealSolution,
     t,
@@ -58,6 +79,34 @@ export function StepBar({ editable = true }: { editable?: boolean }) {
         <div className="step-bar__intro">
           {hasSolution && <div className="step-bar__header">{t.yourTurn}</div>}
           {label && <span className="step-bar__label-text">{label}</span>}
+        </div>
+      )}
+
+      {/* Where the reader is, and — on an exercise — how each step went. The
+          walk through the steps used to say only which one was on screen, so a
+          "That matches" left standing from the step before read as if the step
+          in front of you had already been answered. */}
+      {!only && (
+        <div className="step-bar__steps" role="group" aria-label={t.stepOverview}>
+          {steps.map((_, i) => {
+            const status = getStepStatus(i);
+            const statusText = statusLabel(t, status, i + 1);
+            return (
+              <button
+                key={i}
+                type="button"
+                className={`step-bar__dot ${status}${
+                  i === currentStep ? " current" : ""
+                }`}
+                onClick={() => goToStep(i)}
+                aria-current={i === currentStep ? "step" : undefined}
+                aria-label={statusText}
+                title={statusText}
+              >
+                <span aria-hidden="true">{statusMark[status]}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 

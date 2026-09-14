@@ -41,6 +41,11 @@ export interface Translations {
   exerciseCorrect: string;
   exerciseWrong: (wrong: string[]) => string;
   exerciseExtra: (extra: string[]) => string;
+  stepOverview: string;
+  stepStatusNone: (step: number) => string;
+  stepStatusUntried: (step: number) => string;
+  stepStatusCorrect: (step: number) => string;
+  stepStatusWrong: (step: number) => string;
 
   // Nodes
   declareLocalVariable: string;
@@ -170,6 +175,11 @@ const en: Translations = {
   exerciseCorrect: "That matches.",
   exerciseWrong: (wrong) => `Not right yet: ${wrong.join(", ")}`,
   exerciseExtra: (extra) => `Not part of this step: ${extra.join(", ")}`,
+  stepOverview: "Steps",
+  stepStatusNone: (step) => `Step ${step}: nothing to do`,
+  stepStatusUntried: (step) => `Step ${step}: not checked yet`,
+  stepStatusCorrect: (step) => `Step ${step}: correct`,
+  stepStatusWrong: (step) => `Step ${step}: not right yet`,
 
   declareLocalVariable: "Declare Local Variable",
   returnMethod: "return",
@@ -300,6 +310,11 @@ const de: Translations = {
   exerciseCorrect: "Das passt.",
   exerciseWrong: (wrong) => `Noch nicht richtig: ${wrong.join(", ")}`,
   exerciseExtra: (extra) => `Gehört nicht zu diesem Schritt: ${extra.join(", ")}`,
+  stepOverview: "Schritte",
+  stepStatusNone: (step) => `Schritt ${step}: nichts zu tun`,
+  stepStatusUntried: (step) => `Schritt ${step}: noch nicht geprüft`,
+  stepStatusCorrect: (step) => `Schritt ${step}: richtig`,
+  stepStatusWrong: (step) => `Schritt ${step}: noch nicht richtig`,
 
   declareLocalVariable: "Lokale Variable deklarieren",
   returnMethod: "return",

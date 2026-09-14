@@ -133,3 +133,15 @@ export const checkAgainst = (
     extra,
   };
 };
+
+/**
+ * A string that changes whenever the part of a step a check looks at changes.
+ *
+ * A result is only about the diagram it was computed from: moving a node does
+ * not make a wrong answer right, but changing an attribute or a reference means
+ * the last check no longer says anything about what is on screen. Comparing
+ * fingerprints is what lets a stale result be dropped rather than left standing
+ * under a diagram it no longer describes.
+ */
+export const fingerprintOf = (step: StoreStep): string =>
+  JSON.stringify(canonicalRoots(step));
