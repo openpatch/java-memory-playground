@@ -42,6 +42,10 @@
   --jmp-text-faint: var(--jmp-quicksilver);
   --jmp-border: var(--jmp-silver);
   --jmp-accent: var(--jmp-green);
+  /* The one call to action in the chrome: the banner that tells a reader the
+     step in front of them is theirs to build. */
+  --jmp-prompt: var(--jmp-mint);
+  --jmp-prompt-text: var(--jmp-deep-forest);
   /* Panels float over the canvas, so they are the surface with a little of it
      showing through. */
   --jmp-panel: rgb(255 255 255 / 92%);
@@ -637,9 +641,7 @@ path.react-flow__edge-path:hover {
   box-shadow: 0 2px 6px var(--jmp-shadow);
 }
 
-/* The groups inside it are not cards of their own. `.step-bar` keeps its own
-   styling for anyone rendering it outside the bar. */
-.bottom-bar .step-bar,
+/* The collector is not a card of its own. */
 .bottom-bar .gc-panel {
   padding: 0;
   background: none;
@@ -647,8 +649,19 @@ path.react-flow__edge-path:hover {
   box-shadow: none;
 }
 
+/* Nor is the step bar — and it does not even keep a box. Dissolving it makes
+   its three sections rows of the bar itself, which is what lets the heading
+   span the full width and lets the collector sit on the end of the controls'
+   line instead of in a group beside the whole stack of them. */
+.bottom-bar .step-bar {
+  display: contents;
+}
+
+/* Standalone, for anyone rendering the component outside the bar; the rule
+   above replaces this wherever it is in one. */
 .step-bar {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: var(--jmp-space);
   padding: var(--jmp-space);
@@ -658,11 +671,46 @@ path.react-flow__edge-path:hover {
   background: var(--jmp-panel);
   border-radius: var(--jmp-radius);
   box-shadow: 0 2px 6px var(--jmp-shadow);
-  /* Wrapping is a last resort — see `.step-bar > *`, which keeps the controls
-     at full size — but a second line beats a "Delete step" that has been
-     pushed off the edge of a phone. */
-  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* What the step is, above what you do with it: the heading and the description
+   take the full width of the bar so the controls start on a line of their own.
+   Basis without a cap — the description inside carries the cap, so a long one
+   wraps instead of stretching the bar the width of the canvas. */
+.step-bar__intro {
+  flex: 0 0 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--jmp-space);
+  min-width: 0;
+}
+
+/* A prompt, not a caption. It runs to the edges of the card it heads — the
+   negative margin is the padding of the bottom bar and of the standalone step
+   bar, which are the same. */
+.step-bar__header {
+  align-self: stretch;
+  margin: calc(-1 * var(--jmp-space)) calc(-1 * var(--jmp-space)) 0;
+  padding: 3px var(--jmp-space-lg);
+  border-radius: var(--jmp-radius) var(--jmp-radius) 0 0;
+  background: var(--jmp-prompt);
+  color: var(--jmp-prompt-text);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Wrapping is a last resort — see `.step-bar__controls > *`, which keeps the
+   controls at full size — but a second line beats a "Delete step" that has
+   been pushed off the edge of a phone. */
+.step-bar__controls {
+  display: flex;
+  align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--jmp-space);
   min-width: 0;
   max-width: 100%;
 }
@@ -687,11 +735,9 @@ path.react-flow__edge-path:hover {
    the two things in the row that give up width when the bar is short of it: a
    button cannot be read at half a word, a sentence reads fine over three lines.
    The measure is capped so a long note breaks into lines instead of stretching
-   the bar the width of the canvas.
-
-   `>` plus the class beats `.step-bar > *`, which pins everything else. */
-.step-bar > .step-bar__label-text,
-.step-bar > .step-bar__result {
+   the bar the width of the canvas. */
+.step-bar__label-text,
+.step-bar__result {
   flex: 0 1 auto;
   min-width: 0;
   max-width: 44ch;
@@ -709,8 +755,8 @@ path.react-flow__edge-path:hover {
 }
 
 /* Controls keep their size rather than squeezing; when there is genuinely no
-   room the bar wraps and they move to a second line intact. */
-.step-bar > * {
+   room the row wraps and they move to a second line intact. */
+.step-bar__controls > * {
   flex: none;
 }
 
@@ -793,11 +839,6 @@ path.react-flow__edge-path:hover {
   align-items: center;
   gap: var(--jmp-space);
   font-size: 13px;
-  white-space: nowrap;
-}
-
-.step-bar__your-turn {
-  font-weight: 600;
   white-space: nowrap;
 }
 

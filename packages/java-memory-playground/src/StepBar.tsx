@@ -45,70 +45,85 @@ export function StepBar({ editable = true }: { editable?: boolean }) {
   if (only && !editable && !hasSolution) return null;
 
   const step = steps[currentStep];
+  // The author edits the label in a field of its own, so the prose version is
+  // the reader's.
+  const label = editable ? undefined : step?.label;
 
   return (
     <div className="step-bar">
-      <button
-        className="button-icon"
-        onClick={() => goToStep(currentStep - 1)}
-        disabled={currentStep === 0}
-        title={t.previousStep}
-        aria-label={t.previousStep}
-      >
-        ◀
-      </button>
-      <span className="step-bar__count">
-        {currentStep + 1} / {steps.length}
-      </span>
-      <button
-        className="button-icon"
-        onClick={() => goToStep(currentStep + 1)}
-        disabled={currentStep === steps.length - 1}
-        title={t.nextStep}
-        aria-label={t.nextStep}
-      >
-        ▶
-      </button>
+      {/* What the step is, above what you do with it. "Your turn" used to sit
+          between the description and the buttons, which is the one place in the
+          row where a prompt reads as a caption rather than as a heading. */}
+      {(hasSolution || label) && (
+        <div className="step-bar__intro">
+          {hasSolution && <div className="step-bar__header">{t.yourTurn}</div>}
+          {label && <span className="step-bar__label-text">{label}</span>}
+        </div>
+      )}
 
-      {editable ? (
-        <>
-          <label className="step-bar__exercise" title={t.exerciseStepHint}>
+      <div className="step-bar__controls">
+        <button
+          className="button-icon"
+          onClick={() => goToStep(currentStep - 1)}
+          disabled={currentStep === 0}
+          title={t.previousStep}
+          aria-label={t.previousStep}
+        >
+          ◀
+        </button>
+        <span className="step-bar__count">
+          {currentStep + 1} / {steps.length}
+        </span>
+        <button
+          className="button-icon"
+          onClick={() => goToStep(currentStep + 1)}
+          disabled={currentStep === steps.length - 1}
+          title={t.nextStep}
+          aria-label={t.nextStep}
+        >
+          ▶
+        </button>
+
+        {editable && (
+          <>
+            <label className="step-bar__exercise" title={t.exerciseStepHint}>
+              <input
+                type="checkbox"
+                checked={step?.exercise ?? false}
+                onChange={(e) => setStepExercise(currentStep, e.target.checked)}
+              />
+              {t.exerciseStep}
+            </label>
             <input
-              type="checkbox"
-              checked={step?.exercise ?? false}
-              onChange={(e) => setStepExercise(currentStep, e.target.checked)}
+              className="step-bar__label"
+              value={step?.label ?? ""}
+              placeholder={t.stepLabelPlaceholder}
+              aria-label={t.stepLabel}
+              onChange={(e) => setStepLabel(currentStep, e.target.value)}
             />
-            {t.exerciseStep}
-          </label>
-          <input
-            className="step-bar__label"
-            value={step?.label ?? ""}
-            placeholder={t.stepLabelPlaceholder}
-            aria-label={t.stepLabel}
-            onChange={(e) => setStepLabel(currentStep, e.target.value)}
-          />
-          <button onClick={addStep} title={t.addStepHint}>
-            {t.addStep}
-          </button>
-          <button
-            onClick={() => deleteStep(currentStep)}
-            disabled={only}
-            title={t.deleteStep}
-          >
-            {t.deleteStep}
-          </button>
-        </>
-      ) : (
-        step?.label && <span className="step-bar__label-text">{step.label}</span>
-      )}
+            <button onClick={addStep} title={t.addStepHint}>
+              {t.addStep}
+            </button>
+            <button
+              onClick={() => deleteStep(currentStep)}
+              disabled={only}
+              title={t.deleteStep}
+            >
+              {t.deleteStep}
+            </button>
+          </>
+        )}
 
-      {hasSolution && (
-        <>
-          <span className="step-bar__your-turn">{t.yourTurn}</span>
-          <button onClick={checkExercise}>{t.checkAnswer}</button>
-          <button onClick={revealSolution}>{t.showSolution}</button>
-        </>
-      )}
+        {hasSolution && (
+          <>
+            <button onClick={checkExercise}>{t.checkAnswer}</button>
+            <button onClick={revealSolution}>{t.showSolution}</button>
+          </>
+        )}
+      </div>
+
+      {/* Left beside the controls rather than moved under the description: it
+          is the answer to the button that was just pressed. */}
       {exerciseResult && (
         <span
           className={
