@@ -37,11 +37,7 @@ function LocalVariableHandle({
 }) {
   const { setNodes, setEdges } = useReactFlow<CustomNodeType, CustomEdgeType>();
 
-  const onChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    let value: any = e.target.value;
-    if (e.target.type === "checkbox") {
-      value = e.target.checked;
-    }
+  const setValue = (value: Attribute["value"]) => {
     setNodes((nds) =>
       nds.map((n) => {
         if (n.id == nodeId && n.type === "method-call") {
@@ -62,6 +58,19 @@ function LocalVariableHandle({
         return n;
       })
     );
+  };
+
+  const onChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setValue(e.target.type === "checkbox" ? e.target.checked : e.target.value);
+  };
+
+  // Clearing the field has to leave it empty while typing, otherwise the digit
+  // typed next lands in front of a `0` that cannot be removed. The fallback
+  // happens once the field is left instead.
+  const onNumericBlur = () => {
+    if (value.value === "" || value.value === undefined) {
+      setValue(0);
+    }
   };
 
   const onDelete = () => {
@@ -132,8 +141,9 @@ function LocalVariableHandle({
           {numericDataTypes.includes(value.dataType) && (
             <input
               onChange={onChange}
+              onBlur={onNumericBlur}
               type="number"
-              value={(value.value as number) || 0}
+              value={(value.value as number | string) ?? ""}
               className="method-call-node__variable-value nodrag"
             />
           )}
