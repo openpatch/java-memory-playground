@@ -1,5 +1,48 @@
 # @openpatch/java-memory-playground
 
+## 0.2.3
+
+### Patch Changes
+
+- [`4c2c88a`](https://github.com/openpatch/java-memory-playground/commit/4c2c88a1cc48680c84027b343ef1766bba20284a) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Lay the bottom bar out in rows, and make "Your turn" a heading.
+
+  Everything was one wrapping row, so on an exercise step the prompt sat between the description and
+  the buttons — the one place in the row where a call to action reads as a caption. The description
+  competed with the controls for the same line, and on a narrow canvas the whole thing became a pile.
+
+  The bar now has three parts: the prompt as a heading across the top of the card, the step's
+  description under it, and the controls on their own line. The collector joins the end of that
+  controls line rather than standing in a group of its own, so a plain diagram is still the single
+  row it was, and the result of checking an exercise stays beside the button that produced it.
+
+  The step bar dissolves into the bottom bar (`display: contents`) instead of being a box inside it,
+  which is what lets the heading span the full width and the collector share the controls' line. It
+  still stands on its own for anyone rendering the component outside the bar.
+
+- [`e5e2b33`](https://github.com/openpatch/java-memory-playground/commit/e5e2b336042025104bd1b83d3cce8fe58b0b487f) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Show a step's whole label, and the whole result of checking an exercise.
+
+  The label was clipped with an ellipsis at 260px. On an exercise step the label is the task, so a
+  reader was being asked to build something the sentence no longer said — and the result of pressing
+  Check listed the attributes that were wrong on a single unbreakable line.
+
+  Both now wrap. They are also the only two things in the step bar allowed to give up width when the
+  bar is short of it: a button cannot be read at half a word, but a sentence reads fine over three
+  lines. The measure is capped so that a long note breaks into lines rather than stretching the bar
+  across the canvas, and a Java identifier longer than the measure breaks mid-word rather than
+  hanging out of the bar.
+
+- [`e5e2b33`](https://github.com/openpatch/java-memory-playground/commit/e5e2b336042025104bd1b83d3cce8fe58b0b487f) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - State the font size of the playground's own controls, so an embedded playground's toolbar is not
+  resized by its host.
+
+  Form controls do not inherit `font-size`, so in a page of its own the buttons and inputs sat at the
+  browser's ~13px default and the container's 24px — the size the _diagram_ is drawn at — never
+  reached them. A host page with a normalize stylesheet (`button, input { font-size: 100% }`) makes
+  them inherit after all, and Save, Download (PNG) and the rest then came out at 24px. In a Hyperbook
+  the toolbar was roughly twice the width of the diagram beneath it.
+
+  The sizes are now written down rather than left to the browser, so they are the same wherever the
+  playground is embedded. Nothing changes in the standalone app.
+
 ## 0.2.2
 
 ### Patch Changes
