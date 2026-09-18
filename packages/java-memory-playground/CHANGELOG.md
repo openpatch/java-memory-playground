@@ -1,5 +1,122 @@
 # @openpatch/java-memory-playground
 
+## 0.2.5
+
+### Patch Changes
+
+- [`12dcbd2`](https://github.com/openpatch/java-memory-playground/commit/12dcbd2e0c3a5aabf43f2f598aaa6940694281b5) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Draw an array's length as fixed, and name the palette's items in Java.
+
+  `length` was an editable number field like any other, so a diagram could say `length = 3` over four
+  elements, or be changed to. Java fixes it when the array is created, and the diagram now says so:
+  the elements stay editable, the count is text.
+
+  The German palette read _neues List_, _neues Array_ — neither a class name nor a sentence, and a
+  neuter article in front of every class whatever its gender. It now reads `new List`, the way the
+  source it stands for does, which is what the English side has said all along.
+
+  _Müll vorhersagen_ has become _Garbage Collector vorhersagen_, to pair with the _Garbage Collector
+  ausführen_ it now sits beside.
+
+- [`12dcbd2`](https://github.com/openpatch/java-memory-playground/commit/12dcbd2e0c3a5aabf43f2f598aaa6940694281b5) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Open an exercise from a link on the task, not on the answer.
+
+  A diagram reaching the playground through the URL skipped the step every other route takes: the
+  exercise steps were never moved aside. Opening a shared link to an exercise put the solution on the
+  canvas, with no **Your turn**, no **Check** and nothing behind them — the exercise was simply gone,
+  and the reader had no way to know one had been authored.
+
+  Which is the route that matters most: handing over a link is how a teacher shares a diagram, and the
+  hash is what the **Save (URL)** button writes. A diagram opened from a file or set through the
+  embedded component's `memory` attribute was always split correctly; only the link was not.
+
+  Reading a diagram from the URL now splits exercises exactly as loading one does, and the teacher's
+  playground keeps seeing the authored steps.
+
+- [`12dcbd2`](https://github.com/openpatch/java-memory-playground/commit/12dcbd2e0c3a5aabf43f2f598aaa6940694281b5) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Restructure the bottom panel into stacked rows for clarity.
+
+  The step bar used to put navigation dots, exercise badge, task label, hint
+  button, check button, and solution button all on one horizontal row. Students
+  had to parse "where am I" and "what do I do" at the same time, and the hint
+  floated above the bar as a detached tooltip.
+
+  The bar is now a vertical stack of rows, divided by hairlines:
+
+  - Row 1: step navigation (arrows + dots)
+  - Row 2: the step's task (badge + label) and its actions (hint, check,
+    solution, result)
+  - Row 3: authoring controls, in edit mode only
+
+  The hint appears inline within the bar instead of floating above it, so it
+  stays in context and does not cover the diagram the reader is working on.
+
+- [`12dcbd2`](https://github.com/openpatch/java-memory-playground/commit/12dcbd2e0c3a5aabf43f2f598aaa6940694281b5) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Show the hint a step carries.
+
+  A step has always been able to hold a `note`. It survived the file, the link and the undo history,
+  and then nothing ever drew it: the field was documented as "not currently rendered by the UI". On
+  an exercise step it did not even survive that far — the student's working step kept the label and
+  dropped the note, so the hint went missing on exactly the step it was written for, and so did
+  revealing the solution.
+
+  The note is now the step's hint. A **Hint** button appears on any step that has one, and the text
+  opens under the controls when it is pressed — asked for, never volunteered, because a hint that is
+  on screen from the start is part of the task and the exercise is then a different one. On an
+  exercise it sits before **Show solution**, which is the point: a student who is stuck had only the
+  choice between trying again and being handed the answer, and now there is a rung between the two.
+  Moving to another step closes it again.
+
+  Authors write it beside the label, in a field of its own. It travels with the diagram, so a hint
+  reaches the student whether the step arrived as a `.jmp` file, a share link or an embedded
+  playground.
+
+- [`4a2ea06`](https://github.com/openpatch/java-memory-playground/commit/4a2ea06f3988023b6b515e0079eb42ef65769bc7) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Let a step carry assignments the reader can run.
+
+  Dragging an edge onto its target says where a reference should end up. It cannot say what
+  `neu.next = current.next` means, because that depends on where `current.next` points _at the moment
+  the line runs_ — and that is the whole difficulty of rewiring a linked list. Both orders of those
+  two lines reach the same picture when you drag; only one of them does when you run them. Until now
+  the playground could ask for the finished shape and mark it right or wrong, but the mistake itself —
+  the node that ends up pointing at itself, the tail that falls off the end — had no way of appearing
+  on the canvas.
+
+  A step can now carry **statements**: lines the reader fires in an order they choose. Each is
+  evaluated against the diagram as it stands, so the right-hand side is read from the picture rather
+  than from the text. Run the two lines the wrong way round and the new node points at itself and the
+  rest of the list greys out, because the reachability the garbage collector already draws says so.
+  A numbered log keeps the order that was chosen, since "I did it the other way round" is the thing
+  worth seeing, and **Start over** puts the diagram back to before the first line ran. A line that
+  cannot run — an unknown name, a null dereference, an `int` field — says why and leaves the diagram
+  untouched.
+
+  They are part of the instruction, so they travel with the label and the hint: to the student's
+  working step, through a share link, a `.jmp` file and the embedded component. Authors write them
+  beside the label, separated by semicolons. Checking an exercise is unchanged — the lines are another
+  way to build the step, not another way to be marked.
+
+- [`12dcbd2`](https://github.com/openpatch/java-memory-playground/commit/12dcbd2e0c3a5aabf43f2f598aaa6940694281b5) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Put the step controls on one strip, and the collector with the palette.
+
+  The bar along the bottom had grown into a stack. A green banner across the full width, the task
+  under it, the dots under that, the buttons under those, and the garbage collector on the end — five
+  rows of furniture parked over the middle of the diagram, on the one edge a linked list drawn stack-
+  left-heap-right is most likely to reach.
+
+  It is one row now: the dots, then what the step is, then what to do about it, in the order they are
+  used. The banner has become a chip in front of the task, which marks an exercise just as clearly
+  and costs no line of its own; the full "Your turn: build this step" stays on it as a title. The
+  task is the one part that grows, so a short one leaves the strip compact and a long one takes the
+  width the buttons do not need, wrapping onto a second line only when the canvas is genuinely
+  narrow.
+
+  A hint opens over the strip instead of inside it, and its button no longer changes width when
+  pressed — both so that asking for one does not slide the buttons out from under the cursor that
+  just asked.
+
+  The collector has moved under the palette, where it belongs: the palette puts objects on the
+  canvas and the collector takes them away. It is a card of the same width, stacked rather than in a
+  row, which gives a prediction the room for its running count and its way out — room the strip never
+  had. A diagram with no trace and no exercise now has nothing along the bottom at all.
+
+  Authoring keeps a row of its own under the reader's strip, so the two fields stay wide enough to
+  type in and the reader's strip is the same shape in both playgrounds.
+
 ## 0.2.4
 
 ### Patch Changes
