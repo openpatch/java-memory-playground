@@ -33,9 +33,14 @@ export interface Translations {
   deleteStep: string;
   stepLabel: string;
   stepLabelPlaceholder: string;
+  stepNote: string;
+  stepNotePlaceholder: string;
+  showHint: string;
+  hideHint: string;
   exerciseStep: string;
   exerciseStepHint: string;
   yourTurn: string;
+  exerciseBadge: string;
   checkAnswer: string;
   showSolution: string;
   exerciseCorrect: string;
@@ -167,9 +172,14 @@ const en: Translations = {
   deleteStep: "Delete step",
   stepLabel: "Step label",
   stepLabelPlaceholder: "What happens here?",
+  stepNote: "Step hint",
+  stepNotePlaceholder: "A hint, for when they get stuck",
+  showHint: "Hint",
+  hideHint: "Hide hint",
   exerciseStep: "Exercise",
   exerciseStepHint: "The student builds this step; its contents are the solution",
   yourTurn: "Your turn: build this step",
+  exerciseBadge: "Exercise",
   checkAnswer: "Check",
   showSolution: "Show solution",
   exerciseCorrect: "That matches.",
@@ -277,7 +287,10 @@ const de: Translations = {
     "Müll ist gepunktet, was ein Schritt geändert hat gestrichelt.",
   config: "Einstellungen",
   runGarbageCollector: "Garbage Collector ausführen",
-  predictGarbage: "Müll vorhersagen",
+  // Paired with "Garbage Collector ausführen" right above it: the two buttons
+  // are the same act, once predicted and once carried out, and "Müll" named
+  // something the rest of the interface never mentions.
+  predictGarbage: "Garbage Collector vorhersagen",
   predictGarbageHint: (marked) =>
     `Klicke die Objekte an, die deiner Meinung nach nicht mehr erreichbar sind (${marked} markiert)`,
   checkAndCollect: "Prüfen und aufräumen",
@@ -289,8 +302,11 @@ const de: Translations = {
   redo: "Wiederholen",
   help: "Hilfe",
 
-  newInstanceOf: (klass) => `neues ${klass}`,
-  newArray: "neues Array",
+  // Java, not German: the palette item makes the thing the source makes, and
+  // "neues List" was neither a class name nor a sentence. The English side has
+  // read this way all along.
+  newInstanceOf: (klass) => `new ${klass}`,
+  newArray: "new Array",
   callMethod: "Methode aufrufen",
   declareGlobalVariable: "Globale Variable deklarieren",
 
@@ -301,10 +317,15 @@ const de: Translations = {
   deleteStep: "Schritt löschen",
   stepLabel: "Beschriftung",
   stepLabelPlaceholder: "Was passiert hier?",
+  stepNote: "Tipp zum Schritt",
+  stepNotePlaceholder: "Ein Tipp, falls es hakt",
+  showHint: "Tipp",
+  hideHint: "Tipp ausblenden",
   exerciseStep: "Aufgabe",
   exerciseStepHint:
     "Diesen Schritt bauen die Schüler:innen selbst; der Inhalt ist die Lösung",
   yourTurn: "Du bist dran: baue diesen Schritt",
+  exerciseBadge: "Aufgabe",
   checkAnswer: "Prüfen",
   showSolution: "Lösung zeigen",
   exerciseCorrect: "Das passt.",

@@ -36,10 +36,12 @@ export const fitPaddingFor = (
   top: px(PANEL_MARGIN + 26 + BREATHING_ROOM),
   right: px(SIDE_ROOM),
   bottom: px(
-    options.hideSteps ? BREATHING_ROOM : PANEL_MARGIN + 46 + BREATHING_ROOM,
+    options.hideSteps ? BREATHING_ROOM : PANEL_MARGIN + 34 + BREATHING_ROOM,
   ),
+  // The collector is a card of the palette's width under it, so the left side
+  // is reserved for either of them.
   left: px(
-    options.hideSidebar
+    options.hideSidebar && options.disableGarbageCollector
       ? SIDE_ROOM
       : PANEL_MARGIN + PALETTE_WIDTH + BREATHING_ROOM,
   ),

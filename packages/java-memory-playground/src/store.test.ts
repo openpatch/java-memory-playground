@@ -253,6 +253,78 @@ describe("exercises", () => {
     ],
   };
 
+  const withHint = (): Memory => ({
+    ...exerciseMemory,
+    steps: exerciseMemory.steps!.map((step, i) =>
+      i === 1 ? { ...step, note: "point the first node at the new one" } : step,
+    ),
+  });
+
+  test("the hint travels with the exercise the student is handed", () => {
+    const store = createMemoryStore(false, "view");
+    store.getState().loadMemory(withHint());
+
+    // The note is authored on the answer, which the student never sees; it is
+    // the step they build that has to carry it.
+    expect(store.getState().steps[1].note).toBe(
+      "point the first node at the new one",
+    );
+  });
+
+  test("revealing the solution leaves the hint in place", () => {
+    const store = createMemoryStore(false, "view");
+    store.getState().loadMemory(withHint());
+    store.getState().goToStep(1);
+
+    store.getState().revealSolution();
+
+    expect(store.getState().steps[1].note).toBe(
+      "point the first node at the new one",
+    );
+  });
+
+  test("a hint written by the author is saved with the diagram", () => {
+    const store = createMemoryStore(false, "edit");
+    store.getState().loadMemory(exerciseMemory);
+
+    store.getState().setStepNote(1, "two nodes, one arrow");
+
+    expect(store.getState().getMemory().steps![1].note).toBe(
+      "two nodes, one arrow",
+    );
+  });
+
+  test("clearing a hint drops it rather than saving an empty one", () => {
+    const store = createMemoryStore(false, "edit");
+    store.getState().loadMemory(withHint());
+
+    store.getState().setStepNote(1, "");
+
+    expect(store.getState().getMemory().steps![1].note).toBeUndefined();
+  });
+
+  test("a link to an exercise opens on the task, not on the answer", () => {
+    const location = stubLocation();
+
+    const teacher = createMemoryStore(true, "edit");
+    teacher.getState().loadMemory(exerciseMemory);
+
+    // A second store reading the hash the first one produced — the student
+    // opening the link the teacher shared.
+    location.hash = "#" + location.hash.replace(/^#/, "");
+    const student = createMemoryStore(true, "view");
+    student.getState().goToStep(1);
+
+    // One object, as in the step before the exercise; the solution has two.
+    expect(
+      student.getState().getNodes().filter((n: any) => n.type === "object"),
+    ).toHaveLength(1);
+
+    // And there is something to press: the answer is still behind it.
+    student.getState().checkExercise();
+    expect(student.getState().getExerciseResult()?.correct).toBe(false);
+  });
+
   test("a student starts an exercise from the step before it", () => {
     const store = createMemoryStore(false, "view");
     store.getState().loadMemory(exerciseMemory);

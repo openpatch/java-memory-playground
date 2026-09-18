@@ -9,6 +9,8 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import {
+  ARRAY_KLASS,
+  ARRAY_LENGTH,
   Attribute,
   Obj,
   STRING_KLASS,
@@ -155,7 +157,7 @@ function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
   const attributeEdges = edges.filter((e) => e.source == id);
   
   // For arrays, display the element type in the header
-  const displayName = data.klass === "Array" && data.arrayElementType
+  const displayName = data.klass === ARRAY_KLASS && data.arrayElementType
     ? `:${data.arrayElementType}[]`
     : `:${data.klass}`;
   
@@ -201,7 +203,7 @@ function ObjectNode({ id, data }: NodeProps<ObjectNodeType>) {
         {Object.entries(data.attributes).map(([name, value]) => (
           <AttributeHandle
             key={`${id}+${name}`}
-            isFinal={false}
+            isFinal={data.klass === ARRAY_KLASS && name === ARRAY_LENGTH}
             isConnected={
               attributeEdges.find((e) => e.sourceHandle == name)?.target != null
             }

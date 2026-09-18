@@ -123,7 +123,7 @@ order the Java source has them.
 | `variables` | object | Variables belonging to no frame. Java has no globals; this is scaffolding for lessons that come before methods. Hidden from the palette by default. |
 | `methodCalls` | object | The call stack: frames keyed by id. |
 | `label` | string | Shown in the step bar and in the caption of an exported PNG. Use the line of Java this step performs — `head = head.next;`. |
-| `note` | string | A teacher's note about the step. Carried through the file and the link; not currently rendered by the UI. |
+| `note` | string | A hint for this step. The reader presses **Hint** to see it; it is not on screen until they do. |
 | `exercise` | boolean | This step is the solution to an exercise the student builds. See [Exercises](#exercises). |
 
 ### An object
@@ -239,7 +239,9 @@ An array is an object whose class is the literal string `Array`:
 }
 ```
 
-- `length` first, then `[0]` … `[n-1]`, in order.
+- `length` first, then `[0]` … `[n-1]`, in order. `length` is drawn as fixed
+  text rather than as a field, the way Java fixes it when the array is made,
+  so write it to match the number of elements you list.
 - It is drawn as `:int[]`, from `arrayElementType`.
 - An array of references has `arrayElementType` set to the class name and each
   element holding an address or nothing — an array of nulls is `n` empty
@@ -332,6 +334,15 @@ references, and compares that string. So:
 Give an exercise step a `label` that says what to build — `insert(7) at the
 front` — since that label is the whole instruction the student gets.
 
+A `note` on the step is the hint behind the **Hint** button, and it is the rung
+between trying again and **Show solution**: the student who is stuck gets a
+nudge instead of the answer. It is hidden until they ask, so write it as the
+one sentence you would say over their shoulder — *the new node's `next` has to
+point at the old front, not the other way round* — and not as the solution in
+prose. The hint travels with the step the student is given, so it is there
+whether the diagram arrived as a file, a link or an embedded playground. A note
+on an ordinary step works too, for an aside that would clutter the label.
+
 ## Options
 
 Options live in the diagram and travel with the link.
@@ -368,8 +379,9 @@ where the class is, then adjust:
 
 ## The garbage collector
 
-*Run Garbage Collector* removes every object not reachable from a variable or a
-stack frame; unreachable objects are tinted before you press it. This makes
+*Run Garbage Collector*, under the palette, removes every object not reachable
+from a variable or a stack frame; unreachable objects are tinted before you
+press it. This makes
 reachability something a student can see rather than be told, so a diagram
 about garbage should be a trace: the object with two references, then one, then
 none.

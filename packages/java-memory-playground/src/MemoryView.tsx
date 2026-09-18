@@ -821,13 +821,51 @@ export const MemoryView = () => {
         edgeTypes={edgeTypes}
         minZoom={0.1}
       >
-        {!options.hideSidebar && (
+        {(!options.hideSidebar || !options.disableGarbageCollector) && (
           <Panel position="top-left">
-            <Sidebar
-              klasses={klasses}
-              options={options}
-              onNodeDrop={onNodeDrop}
-            />
+            {!options.hideSidebar && (
+              <Sidebar
+                klasses={klasses}
+                options={options}
+                onNodeDrop={onNodeDrop}
+              />
+            )}
+            {/* Under the palette, because collecting is another thing done to
+                what is on the canvas — the palette puts objects there, this
+                takes them away. It used to sit along the bottom beside the
+                trace, which made the strip about two unrelated things and
+                stacked a second card over the middle of the diagram. A
+                prediction is a mode, with a running count and a way out, and
+                a column has the room for that. */}
+            {!options.disableGarbageCollector && (
+              <div className="gc-panel">
+                {gcResult && (
+                  <span className="gc-result">
+                    {t.gcScore(gcResult.found, gcResult.missed, gcResult.wrong)}
+                  </span>
+                )}
+                {options.gcPrediction && gcPrediction === null && (
+                  <button className="button-gc" onClick={startGcPrediction}>
+                    {t.predictGarbage}
+                  </button>
+                )}
+                {gcPrediction !== null && (
+                  <>
+                    <span className="gc-hint">
+                      {t.predictGarbageHint(gcPrediction.length)}
+                    </span>
+                    <button onClick={cancelGcPrediction}>{t.cancel}</button>
+                  </>
+                )}
+                {(!options.gcPrediction || gcPrediction !== null) && (
+                  <button className="button-gc" onClick={collectGarbage}>
+                    {gcPrediction !== null
+                      ? t.checkAndCollect
+                      : t.runGarbageCollector}
+                  </button>
+                )}
+              </div>
+            )}
           </Panel>
         )}
         <Panel position="top-right">
@@ -886,48 +924,15 @@ export const MemoryView = () => {
             </a>
           </div>
         </Panel>
-        {/* One row along the bottom. The step bar and the collector used to be
-            their own panels, pinned to the centre and the right, which meant
-            they slid into each other on a narrow screen and the collector
-            covered "Add step". Sharing a row, they cannot overlap. */}
-        {(!options.hideSteps || !options.disableGarbageCollector) && (
+        {/* The trace alone, along the bottom. The collector used to share this
+            row — it had been given its own panel, the two slid into each other
+            on a narrow screen, and putting them together stacked a second thing
+            on a strip that was already the tallest furniture on the canvas. It
+            acts on the whole diagram, like saving and printing, so it now sits
+            with those instead and the strip is about the step again. */}
+        {!options.hideSteps && (
           <Panel position="bottom-center">
-            <div className="bottom-bar">
-              {!options.hideSteps && <StepBar editable={mode === "edit"} />}
-              {!options.disableGarbageCollector && (
-                <div className="button-group gc-panel">
-                  {gcResult && (
-                    <span className="gc-result">
-                      {t.gcScore(
-                        gcResult.found,
-                        gcResult.missed,
-                        gcResult.wrong,
-                      )}
-                    </span>
-                  )}
-                  {options.gcPrediction && gcPrediction === null && (
-                    <button className="button-gc" onClick={startGcPrediction}>
-                      {t.predictGarbage}
-                    </button>
-                  )}
-                  {gcPrediction !== null && (
-                    <>
-                      <span className="gc-hint">
-                        {t.predictGarbageHint(gcPrediction.length)}
-                      </span>
-                      <button onClick={cancelGcPrediction}>{t.cancel}</button>
-                    </>
-                  )}
-                  {(!options.gcPrediction || gcPrediction !== null) && (
-                    <button className="button-gc" onClick={collectGarbage}>
-                      {gcPrediction !== null
-                        ? t.checkAndCollect
-                        : t.runGarbageCollector}
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
+            <StepBar editable={mode === "edit"} />
           </Panel>
         )}
         <Controls />

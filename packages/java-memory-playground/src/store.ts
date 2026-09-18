@@ -113,6 +113,7 @@ export type RFState = {
   addStep: () => void;
   deleteStep: (index: number) => void;
   setStepLabel: (index: number, label: string) => void;
+  setStepNote: (index: number, note: string) => void;
   /** The nodes and edges of the step on screen. */
   getNodes: () => CustomNodeType[];
   getEdges: () => CustomEdgeType[];
@@ -241,7 +242,14 @@ const withExercisesHidden = (steps: StoreStep[]) => {
   const working = steps.map((step, i) => {
     if (!step.exercise || i === 0) return step;
     solutions[i] = step;
-    return { ...copyStep(steps[i - 1]), label: step.label, exercise: true };
+    // The label and the note are the instruction and its hint, so they belong
+    // to the step the student is handed, not to the answer behind it.
+    return {
+      ...copyStep(steps[i - 1]),
+      label: step.label,
+      note: step.note,
+      exercise: true,
+    };
   });
   return { steps: working, solutions };
 };
@@ -387,6 +395,14 @@ export const createMemoryStore = (
                 label: label || undefined,
               })),
             }),
+
+          setStepNote: (index, note) =>
+            set({
+              steps: withStep(get().steps, index, (step) => ({
+                ...step,
+                note: note || undefined,
+              })),
+            }),
           // Configuration belongs to the teacher, so a student's playground
           // cannot be routed into it, by a shortcut or otherwise.
           setRoute: (route) =>
@@ -485,6 +501,7 @@ export const createMemoryStore = (
               steps: withStep(get().steps, currentStep, (step) => ({
                 ...copyStep(solution),
                 label: step.label,
+                note: step.note,
                 exercise: true,
               })),
               // Being shown the answer is not having got it right, so the step
@@ -746,10 +763,22 @@ export const createMemoryStore = (
           const memory = parseMemory(stored);
           if (!memory) return current;
 
-          const steps = stepsOf(memory).map(toStoreStep);
+          const loaded = stepsOf(memory).map(toStoreStep);
+          const all = loaded.length > 0 ? loaded : current.steps;
+          // The same split `loadMemory` does. A diagram arriving through the
+          // URL is a diagram like any other, and it used to skip this: a link
+          // to an exercise opened on the answer, with nothing to check against,
+          // which is the one way a teacher is most likely to hand one over.
+          const { steps, solutions } =
+            current.mode === "edit"
+              ? { steps: all, solutions: {} }
+              : withExercisesHidden(all);
+
           return {
             ...current,
-            steps: steps.length > 0 ? steps : current.steps,
+            steps,
+            solutions,
+            exerciseResults: {},
             currentStep: 0,
             klasses: memory.klasses,
             options: memory.options,

@@ -165,9 +165,9 @@
   color: var(--jmp-surface);
 }
 
-/* Every control in the bottom bar is the same height, so a row of them reads
+/* Every control in the step strip is the same height, so a row of them reads
    as a row rather than as a skyline. */
-.bottom-bar button {
+.step-bar button {
   min-height: 26px;
 }
 
@@ -212,6 +212,13 @@
 
 /* The palette floats over the canvas like the other controls rather than
    taking a column out of it, so a small embed keeps its width for the diagram. */
+/* The palette and the collector under it: two cards in one column. */
+.react-flow__panel.top.left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--jmp-space);
+}
+
 .sidebar {
   width: 132px;
   display: flex;
@@ -457,6 +464,18 @@
   justify-self: start;
 }
 
+/* A value with no field to type in — an array's `length`, which Java fixes
+   when the array is created. It keeps the input's box so the column still
+   lines up, and gives up the border and the field's width because there is
+   nothing to click. */
+span.object-node__attribute-value,
+span.method-call-node__variable-value {
+  padding: 3px 5px;
+  margin-left: 3px;
+  font-size: 12px;
+  color: var(--jmp-text-muted);
+}
+
 /* Except a handle, which is where a reference leaves the node and so has to
    stay on its border, whatever the widest value in the node is. */
 .method-call-node__variable > .react-flow__handle,
@@ -624,82 +643,83 @@ path.react-flow__edge-path:hover {
   max-width: calc(100% - 2 * 56px);
 }
 
-/* Everything pinned along the bottom, in one row that wraps rather than two
-   panels that slide over each other when the canvas gets narrow.
-   One card rather than two: side by side, two cards of their own sat at
-   different heights with a hairline between them. */
-.bottom-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: var(--jmp-space) var(--jmp-space-lg);
-  max-width: 100%;
-  padding: var(--jmp-space);
-  background: var(--jmp-panel);
-  border-radius: var(--jmp-radius);
-  box-shadow: 0 2px 6px var(--jmp-shadow);
-}
+/* The strip along the bottom: the walk through the trace, what the step is,
+   and what to do about it — stacked into clear rows so a student reads
+   navigation first, the task second, and the actions third.
 
-/* The collector is not a card of its own. */
-.bottom-bar .gc-panel {
-  padding: 0;
-  background: none;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-/* Nor is the step bar — and it does not even keep a box. Dissolving it makes
-   its three sections rows of the bar itself, which is what lets the heading
-   span the full width and lets the collector sit on the end of the controls'
-   line instead of in a group beside the whole stack of them. */
-.bottom-bar .step-bar {
-  display: contents;
-}
-
-/* Standalone, for anyone rendering the component outside the bar; the rule
-   above replaces this wherever it is in one. */
+   It used to be a single wrapping row, which put dots, badge, task, hint,
+   check and solution all on one line and made it hard to tell navigation
+   from the exercise. Each concern now has a row of its own, divided by a
+   hairline so the eye does not have to guess where one ends and the next
+   begins. */
 .step-bar {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--jmp-space);
-  padding: var(--jmp-space);
+  align-items: stretch;
+  gap: 0;
+  padding: 0 var(--jmp-space-lg);
   font-size: 13px;
-  /* The bar floats over the canvas, so it needs to stay legible when a node
+  /* The strip floats over the canvas, so it needs to stay legible when a node
      happens to sit underneath it. */
   background: var(--jmp-panel);
   border-radius: var(--jmp-radius);
   box-shadow: 0 2px 6px var(--jmp-shadow);
-  min-width: 0;
   max-width: 100%;
-}
-
-/* What the step is, above what you do with it: the heading and the description
-   take the full width of the bar so the controls start on a line of their own.
-   Basis without a cap — the description inside carries the cap, so a long one
-   wraps instead of stretching the bar the width of the canvas. */
-.step-bar__intro {
-  flex: 0 0 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--jmp-space);
   min-width: 0;
 }
 
-/* A prompt, not a caption. It runs to the edges of the card it heads — the
-   negative margin is the padding of the bottom bar and of the standalone step
-   bar, which are the same. */
-.step-bar__header {
-  align-self: stretch;
-  margin: calc(-1 * var(--jmp-space)) calc(-1 * var(--jmp-space)) 0;
-  padding: 3px var(--jmp-space-lg);
-  border-radius: var(--jmp-radius) var(--jmp-radius) 0 0;
+/* Each row of the strip: navigation, the step body, and the authoring row. */
+.step-bar__nav,
+.step-bar__body,
+.step-bar__author {
+  padding: var(--jmp-space) 0;
+}
+
+/* A hairline between rows, but only when there is a row above to divide from. */
+.step-bar__nav + .step-bar__body,
+.step-bar__body + .step-bar__author,
+.step-bar__nav + .step-bar__author {
+  border-top: 1px solid var(--jmp-border);
+}
+
+/* Row 2: the step's task and its actions, in one body. The body wraps its
+   children onto lines as needed, keeping the badge and label together while
+   the buttons flow beside them. */
+.step-bar__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--jmp-space) var(--jmp-space-lg);
+  min-width: 0;
+}
+
+/* What the step is: the chip and the task. It is the one part of the row that
+   grows, so a short task leaves the row compact and a long one takes the
+   width the buttons do not need. */
+.step-bar__intro {
+  flex: 1 1 22ch;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--jmp-space);
+  /* Down to a measure worth reading and no further. Past that the buttons
+     give way instead — a verdict appearing beside them used to squeeze the
+     task into a four-line column, and a verdict reads fine on a line of its
+     own while a task does not. */
+  min-width: min(34ch, 100%);
+}
+
+/* The prompt, as a mark on the task rather than a banner over everything. It
+   carries the full "Your turn: build this step" as its title. */
+.step-bar__badge {
+  flex: none;
+  padding: 1px var(--jmp-space-lg);
+  border-radius: 999px;
   background: var(--jmp-prompt);
   color: var(--jmp-prompt-text);
   font-weight: 600;
-  text-align: center;
+  white-space: nowrap;
 }
 
 /* Wrapping is a last resort — see `.step-bar__controls > *`, which keeps the
@@ -716,17 +736,15 @@ path.react-flow__edge-path:hover {
 }
 
 /* Walking through the steps: the two arrows with the strip of dots between
-   them, on a row of its own above the controls. No cap on the measure — a
-   `max-width` here would let the row share a line with the controls after all,
-   because it is the capped size, not the basis, that decides whether the two
-   fit side by side. */
+   them, on a row of their own. It keeps its size — the arrows are the one
+   thing a reader goes for without looking — and a long trace wraps its dots
+   rather than the arrows drifting apart. */
 .step-bar__nav {
-  flex: 0 0 100%;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: var(--jmp-space);
+  min-width: 0;
 }
 
 /* The dots are the only part of the row that gives up width: a trace long
@@ -741,12 +759,12 @@ path.react-flow__edge-path:hover {
   gap: 5px;
 }
 
-/* A dot, not a button: the bottom bar sets a height for every button in it,
-   which is right for a button and too tall for this.
+/* A dot, not a button: the strip sets a height for every button in it, which
+   is right for a button and too tall for this.
    Two classes, and the scope is deliberately not written out — the build
    prefixes it onto every selector, so naming it here would leave this rule at
-   the same weight as `.bottom-bar button` (a class and a type, once prefixed)
-   and the height would go on being the bar's. */
+   the same weight as `.step-bar button` (a class and a type, once prefixed)
+   and the height would go on being the strip's. */
 .step-bar__steps .step-bar__dot {
   width: 16px;
   height: 16px;
@@ -822,7 +840,7 @@ path.react-flow__edge-path:hover {
 .step-bar__result {
   flex: 0 1 auto;
   min-width: 0;
-  max-width: 44ch;
+  max-width: 52ch;
   white-space: normal;
   /* A Java identifier can be longer than the measure with nowhere to break;
      breaking it mid-word beats it hanging out of the bar. */
@@ -834,6 +852,17 @@ path.react-flow__edge-path:hover {
 
 .step-bar__label-text {
   padding: 0 4px;
+}
+
+/* Authoring, on a row under the reader's strip: two fields worth typing in
+   beside the controls that add and remove a step. */
+.step-bar__author {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--jmp-space);
+  min-width: 0;
 }
 
 /* Controls keep their size rather than squeezing; when there is genuinely no
@@ -899,10 +928,14 @@ path.react-flow__edge-path:hover {
   z-index: 2;
 }
 
-/* A sibling of the step bar in the bottom row, so it is dressed like one. */
+/* A card under the palette, the same width and dressed the same, so the two
+   read as one column. Stacked rather than in a row: the labels are sentences,
+   not words, and a prediction adds a count and a way out to them. */
 .gc-panel {
+  width: 132px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: var(--jmp-space);
   padding: var(--jmp-space);
   background: var(--jmp-panel);
@@ -910,10 +943,19 @@ path.react-flow__edge-path:hover {
   box-shadow: 0 2px 6px var(--jmp-shadow);
 }
 
+/* The palette's items wrap their labels, so these do too rather than being
+   the one thing in the column that insists on a line of its own. */
+.java-memory-playground .gc-panel button {
+  white-space: normal;
+  text-align: center;
+}
+
 .gc-hint,
 .gc-result {
   font-size: 13px;
   padding: 0 var(--jmp-space);
+  text-align: center;
+  line-height: 1.35;
 }
 
 .step-bar__exercise {
@@ -937,6 +979,26 @@ path.react-flow__edge-path:hover {
 .step-bar__result.wrong {
   background: var(--jmp-danger-soft);
   color: var(--jmp-danger-text);
+}
+
+/* The hint's text, shown inline under the controls rather than floating
+   above the bar. A hint that appears in place stays beside the button that
+   opened it and does not cover the diagram the reader is working on. It
+   takes the full width of the body so the text wraps at a readable measure.
+
+   Amber keeps it apart from the green and red of a verdict: a hint says
+   nothing about the attempt. */
+.step-bar__note {
+  flex: 1 1 100%;
+  margin: 0;
+  padding: var(--jmp-space) var(--jmp-space-lg);
+  border-radius: var(--jmp-radius);
+  background: var(--jmp-warning-soft);
+  color: var(--jmp-warning-text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-align: center;
+  line-height: 1.35;
 }
 
 /* ---------------------------------------------------------------------------

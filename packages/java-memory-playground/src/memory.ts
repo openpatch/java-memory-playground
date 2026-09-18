@@ -21,6 +21,14 @@ export const primitveDataTypes = [...numericDataTypes, "boolean"];
 
 /** The class name of the heap objects that hold String values. */
 export const STRING_KLASS = "String";
+export const ARRAY_KLASS = "Array";
+/**
+ * The field holding an array's length.
+ *
+ * Java fixes it when the array is created and there is no assigning to it
+ * afterwards, so the diagram does not offer a field to type in either.
+ */
+export const ARRAY_LENGTH = "length";
 
 /** Types always offered in a type picker, before the user's own classes. */
 export const builtInDataTypes = [...primitveDataTypes, STRING_KLASS];

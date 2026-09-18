@@ -260,7 +260,11 @@
           <strong>new <em>ClassName</em></strong> — an instance of one of your
           configured classes, with a field for each attribute.
         </li>
-        <li><strong>new Array</strong> — pick a length and an element type.</li>
+        <li>
+          <strong>new Array</strong> — pick a length and an element type. The
+          <em>length</em> field is then fixed, as it is in Java: the elements
+          can be edited, the number of them cannot.
+        </li>
         <li>
           <strong>Call Method</strong> — a new frame on top of the stack.
         </li>
@@ -300,7 +304,9 @@
       <p>
         A diagram can be a single picture or a sequence of them. The bar along
         the bottom moves between steps, and each step can carry a label saying
-        what happens there — <em>head = new Node(1)</em>.
+        what happens there — <em>head = new Node(1)</em>. It is one strip: the
+        dots for the trace, then the step&rsquo;s label, then what you can do
+        about it.
       </p>
       <p>
         <strong>Add step</strong> duplicates the current step and continues from
@@ -313,12 +319,23 @@
         handed the previous step and builds this one themselves, then checks
         their answer against what the step actually contains.
       </p>
+      <p>
+        Beside the label, a step can carry a <strong>hint</strong>. It is not on
+        screen to begin with — a hint that is always visible is part of the
+        task, and the exercise is then a different one. The student presses
+        <strong>Hint</strong> when they want it, which puts a rung between
+        trying again and <strong>Show solution</strong>. Write the hint as the
+        nudge you would give over a shoulder, not as the answer in prose.
+      </p>
 
       <h2 id="gc">The garbage collector</h2>
       <p>
-        <strong>Run Garbage Collector</strong> removes every object that cannot
-        be reached from a variable or a stack frame. Unreachable objects are
-        already tinted before you press it, so you can see what is about to go.
+        <strong>Run Garbage Collector</strong>, under the palette, removes every
+        object that cannot be reached from a variable or a stack frame.
+        Unreachable objects are already tinted before you press it, so you can
+        see what is about to go. It sits with the palette because the two are
+        the same kind of thing: one puts objects on the canvas, the other takes
+        them away.
       </p>
       <p>
         With the <code>gcPrediction</code> option on, you commit first: click
