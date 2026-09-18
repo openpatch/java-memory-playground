@@ -21,6 +21,8 @@ The app is at <https://jmp.openpatch.org>. The human-facing documentation is at
 - **Write an exercise** — a trace where one step is marked `"exercise": true`.
   The student is handed the step before it, builds this one, and presses
   **Check**; the playground compares their diagram with yours.
+- **Set an ordering exercise** — give a step `statements` and let the reader
+  fire the assignments in an order they choose, see [Statements](#statements).
 - **Hand back a link** — the whole diagram encoded into a URL, see
   [Share links](#share-links). No account, no server, no storage.
 - **Explain a diagram** — read the JSON and say what the program's memory looks
@@ -28,9 +30,11 @@ The app is at <https://jmp.openpatch.org>. The human-facing documentation is at
 
 ## What the playground does not do
 
-- It does not execute, compile or parse Java statements. There is a class
-  parser (see [Classes from Java source](#classes-from-java-source)) and it
-  reads structure only: class names, field names, field types.
+- It does not compile or run Java. There is a class parser (see
+  [Classes from Java source](#classes-from-java-source)), which reads structure
+  only: class names, field names, field types. And a step's `statements` are
+  executed (see [Statements](#statements)), but only assignments between
+  references — no arithmetic, no calls, no control flow.
 - It does not check your diagram against the Java language. A field of a type
   that does not exist, an object of an unknown class, a reference to a missing
   object — all of these draw something. Correctness is yours.
@@ -125,6 +129,7 @@ order the Java source has them.
 | `label` | string | Shown in the step bar and in the caption of an exported PNG. Use the line of Java this step performs — `head = head.next;`. |
 | `note` | string | A hint for this step. The reader presses **Hint** to see it; it is not on screen until they do. |
 | `exercise` | boolean | This step is the solution to an exercise the student builds. See [Exercises](#exercises). |
+| `statements` | string[] | Assignments the reader can run against this step, in an order they choose. See [Statements](#statements). |
 
 ### An object
 
@@ -342,6 +347,39 @@ point at the old front, not the other way round* — and not as the solution in
 prose. The hint travels with the step the student is given, so it is there
 whether the diagram arrived as a file, a link or an embedded playground. A note
 on an ordinary step works too, for an aside that would clutter the label.
+
+## Statements
+
+A step can carry lines the reader runs by pressing them:
+
+```json
+"statements": ["neu.next = current.next", "current.next = neu"]
+```
+
+Each is evaluated against the diagram as it stands when it is pressed. That is
+the point of them. Dragging an edge says where a reference should end up; a
+line says what it means *at the moment it runs*, so the two lines above build
+the list in one order and make the new node point at itself in the other. The
+reader sees the broken picture rather than a verdict, and the rest of the list
+greys out behind it because nothing reaches it any more.
+
+The grammar is deliberately small:
+
+- `name` — a global variable, or a local of a frame.
+- `name.attribute`, to any depth — the attribute of whatever that path points
+  at right now.
+- `null`, on the right-hand side only.
+
+Anything else is refused with a reason and the diagram is left alone: an
+unknown name, a path through a null reference, an attribute the class does not
+have, or a primitive field, which holds a value rather than an arrow.
+
+A numbered log keeps the order the reader chose, and **Start over** returns the
+step to how the first line found it. Statements belong to the instruction, so
+they travel with the label and the note — onto the student's working step, and
+through a file, a link or an embedded playground. They do not replace dragging
+and they do not change how an exercise is checked; they are a second way to
+build the step.
 
 ## Options
 

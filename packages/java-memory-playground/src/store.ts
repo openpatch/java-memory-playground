@@ -17,6 +17,10 @@ import {
   getTranslations,
   translations,
 } from "./translations";
+import {
+  StatementError,
+  executeStatement,
+} from "./statements";
 import { CustomEdgeType, CustomNodeType } from "./types";
 import { isConnectedToMethodCall, isConnectedToVariable } from "./utils";
 
@@ -36,8 +40,16 @@ export type StoreStep = {
   label?: string;
   note?: string;
   exercise?: boolean;
+  statements?: string[];
   nodes: CustomNodeType[];
   edges: CustomEdgeType[];
+};
+
+/** One line the reader ran, kept in the order they ran them. */
+export type StatementEntry = {
+  text: string;
+  /** Why it could not run, when it could not. */
+  error?: StatementError;
 };
 
 /**
@@ -96,6 +108,14 @@ export type RFState = {
   /** The last check of each exercise step, by step index. */
   exerciseResults: Record<number, CheckedAttempt>;
 
+  /** What the reader has run on each step, by step index. */
+  statementLog: Record<number, StatementEntry[]>;
+  /**
+   * The state each step was in before its first statement ran, so that the
+   * reader can start the sequence over without hunting for the undo key.
+   */
+  statementStart: Record<number, StoreStep>;
+
   /** Ids of the objects a prediction has marked as unreachable, while running. */
   gcPrediction: string[] | null;
   gcResult: GcPredictionResult | null;
@@ -141,6 +161,15 @@ export type RFState = {
   /** The check of the step on screen, or null if it has none or it is stale. */
   getExerciseResult: () => ExerciseResult | null;
   getStepStatus: (index: number) => StepStatus;
+
+  // Statements
+  setStepStatements: (index: number, statements: string[]) => void;
+  /** Runs one line against the step on screen and records what it did. */
+  runStatement: (text: string) => void;
+  /** Puts the step back to where the first line found it. */
+  resetStatements: () => void;
+  getStatements: () => string[];
+  getStatementLog: () => StatementEntry[];
 
   // Garbage collection
   startGcPrediction: () => void;
@@ -224,6 +253,7 @@ const toStoreStep = (step: Step): StoreStep => ({
   label: step.label,
   note: step.note,
   exercise: step.exercise,
+  statements: step.statements,
   ...getEdgesAndNodes(step),
 });
 
@@ -248,6 +278,7 @@ const withExercisesHidden = (steps: StoreStep[]) => {
       ...copyStep(steps[i - 1]),
       label: step.label,
       note: step.note,
+      statements: step.statements,
       exercise: true,
     };
   });
@@ -330,6 +361,8 @@ export const createMemoryStore = (
           saveCount: 0,
           solutions: {},
           exerciseResults: {},
+          statementLog: {},
+          statementStart: {},
           gcPrediction: null,
           gcResult: null,
 
@@ -502,6 +535,7 @@ export const createMemoryStore = (
                 ...copyStep(solution),
                 label: step.label,
                 note: step.note,
+                statements: step.statements,
                 exercise: true,
               })),
               // Being shown the answer is not having got it right, so the step
@@ -542,6 +576,76 @@ export const createMemoryStore = (
             if (fingerprintOf(step) !== checked.fingerprint) return "untried";
             return checked.result.correct ? "correct" : "wrong";
           },
+
+          setStepStatements: (index, statements) =>
+            set({
+              steps: withStep(get().steps, index, (step) => ({
+                ...step,
+                statements: statements.length ? statements : undefined,
+              })),
+            }),
+
+          runStatement: (text) => {
+            const { steps, currentStep, statementLog, statementStart } = get();
+            const step = steps[currentStep];
+            if (!step) return;
+
+            const result = executeStatement(text, step.nodes, step.edges);
+            const entry: StatementEntry = result.ok
+              ? { text }
+              : { text, error: result.error };
+
+            set({
+              // The first line of a step is what there is to go back to.
+              statementStart:
+                currentStep in statementStart
+                  ? statementStart
+                  : { ...statementStart, [currentStep]: copyStep(step) },
+              statementLog: {
+                ...statementLog,
+                [currentStep]: (statementLog[currentStep] ?? []).concat(entry),
+              },
+              ...(result.ok
+                ? {
+                    steps: withStep(steps, currentStep, (current) => ({
+                      ...current,
+                      edges: result.edges,
+                    })),
+                  }
+                : {}),
+            });
+          },
+
+          resetStatements: () => {
+            const { currentStep, statementStart, statementLog } = get();
+            const start = statementStart[currentStep];
+            const { [currentStep]: _clearedLog, ...restLog } = statementLog;
+            const { [currentStep]: _clearedStart, ...restStart } =
+              statementStart;
+            set({
+              ...(start
+                ? {
+                    steps: withStep(get().steps, currentStep, (step) => ({
+                      ...copyStep(start),
+                      label: step.label,
+                      note: step.note,
+                      statements: step.statements,
+                      exercise: step.exercise,
+                    })),
+                  }
+                : {}),
+              statementLog: restLog,
+              statementStart: restStart,
+              exerciseResults: withoutResult(
+                get().exerciseResults,
+                currentStep,
+              ),
+            });
+          },
+
+          getStatements: () => get().steps[get().currentStep]?.statements ?? [],
+
+          getStatementLog: () => get().statementLog[get().currentStep] ?? [],
 
           startGcPrediction: () => set({ gcPrediction: [], gcResult: null }),
 
@@ -616,6 +720,8 @@ export const createMemoryStore = (
               steps,
               solutions,
               exerciseResults: {},
+              statementLog: {},
+              statementStart: {},
               gcPrediction: null,
               gcResult: null,
               currentStep: 0,
@@ -634,6 +740,9 @@ export const createMemoryStore = (
               ...(step.label ? { label: step.label } : {}),
               ...(step.note ? { note: step.note } : {}),
               ...(step.exercise ? { exercise: true } : {}),
+              ...(step.statements?.length
+                ? { statements: step.statements }
+                : {}),
               ...getMemory(step.edges, step.nodes),
             }));
 

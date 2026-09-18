@@ -726,3 +726,180 @@ describe("setPersistence", () => {
     expect(createMemoryStore(false).getState().persistence).toBe(false);
   });
 });
+
+/**
+ * A two-step diagram whose second step is an exercise with statements: the
+ * reader is handed the first step and a set of lines to run.
+ */
+const listeMitAnweisungen = (): Memory => ({
+  viewport: { x: 0, y: 0, zoom: 1 },
+  options: {},
+  klasses: { ListNode: { attributes: { next: "ListNode" } } },
+  steps: [
+    {
+      label: "Ausgangslage",
+      objects: {
+        "@a": {
+          klass: "ListNode",
+          attributes: { next: { dataType: "ListNode", value: "@b" } },
+          position: { x: 0, y: 0 },
+        },
+        "@b": {
+          klass: "ListNode",
+          attributes: { next: { dataType: "ListNode", value: undefined } },
+          position: { x: 200, y: 0 },
+        },
+        "@neu": {
+          klass: "ListNode",
+          attributes: { next: { dataType: "ListNode", value: undefined } },
+          position: { x: 100, y: 200 },
+        },
+      },
+      variables: {
+        "@v1": {
+          name: "first",
+          dataType: "ListNode",
+          value: "@a",
+          position: { x: -150, y: 0 },
+        },
+        "@v2": {
+          name: "neu",
+          dataType: "ListNode",
+          value: "@neu",
+          position: { x: -150, y: 200 },
+        },
+      },
+      methodCalls: {},
+    },
+    {
+      label: "Hänge neu hinter first",
+      exercise: true,
+      statements: ["neu.next = first.next", "first.next = neu"],
+      objects: {},
+      variables: {},
+      methodCalls: {},
+    },
+  ],
+});
+
+/** Where `first.next` points, by object id. */
+const nextOfFirst = (store: ReturnType<typeof createMemoryStore>) => {
+  const edges = store.getState().getEdges();
+  const first = edges.find((e: any) => e.source === "@v1")?.target;
+  return edges.find(
+    (e: any) => e.source === first && e.sourceHandle === "next",
+  )?.target;
+};
+
+describe("statements", () => {
+  test("are handed to the reader with the exercise, not kept with the answer", () => {
+    const store = createMemoryStore(false);
+    store.getState().loadMemory(listeMitAnweisungen());
+    store.getState().goToStep(1);
+
+    expect(store.getState().getStatements()).toEqual([
+      "neu.next = first.next",
+      "first.next = neu",
+    ]);
+  });
+
+  test("running them in the right order links the new node in", () => {
+    const store = createMemoryStore(false);
+    store.getState().loadMemory(listeMitAnweisungen());
+    store.getState().goToStep(1);
+
+    store.getState().runStatement("neu.next = first.next");
+    store.getState().runStatement("first.next = neu");
+
+    expect(nextOfFirst(store)).toBe("@neu");
+    const edges = store.getState().getEdges();
+    expect(
+      edges.find((e: any) => e.source === "@neu" && e.sourceHandle === "next")
+        ?.target,
+    ).toBe("@b");
+  });
+
+  test("running them the other way round makes the node its own successor", () => {
+    const store = createMemoryStore(false);
+    store.getState().loadMemory(listeMitAnweisungen());
+    store.getState().goToStep(1);
+
+    store.getState().runStatement("first.next = neu");
+    store.getState().runStatement("neu.next = first.next");
+
+    const edges = store.getState().getEdges();
+    expect(
+      edges.find((e: any) => e.source === "@neu" && e.sourceHandle === "next")
+        ?.target,
+    ).toBe("@neu");
+  });
+
+  test("keeps the order the reader chose, and why a line did nothing", () => {
+    const store = createMemoryStore(false);
+    store.getState().loadMemory(listeMitAnweisungen());
+    store.getState().goToStep(1);
+
+    store.getState().runStatement("first.next = neu");
+    store.getState().runStatement("nowhere = first");
+
+    const log = store.getState().getStatementLog();
+    expect(log.map((e) => e.text)).toEqual([
+      "first.next = neu",
+      "nowhere = first",
+    ]);
+    expect(log[0].error).toBeUndefined();
+    expect(log[1].error).toEqual({ code: "unknownName", name: "nowhere" });
+  });
+
+  test("a line that cannot run leaves the diagram alone", () => {
+    const store = createMemoryStore(false);
+    store.getState().loadMemory(listeMitAnweisungen());
+    store.getState().goToStep(1);
+    const before = nextOfFirst(store);
+
+    store.getState().runStatement("first.missing = neu");
+
+    expect(nextOfFirst(store)).toBe(before);
+  });
+
+  test("starting over puts the diagram back and empties the log", () => {
+    const store = createMemoryStore(false);
+    store.getState().loadMemory(listeMitAnweisungen());
+    store.getState().goToStep(1);
+
+    store.getState().runStatement("first.next = neu");
+    store.getState().runStatement("neu.next = first.next");
+    store.getState().resetStatements();
+
+    expect(nextOfFirst(store)).toBe("@b");
+    expect(store.getState().getStatementLog()).toEqual([]);
+    // The instruction survives the reset — only the attempt is undone.
+    expect(store.getState().getStatements()).toHaveLength(2);
+  });
+
+  test("each step keeps its own log", () => {
+    const store = createMemoryStore(false);
+    store.getState().loadMemory(listeMitAnweisungen());
+    store.getState().goToStep(1);
+    store.getState().runStatement("first.next = neu");
+
+    store.getState().goToStep(0);
+    expect(store.getState().getStatementLog()).toEqual([]);
+
+    store.getState().goToStep(1);
+    expect(store.getState().getStatementLog()).toHaveLength(1);
+  });
+
+  test("are written back when the diagram is saved", () => {
+    const store = createMemoryStore(false);
+    store.getState().loadMemory(listeMitAnweisungen());
+    store.getState().goToStep(1);
+    store.getState().runStatement("first.next = neu");
+
+    const saved = store.getState().getMemory();
+    expect(saved.steps![1].statements).toEqual([
+      "neu.next = first.next",
+      "first.next = neu",
+    ]);
+  });
+});

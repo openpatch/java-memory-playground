@@ -13,6 +13,12 @@ export { StepBar } from "./StepBar";
 export { diffSteps, emptyDiff } from "./stepDiff";
 export { canonicalRoots, checkAgainst } from "./canonical";
 export type { ExerciseResult } from "./canonical";
+export {
+  executeStatement,
+  parseStatement,
+  parseStatementList,
+} from "./statements";
+export type { StatementError, StatementResult, Slot } from "./statements";
 export { ClassSource } from "./ClassSource";
 export { ConfirmDialog } from "./ConfirmDialog";
 export { parseJavaClasses, toJavaSource } from "./javaSource";
@@ -35,6 +41,7 @@ export type {
   PlaygroundMode,
   MemoryStore,
   StoreStep,
+  StatementEntry,
   GcPredictionResult,
 } from "./store";
 export {

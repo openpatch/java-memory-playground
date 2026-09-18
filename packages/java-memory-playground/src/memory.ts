@@ -146,6 +146,14 @@ export type Step = {
    * they build against it.
    */
   exercise?: boolean;
+  /**
+   * Assignments the reader may run against this step, in an order they choose.
+   *
+   * Each is evaluated when it is pressed, against the diagram as it stands, so
+   * running them in the wrong order produces the broken picture rather than a
+   * wrong answer. They belong to the instruction, like the label and the note.
+   */
+  statements?: string[];
   objects: Objs;
   variables: Variables;
   methodCalls: MethodCalls;

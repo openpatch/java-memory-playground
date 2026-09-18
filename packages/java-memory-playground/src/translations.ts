@@ -46,6 +46,18 @@ export interface Translations {
   exerciseCorrect: string;
   exerciseWrong: (wrong: string[]) => string;
   exerciseExtra: (extra: string[]) => string;
+  statements: string;
+  statementsPlaceholder: string;
+  statementsHint: string;
+  runStatement: (statement: string) => string;
+  statementLog: string;
+  resetStatements: string;
+  resetStatementsHint: string;
+  statementMalformed: string;
+  statementUnknownName: (name: string) => string;
+  statementNullDereference: (path: string) => string;
+  statementUnknownAttribute: (name: string, klass: string) => string;
+  statementNotAReference: (path: string) => string;
   stepOverview: string;
   stepStatusNone: (step: number) => string;
   stepStatusUntried: (step: number) => string;
@@ -185,6 +197,21 @@ const en: Translations = {
   exerciseCorrect: "That matches.",
   exerciseWrong: (wrong) => `Not right yet: ${wrong.join(", ")}`,
   exerciseExtra: (extra) => `Not part of this step: ${extra.join(", ")}`,
+  statements: "Statements",
+  statementsPlaceholder: "neu.next = current.next; current.next = neu",
+  statementsHint:
+    "Lines the reader can run in any order, separated by semicolons",
+  runStatement: (statement) => `Run ${statement}`,
+  statementLog: "What you ran",
+  resetStatements: "Start over",
+  resetStatementsHint: "Put the diagram back to before the first line ran",
+  statementMalformed: "That is not an assignment.",
+  statementUnknownName: (name) => `There is no ${name} here.`,
+  statementNullDereference: (path) =>
+    `${path} is null — reading through it would throw a NullPointerException.`,
+  statementUnknownAttribute: (name, klass) => `${klass} has no ${name}.`,
+  statementNotAReference: (path) =>
+    `${path} holds a value, not a reference.`,
   stepOverview: "Steps",
   stepStatusNone: (step) => `Step ${step}: nothing to do`,
   stepStatusUntried: (step) => `Step ${step}: not checked yet`,
@@ -331,6 +358,22 @@ const de: Translations = {
   exerciseCorrect: "Das passt.",
   exerciseWrong: (wrong) => `Noch nicht richtig: ${wrong.join(", ")}`,
   exerciseExtra: (extra) => `Gehört nicht zu diesem Schritt: ${extra.join(", ")}`,
+  statements: "Anweisungen",
+  statementsPlaceholder: "neu.next = current.next; current.next = neu",
+  statementsHint:
+    "Zeilen, die in selbst gewählter Reihenfolge ausgeführt werden, mit Semikolon getrennt",
+  runStatement: (statement) => `${statement} ausführen`,
+  statementLog: "Ausgeführt",
+  resetStatements: "Von vorn",
+  resetStatementsHint:
+    "Das Diagramm auf den Stand vor der ersten Zeile zurücksetzen",
+  statementMalformed: "Das ist keine Zuweisung.",
+  statementUnknownName: (name) => `${name} gibt es hier nicht.`,
+  statementNullDereference: (path) =>
+    `${path} ist null — der Zugriff darüber löst eine NullPointerException aus.`,
+  statementUnknownAttribute: (name, klass) => `${klass} hat kein ${name}.`,
+  statementNotAReference: (path) =>
+    `${path} enthält einen Wert, keine Referenz.`,
   stepOverview: "Schritte",
   stepStatusNone: (step) => `Schritt ${step}: nichts zu tun`,
   stepStatusUntried: (step) => `Schritt ${step}: noch nicht geprüft`,
