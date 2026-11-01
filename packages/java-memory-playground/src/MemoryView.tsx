@@ -14,7 +14,8 @@ import {
 import { ariaLabelsFor } from "./ariaLabels";
 import { captureDiagram, downloadAllSteps } from "./exportSteps";
 import { fitPaddingFor } from "./fitPadding";
-import { BLACK, TEXT_MUTED, WARNING } from "./palette";
+import { paletteFor } from "./palette";
+import { useColorMode } from "./colorMode";
 import useStore, { useMemoryStore } from "./storeContext";
 import { useUndoRedo } from "./useUndoRedo";
 import { RFState } from "./store";
@@ -144,6 +145,14 @@ export const MemoryView = () => {
    * about the diagram, and a link shared in print mode would arrive grey.
    */
   const [printMode, setPrintMode] = useState(false);
+
+  // The scheme the host is in, read from this view's own element — the same
+  // color-scheme the CSS light-dark() pairs resolve against, so the colours
+  // drawn inline into the SVG (which cannot read `var(--jmp-…)`) agree with
+  // the chrome around them. Print is paper: always the light half.
+  const viewRef = useRef<HTMLDivElement>(null);
+  const colorMode = useColorMode(viewRef);
+  const palette = paletteFor(printMode ? "light" : colorMode);
 
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
 
@@ -446,6 +455,9 @@ export const MemoryView = () => {
       flowRef.current,
       store.getState().getNodes(),
       getViewport(),
+      // The PNG is a photograph of the live diagram, so its caption and
+      // backdrop wear the scheme the diagram on screen is drawn in.
+      printMode ? "light" : colorMode,
     );
     setViewport(before);
     return dataUrl;
@@ -472,6 +484,7 @@ export const MemoryView = () => {
         await settle(320);
       },
       captureNow: captureCurrentStep,
+      mode: printMode ? "light" : colorMode,
     });
     goToStep(back);
   };
@@ -736,9 +749,14 @@ export const MemoryView = () => {
   }, [nodes, edges, options.inlineStrings]);
 
   return (
-    <div className="memory-view">
+    <div className="memory-view" ref={viewRef}>
       <ReactFlow
         ref={flowRef}
+        // Flips React Flow's own `dark` class, so the parts of its chrome the
+        // --xy-* tokens above do not reach (connection line, handles while
+        // dragging) follow the host's scheme too — the same prop bitflow
+        // derives from the same color-scheme.
+        colorMode={colorMode}
         // The palette is a floating panel, so the toolbar opposite it has to
         // know whether that corner is occupied before it decides how wide it
         // may be. See `.with-palette` in index.css.
@@ -783,7 +801,11 @@ export const MemoryView = () => {
             // line style here instead, so a changed reference is the dashed
             // one on paper.
             style: {
-              stroke: printMode ? BLACK : changed ? WARNING : TEXT_MUTED,
+              stroke: printMode
+                ? palette.BLACK
+                : changed
+                  ? palette.WARNING
+                  : palette.TEXT_MUTED,
               strokeWidth: 4,
               strokeDasharray: printMode && changed ? "12 7" : undefined,
               opacity: changed || live ? 1 : stack ? 0.6 : 0.2,
@@ -799,7 +821,7 @@ export const MemoryView = () => {
             // export carries along unread — so a literal, for the same reason
             // the line above it is one. The head then matches its line both on
             // screen and in the picture.
-            color: printMode ? BLACK : TEXT_MUTED,
+            color: printMode ? palette.BLACK : palette.TEXT_MUTED,
           },
         }}
         onNodeClick={(_, node) => {

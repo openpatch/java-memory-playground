@@ -214,6 +214,44 @@ so a diagram authored with Strings collapsed can be shown expanded, and back.
 Each element keeps its own state and emits its own `change` events, so a page
 can host as many playgrounds as it needs.
 
+## Theming
+
+Every colour is a `--jmp-*` custom property, and the element renders into the
+light DOM, so a host re-themes it by declaring the properties on the element
+or on a container around it:
+
+```css
+.my-playground {
+  --jmp-accent: #7c3aed;
+  --jmp-frame: #ede9fe;
+  --jmp-prompt-text: #4c1d95;
+}
+```
+
+Dark mode follows the CSS `color-scheme` of the page around the element, never
+the OS by itself: every colour token is a `light-dark()` pair. Set
+`color-scheme: dark` on a container when your page switches to dark, or
+`color-scheme: light dark` on the page to follow the OS. A page that sets
+neither gets the light theme. The reference edges are drawn into an SVG with
+literal colours, and they read the same `color-scheme` and follow it live, so
+they cannot end up the only light thing in a dark host.
+
+### Hyperbook
+
+Where the host is a Hyperbook book, the playground reads four of the book's
+tokens by name, with its own `light-dark()` values as the fallback, so it
+follows the book's theme without a mapping stylesheet:
+
+| Playground token | Hyperbook token | What the host owes beyond it                          |
+| ---------------- | --------------- | ----------------------------------------------------- |
+| `--jmp-surface`  | `--color-background` | a `color-scheme` on the container (Hyperbook's dark stylesheet sets it) |
+| `--jmp-text`     | `--color-text`  | same                                                  |
+| `--jmp-text-muted` | `--color-text-deactivated` | same                                        |
+| `--jmp-accent`   | `--color-brand` | same                                                  |
+
+Print mode (the print toggle, and printing a page) pins `color-scheme:
+light`, because paper has no dark mode.
+
 ## Development
 
 ```sh

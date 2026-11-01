@@ -8,13 +8,18 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  /* The standalone app follows the OS; embedded in a host page, the host's
+     own color-scheme on the container is what the playground's light-dark()
+     palette resolves against instead. */
+  color-scheme: light dark;
 }
 
 html, body, #root {
   margin: 0;
   padding: 0;
   height: 100%;
-  /* White, from the OpenPatch palette. The playground paints its own surface
-     on top; this is only what shows before it mounts. */
-  background: #ffffff;
+  /* The playground paints its own surface on top; this is only what shows
+     before it mounts. */
+  background: light-dark(#ffffff, #1e1e1e);
 }

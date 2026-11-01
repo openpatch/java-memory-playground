@@ -29,6 +29,10 @@ export { optionPresets } from "./presets";
 export type { PresetName } from "./presets";
 export { captureDiagram, downloadAllSteps } from "./exportSteps";
 export type { StepDiff } from "./stepDiff";
+export { useColorMode, usedColorScheme } from "./colorMode";
+export type { ColorMode } from "./colorMode";
+export { paletteFor } from "./palette";
+export type { Palette, PaletteEntry } from "./palette";
 
 export {
   createMemoryStore,

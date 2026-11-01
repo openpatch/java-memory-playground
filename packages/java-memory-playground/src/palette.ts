@@ -1,3 +1,5 @@
+import type { ColorMode } from "./colorMode";
+
 /**
  * The handful of palette entries that have to exist in JavaScript as well as in
  * CSS, named after the tokens in `index.css` they duplicate.
@@ -12,19 +14,52 @@
  * `fill` falls back to black, stays behind pointing at nothing. A canvas has no
  * stylesheet to read at all.
  *
+ * The CSS tokens are `light-dark()` pairs resolved against the host's
+ * color-scheme, so each constant below carries both halves; `paletteFor`
+ * picks the one matching the scheme `useColorMode` reads. Print always uses
+ * the light half — paper has no dark mode (`.jmp-print` pins
+ * `color-scheme: light` for the same reason).
+ *
  * `palette.test.ts` keeps these in step with `index.css`, so a colour still
  * only has to be changed in one place.
  */
 
+/** Both halves of a `light-dark()` pair in index.css. */
+export interface PaletteEntry {
+  light: string;
+  dark: string;
+}
+
 /** `--jmp-black`. What print mode draws its references in. */
-export const BLACK = "#000000";
+export const BLACK: PaletteEntry = { light: "#000000", dark: "#f5f5f5" };
 /** `--jmp-text` — Coal. */
-export const TEXT = "#242428";
+export const TEXT: PaletteEntry = { light: "#242428", dark: "#f5f5f5" };
 /** `--jmp-text-muted` — Charcoal. */
-export const TEXT_MUTED = "#3c3c3c";
-/** `--jmp-surface` — White. */
-export const SURFACE = "#ffffff";
-/** `--jmp-surface-sunken` — Whitesmoke. */
-export const SURFACE_SUNKEN = "#f5f5f5";
+export const TEXT_MUTED: PaletteEntry = {
+  light: "#3c3c3c",
+  dark: "#d6d6d6",
+};
+/** `--jmp-surface` — White on a light page. */
+export const SURFACE: PaletteEntry = { light: "#ffffff", dark: "#1e1e1e" };
+/** `--jmp-surface-sunken` — Whitesmoke on a light page. */
+export const SURFACE_SUNKEN: PaletteEntry = {
+  light: "#f5f5f5",
+  dark: "#353535",
+};
 /** `--jmp-warning`. */
-export const WARNING = "#b7791f";
+export const WARNING: PaletteEntry = { light: "#b7791f", dark: "#d9a959" };
+
+/**
+ * The palette entries as literal colours for one scheme, the form the SVG and
+ * canvas drawing and the PNG export need.
+ */
+export const paletteFor = (mode: ColorMode) => ({
+  BLACK: BLACK[mode],
+  TEXT: TEXT[mode],
+  TEXT_MUTED: TEXT_MUTED[mode],
+  SURFACE: SURFACE[mode],
+  SURFACE_SUNKEN: SURFACE_SUNKEN[mode],
+  WARNING: WARNING[mode],
+});
+
+export type Palette = ReturnType<typeof paletteFor>;

@@ -1,7 +1,8 @@
 import { getNodesBounds, Viewport } from "@xyflow/react";
 import { toPng } from "html-to-image";
 
-import { SURFACE, SURFACE_SUNKEN, TEXT } from "./palette";
+import type { ColorMode } from "./colorMode";
+import { paletteFor } from "./palette";
 import { CustomNodeType } from "./types";
 
 /**
@@ -34,10 +35,6 @@ const download = (dataUrl: string, name: string) => {
   a.click();
 };
 
-const EXPORT_BACKGROUND = SURFACE;
-const EXPORT_CAPTION_BACKGROUND = SURFACE_SUNKEN;
-const EXPORT_CAPTION_TEXT = TEXT;
-
 const PIXEL_RATIO = 2;
 const MARGIN = 28;
 
@@ -56,8 +53,13 @@ export const captureDiagram = async (
   flowElement: HTMLElement,
   nodes: CustomNodeType[],
   viewport: Viewport,
+  mode: ColorMode = "light",
 ): Promise<string | null> => {
   if (nodes.length === 0) return null;
+
+  // The picture's backdrop wears the scheme the diagram on screen is drawn
+  // in — the photograph itself carries its own computed styles.
+  const EXPORT_BACKGROUND = paletteFor(mode).SURFACE;
 
   const dataUrl = await toPng(flowElement, {
     filter: excludeChrome,
@@ -113,8 +115,9 @@ export const downloadStep = async (
   nodes: CustomNodeType[],
   viewport: Viewport,
   name: string,
+  mode: ColorMode = "light",
 ) => {
-  const dataUrl = await captureDiagram(flowElement, nodes, viewport);
+  const dataUrl = await captureDiagram(flowElement, nodes, viewport, mode);
   if (dataUrl) download(dataUrl, name);
 };
 
@@ -130,6 +133,7 @@ export const downloadAllSteps = async ({
   showStep,
   captureNow,
   fileName = "java-memory-playground.png",
+  mode = "light",
 }: {
   stepCount: number;
   labelFor: (index: number) => string;
@@ -138,7 +142,14 @@ export const downloadAllSteps = async ({
   /** Photographs the step now on screen. */
   captureNow: () => Promise<string | null>;
   fileName?: string;
+  /** The scheme the steps on screen are drawn in, for the caption strip. */
+  mode?: ColorMode;
 }) => {
+  const palette = paletteFor(mode);
+  const EXPORT_BACKGROUND = palette.SURFACE;
+  const EXPORT_CAPTION_BACKGROUND = palette.SURFACE_SUNKEN;
+  const EXPORT_CAPTION_TEXT = palette.TEXT;
+
   const shots: { image: HTMLImageElement; caption: string }[] = [];
 
   for (let i = 0; i < stepCount; i++) {

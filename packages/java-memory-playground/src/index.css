@@ -22,35 +22,51 @@
   /* The OpenPatch palette, from the branding repository. These are the only
      colours with names of their own; everything below is a role filled by one
      of them, so a diagram can be restyled by reassigning roles rather than by
-     hunting hex codes through the stylesheet. */
-  --jmp-green: #007864;
-  --jmp-deep-forest: #004c45;
-  --jmp-mint: #b5e3d8;
-  --jmp-black: #000000;
-  --jmp-coal: #242428;
-  --jmp-charcoal: #3c3c3c;
-  --jmp-quicksilver: #a4a4a4;
-  --jmp-silver: #d6d6d6;
-  --jmp-whitesmoke: #f5f5f5;
+     hunting hex codes through the stylesheet.
+
+     Every colour is a light-dark() pair, resolved against the `color-scheme`
+     of the element that uses it — so the playground is light unless its host
+     says otherwise. A page declaring `color-scheme: light dark` follows the
+     OS; a host with its own dark mode sets `color-scheme: dark` on the
+     container when it switches (Hyperbook does, VS Code's webview classes do
+     via the webview HTML). Nothing inside the playground picks a scheme by
+     itself, which is what keeps a light page on a dark OS from getting a dark
+     box. The neutral scale inverts — coal is the strongest ink either way, so
+     a reference stays the opposite of the canvas — and each feedback accent
+     clears 4.5:1 both on its own surface and as text on the page. */
+  --jmp-green: light-dark(#007864, #57a396);
+  --jmp-deep-forest: light-dark(#004c45, #b5e3d8);
+  --jmp-mint: light-dark(#b5e3d8, #214640);
+  --jmp-black: light-dark(#000000, #f5f5f5);
+  --jmp-coal: light-dark(#242428, #f5f5f5);
+  --jmp-charcoal: light-dark(#3c3c3c, #d6d6d6);
+  --jmp-quicksilver: light-dark(#a4a4a4, #7a7a7a);
+  --jmp-silver: light-dark(#d6d6d6, #464646);
+  --jmp-whitesmoke: light-dark(#f5f5f5, #353535);
   --jmp-white: #ffffff;
 
-  /* Roles */
-  --jmp-surface: var(--jmp-white);
+  /* Roles. Where the host paints the page itself — a Hyperbook book, the
+     editor frame of Hyperbook Cloud — the surface, text and accent come from
+     the host's own tokens, which the host flips per theme itself, so a
+     playground on its pages wears the book's colours without a mapping
+     stylesheet; the light-dark() pair is the fallback a host without the
+     token sees. */
+  --jmp-surface: var(--color-background, light-dark(#ffffff, #1e1e1e));
   --jmp-surface-sunken: var(--jmp-whitesmoke);
-  --jmp-text: var(--jmp-coal);
-  --jmp-text-muted: var(--jmp-charcoal);
+  --jmp-text: var(--color-text, var(--jmp-coal));
+  --jmp-text-muted: var(--color-text-deactivated, var(--jmp-charcoal));
   --jmp-text-faint: var(--jmp-quicksilver);
   --jmp-border: var(--jmp-silver);
-  --jmp-accent: var(--jmp-green);
+  --jmp-accent: var(--color-brand, var(--jmp-green));
   /* The one call to action in the chrome: the banner that tells a reader the
      step in front of them is theirs to build. */
   --jmp-prompt: var(--jmp-mint);
   --jmp-prompt-text: var(--jmp-deep-forest);
   /* Panels float over the canvas, so they are the surface with a little of it
      showing through. */
-  --jmp-panel: rgb(255 255 255 / 92%);
-  --jmp-shadow: rgb(0 0 0 / 15%);
-  --jmp-shadow-soft: rgb(0 0 0 / 8%);
+  --jmp-panel: light-dark(rgb(255 255 255 / 92%), rgb(30 30 30 / 92%));
+  --jmp-shadow: light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 50%));
+  --jmp-shadow-soft: light-dark(rgb(0 0 0 / 8%), rgb(0 0 0 / 30%));
   --jmp-scrim: rgb(0 0 0 / 50%);
 
   /* What the three kinds of box are made of. The palette has one accent, and
@@ -65,14 +81,31 @@
      collected" and "changed since the last step", and neither reads as green.
      They are kept to one hue each. */
   --jmp-success: var(--jmp-green);
-  --jmp-success-soft: var(--jmp-mint);
-  --jmp-success-text: var(--jmp-deep-forest);
-  --jmp-danger: #c0392b;
-  --jmp-danger-soft: #f7d7d3;
-  --jmp-danger-text: #7f2419;
-  --jmp-warning: #b7791f;
-  --jmp-warning-soft: #f6e6c4;
-  --jmp-warning-text: #6b4711;
+  --jmp-success-soft: light-dark(#b5e3d8, #18312d);
+  --jmp-success-text: light-dark(#004c45, #b5e3d8);
+  --jmp-danger: light-dark(#c0392b, #e08a7d);
+  --jmp-danger-soft: light-dark(#f7d7d3, #3b2021);
+  --jmp-danger-text: light-dark(#7f2419, #f0b8b3);
+  --jmp-warning: light-dark(#b7791f, #d9a959);
+  --jmp-warning-soft: light-dark(#f6e6c4, #362d17);
+  --jmp-warning-text: light-dark(#6b4711, #e8c87a);
+
+  /* React Flow's own chrome — the zoom controls bottom left, the dotted
+     canvas — reads its `--xy-*` variables. The build scopes React Flow's
+     stylesheet under this container too, which makes its
+     `.react-flow__controls-button` rule (two classes once scoped) outrank the
+     plain `button` rule above, so those buttons keep React Flow's light
+     defaults — a white button with icons inheriting the white dark-mode text —
+     unless these variables say otherwise. Pointing them at the roles above
+     makes the chrome follow the same color-scheme as everything else. */
+  --xy-background-color: var(--jmp-surface);
+  --xy-background-pattern-color: light-dark(#91919a, #555);
+  --xy-controls-button-background-color: var(--jmp-surface-sunken);
+  --xy-controls-button-background-color-hover: var(--jmp-silver);
+  --xy-controls-button-color: var(--jmp-text-muted);
+  --xy-controls-button-color-hover: var(--jmp-text);
+  --xy-controls-button-border-color: var(--jmp-border);
+  --xy-controls-box-shadow: 0 0 2px 1px var(--jmp-shadow-soft);
 }
 
 .button-group {
@@ -1069,6 +1102,11 @@ path.react-flow__edge-path:hover {
    come out of the printer.
    --------------------------------------------------------------------------- */
 .jmp-print {
+  /* Paper is light whatever the screen is: every light-dark() pair in here
+     resolves to its light half. (A Hyperbook printing a book also pins the
+     host tokens to light in its own print stylesheet.) */
+  color-scheme: light;
+
   /* Black, so a handle and a checkbox read at any print resolution. */
   --jmp-accent: var(--jmp-black);
 

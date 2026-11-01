@@ -163,6 +163,18 @@ export class MemoryEditorProvider implements vscode.CustomTextEditorProvider {
       width: 100%;
       height: 100%;
     }
+    /* The workbench puts its theme class on the body; the playground's
+       light-dark() palette resolves against the inherited color-scheme, so
+       mapping the class here is all dark mode takes. */
+    body.vscode-light {
+      color-scheme: light;
+    }
+    body.vscode-dark {
+      color-scheme: dark;
+    }
+    body.vscode-high-contrast {
+      color-scheme: dark;
+    }
   </style>
 </head>
 <body>
