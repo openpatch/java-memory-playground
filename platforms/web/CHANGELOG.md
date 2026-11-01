@@ -1,5 +1,12 @@
 # web
 
+## 0.2.6
+
+### Patch Changes
+
+- Updated dependencies [[`73faf1b`](https://github.com/openpatch/java-memory-playground/commit/73faf1b3170850d1cf18de111349ec69792a704d)]:
+  - @java-memory-playground/java-memory-playground@0.2.6
+
 ## 0.2.5
 
 ### Patch Changes
