@@ -1,7 +1,8 @@
 import { getNodesBounds, Viewport } from "@xyflow/react";
-import { toPng } from "html-to-image";
+import { getFontEmbedCSS, toCanvas } from "html-to-image";
 
 import type { ColorMode } from "./colorMode";
+import { pruneFontCss, textOf } from "./fontSubset";
 import { paletteFor } from "./palette";
 import { CustomNodeType } from "./types";
 
@@ -39,34 +40,54 @@ const PIXEL_RATIO = 2;
 const MARGIN = 28;
 
 /**
- * A picture of the diagram alone, cropped to the nodes.
+ * What a run of photographs can share. Embedding the page's web fonts means
+ * reading every stylesheet and fetching every font file, and that answer does
+ * not change between two steps of the same export — done per step it was most
+ * of the time an export took.
+ */
+export type CaptureSession = { fontEmbedCSS?: Promise<string> };
+
+/**
+ * A picture of the diagram alone, cropped to the nodes, as a canvas.
  *
  * The whole flow is photographed rather than just its viewport, because the
  * arrowheads are SVG markers defined outside the viewport and a reference
  * without its arrowhead has lost which way it points. The empty canvas around
  * the diagram is then cropped away.
  *
+ * A canvas rather than a PNG: encoding one only to decode it again for the
+ * crop — and, for a whole trace, again for the composite — was the other half
+ * of the time an export took. Only the final picture is encoded.
+ *
  * Callers are expected to have framed the diagram first — anything scrolled out
  * of view was never photographed and cannot be cropped back in.
  */
-export const captureDiagram = async (
+export const captureDiagramCanvas = async (
   flowElement: HTMLElement,
   nodes: CustomNodeType[],
   viewport: Viewport,
   mode: ColorMode = "light",
-): Promise<string | null> => {
+  session: CaptureSession = {},
+): Promise<HTMLCanvasElement | null> => {
   if (nodes.length === 0) return null;
 
   // The picture's backdrop wears the scheme the diagram on screen is drawn
   // in — the photograph itself carries its own computed styles.
   const EXPORT_BACKGROUND = paletteFor(mode).SURFACE;
 
-  const dataUrl = await toPng(flowElement, {
+  session.fontEmbedCSS ??= getFontEmbedCSS(flowElement, { filter: excludeChrome })
+    // A font that cannot be fetched costs the picture its typeface, not the
+    // picture.
+    .catch(() => "");
+
+  const shot = await toCanvas(flowElement, {
     filter: excludeChrome,
     backgroundColor: EXPORT_BACKGROUND,
     pixelRatio: PIXEL_RATIO,
+    // Only the faces this step's characters need — per step, because one
+    // step's String may use a script the others do not.
+    fontEmbedCSS: pruneFontCss(await session.fontEmbedCSS, textOf(flowElement)),
   });
-  const shot = await loadImage(dataUrl);
 
   // Where the nodes ended up on screen, in the flow element's own coordinates.
   const bounds = getNodesBounds(nodes);
@@ -85,13 +106,13 @@ export const captureDiagram = async (
     Math.round(height),
     Math.round(shot.height / PIXEL_RATIO) - clampedTop,
   );
-  if (clampedWidth <= 0 || clampedHeight <= 0) return dataUrl;
+  if (clampedWidth <= 0 || clampedHeight <= 0) return shot;
 
   const canvas = document.createElement("canvas");
   canvas.width = clampedWidth * PIXEL_RATIO;
   canvas.height = clampedHeight * PIXEL_RATIO;
   const context = canvas.getContext("2d");
-  if (!context) return dataUrl;
+  if (!context) return shot;
 
   context.fillStyle = EXPORT_BACKGROUND;
   context.fillRect(0, 0, canvas.width, canvas.height);
@@ -107,7 +128,18 @@ export const captureDiagram = async (
     canvas.height,
   );
 
-  return canvas.toDataURL("image/png");
+  return canvas;
+};
+
+/** The same picture, encoded as a PNG. */
+export const captureDiagram = async (
+  flowElement: HTMLElement,
+  nodes: CustomNodeType[],
+  viewport: Viewport,
+  mode: ColorMode = "light",
+): Promise<string | null> => {
+  const canvas = await captureDiagramCanvas(flowElement, nodes, viewport, mode);
+  return canvas ? canvas.toDataURL("image/png") : null;
 };
 
 export const downloadStep = async (
@@ -139,8 +171,11 @@ export const downloadAllSteps = async ({
   labelFor: (index: number) => string;
   /** Puts a step on screen, framed and measured, ready to be photographed. */
   showStep: (index: number) => Promise<void>;
-  /** Photographs the step now on screen. */
-  captureNow: () => Promise<string | null>;
+  /**
+   * Photographs the step now on screen. A canvas is used as it is; a data URL
+   * — what this returned before — is still accepted, and decoded first.
+   */
+  captureNow: () => Promise<HTMLCanvasElement | string | null>;
   fileName?: string;
   /** The scheme the steps on screen are drawn in, for the caption strip. */
   mode?: ColorMode;
@@ -150,14 +185,17 @@ export const downloadAllSteps = async ({
   const EXPORT_CAPTION_BACKGROUND = palette.SURFACE_SUNKEN;
   const EXPORT_CAPTION_TEXT = palette.TEXT;
 
-  const shots: { image: HTMLImageElement; caption: string }[] = [];
+  const shots: {
+    image: HTMLCanvasElement | HTMLImageElement;
+    caption: string;
+  }[] = [];
 
   for (let i = 0; i < stepCount; i++) {
     await showStep(i);
-    const dataUrl = await captureNow();
-    if (!dataUrl) continue;
+    const shot = await captureNow();
+    if (!shot) continue;
     shots.push({
-      image: await loadImage(dataUrl),
+      image: typeof shot === "string" ? await loadImage(shot) : shot,
       caption: `${i + 1}/${stepCount}${labelFor(i) ? ` — ${labelFor(i)}` : ""}`,
     });
   }

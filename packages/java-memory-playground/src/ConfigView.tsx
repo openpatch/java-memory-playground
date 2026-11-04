@@ -231,35 +231,14 @@ export const ConfigView = () => {
         }}>{t.configuration}</h1>
 
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          {/* The same two buttons as on the canvas: the one primary action,
+              and a quiet way back. */}
           <button
+            className="button-primary"
             onClick={onSave}
-            style={{
-              // The one primary action on the page, so it gets the one accent.
-              backgroundColor: hasUnsavedChanges
-                ? "var(--jmp-accent)"
-                : "var(--jmp-text-faint)",
-              color: "var(--jmp-surface)",
-              padding: "8px 16px",
-              fontSize: "14px",
-              fontWeight: "500",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer"
-            }}
+            disabled={!hasUnsavedChanges}
           >{hasUnsavedChanges ? t.save : t.saved}</button>
-          <button
-            onClick={onView}
-            style={{
-              backgroundColor: "var(--jmp-surface)",
-              color: "var(--jmp-text)",
-              padding: "8px 16px",
-              fontSize: "14px",
-              fontWeight: "500",
-              border: "1px solid var(--jmp-border)",
-              borderRadius: "6px",
-              cursor: "pointer"
-            }}
-          >{t.backToDiagram}</button>
+          <button onClick={onView}>‹ {t.backToDiagram}</button>
           {showSaveSuccess && (
             <span style={{
               color: "var(--jmp-success)",
@@ -285,7 +264,7 @@ export const ConfigView = () => {
           fontSize: "18px",
           fontWeight: "600"
         }}>{t.options}</h2>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "12px" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center", marginBottom: "12px" }}>
           <span style={{ fontSize: "14px", color: "var(--jmp-text-muted)" }}>{t.presets}:</span>
           {(
             [
@@ -501,6 +480,48 @@ export const ConfigView = () => {
             {t.optionLabels.gcPrediction}
           </label>
         </div>
+
+        {/* What the toolbar offers. A host embedding the playground often has
+            its own way of saving or helping, or no use for downloads. */}
+        <h3 style={{
+          margin: "20px 0 10px",
+          color: "var(--jmp-text)",
+          fontSize: "14px",
+          fontWeight: "600"
+        }}>{t.toolbarOptions}</h3>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: "12px"
+        }}>
+          {(
+            [
+              "hideUndoRedo",
+              "hideDownloadPng",
+              "hideDownloadAllPng",
+              "hidePrintMode",
+              "hideHelp",
+              "hideSave",
+            ] as const
+          ).map((key) => (
+            <label key={key} style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "14px",
+              color: "var(--jmp-text-muted)",
+              cursor: "pointer"
+            }}>
+              <input
+                type="checkbox"
+                checked={options[key] || false}
+                onChange={(e) => handleOptionChange(key, e.target.checked)}
+                style={{ width: "16px", height: "16px", cursor: "pointer" }}
+              />
+              {t.optionLabels[key]}
+            </label>
+          ))}
+        </div>
       </div>
 
       <div style={{
@@ -524,7 +545,7 @@ export const ConfigView = () => {
               fontSize: "18px",
               fontWeight: "600"
             }}>{t.classes}</h2>
-            <div style={{ display: "flex", gap: "4px" }}>
+            <div className="jmp-segmented" role="radiogroup" aria-label={t.classes}>
               {(
                 [
                   ["source", t.classSource],
@@ -533,18 +554,9 @@ export const ConfigView = () => {
               ).map(([name, label]) => (
                 <button
                   key={name}
+                  role="radio"
                   onClick={() => setClassTab(name)}
-                  aria-pressed={classTab === name}
-                  style={{
-                    backgroundColor: classTab === name ? "var(--jmp-text)" : "var(--jmp-surface)",
-                    color: classTab === name ? "var(--jmp-surface)" : "var(--jmp-text-muted)",
-                    padding: "6px 12px",
-                    fontSize: "13px",
-                    fontWeight: "500",
-                    border: "1px solid var(--jmp-border)",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                  }}
+                  aria-checked={classTab === name}
                 >
                   {label}
                 </button>
@@ -552,19 +564,9 @@ export const ConfigView = () => {
             </div>
           </div>
           {classTab === "list" && (
-            <button
-              onClick={handleAddKlass}
-              style={{
-                backgroundColor: "var(--jmp-text)",
-                color: "var(--jmp-surface)",
-                padding: "8px 16px",
-                fontSize: "14px",
-                fontWeight: "500",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer"
-              }}
-            >{t.addClass}</button>
+            <button onClick={handleAddKlass}>
+              <span aria-hidden="true">+</span> {t.addClass}
+            </button>
           )}
         </div>
 

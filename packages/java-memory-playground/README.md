@@ -145,9 +145,32 @@ build.
 The check compares the *shape* reachable from each root — the named variables
 and each frame's locals — not the addresses, because a student who allocates an
 object gets whatever address the playground handed out. Building the right
-diagram passes however it was built, and the report names the root that is
-wrong rather than only saying no. `checkAgainst` and `canonicalRoots` are
-exported if you want to run the comparison yourself.
+diagram passes however it was built, and the report says where it goes wrong —
+`head.next should be null` — rather than only saying no.
+
+Both diagrams are walked side by side from each variable, so sharing is part of
+the answer: two variables that should refer to the same object must, and two
+that should not, must not. The call stack is compared too. Extra variables, such
+as a temporary one, are allowed unless the exercise says otherwise:
+
+```json
+{
+  "exercise": true,
+  "check": {
+    "ignoreRoots": ["tmp"],
+    "extraRoots": "forbid",
+    "stringIdentity": true
+  }
+}
+```
+
+`ignoreRoots` leaves variables of the solution unchecked (a local is written
+`0:App.main.name`, its frame's place on the stack first); `extraRoots: "forbid"`
+fails an attempt that has variables the solution does not; `stringIdentity`
+compares Strings with `==` instead of `.equals()`. The teacher's playground sets
+these in the *Check settings* panel of an exercise step. `checkAgainst`,
+`rootsOf` and `resultMessages` are exported if you want to run the comparison
+yourself.
 
 Saving from a student's playground writes the exercise back as authored, not
 their attempt, so a shared link stays the exercise.

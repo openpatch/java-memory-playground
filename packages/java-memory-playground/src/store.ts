@@ -6,7 +6,12 @@ import { temporal } from "zundo";
 import { persist, StateStorage, createJSONStorage } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
-import { ExerciseResult, checkAgainst, fingerprintOf } from "./canonical";
+import {
+  CheckOptions,
+  ExerciseResult,
+  checkAgainst,
+  fingerprintOf,
+} from "./canonical";
 import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
 import { parseMemory, stepsOf } from "./helper";
 import { Memory, Step, initialMemory } from "./memory";
@@ -40,6 +45,7 @@ export type StoreStep = {
   label?: string;
   note?: string;
   exercise?: boolean;
+  check?: CheckOptions;
   statements?: string[];
   nodes: CustomNodeType[];
   edges: CustomEdgeType[];
@@ -88,6 +94,13 @@ export type RFState = {
   selectedNodeId: string;
   /** Whether this store mirrors its memory into `location.hash`. */
   persistence: boolean;
+  /**
+   * Whether the playground is drawn in its compact layout — a phone, or a
+   * small embed — where the panels fold away behind buttons. Measured from
+   * the playground's own size, not the window's, and never saved.
+   */
+  compact: boolean;
+  setCompact: (compact: boolean) => void;
 
   // Core data. The diagram lives here rather than in React Flow's local state,
   // so it survives switching to the config view and is never silently lost.
@@ -155,6 +168,8 @@ export type RFState = {
 
   // Exercises
   setStepExercise: (index: number, exercise: boolean) => void;
+  /** Changes how strictly an exercise step is checked. */
+  setStepCheck: (index: number, check: CheckOptions) => void;
   checkExercise: () => void;
   revealSolution: () => void;
   clearExerciseResult: () => void;
@@ -253,6 +268,7 @@ const toStoreStep = (step: Step): StoreStep => ({
   label: step.label,
   note: step.note,
   exercise: step.exercise,
+  check: step.check,
   statements: step.statements,
   ...getEdgesAndNodes(step),
 });
@@ -352,6 +368,10 @@ export const createMemoryStore = (
           mode,
           selectedNodeId: "",
           persistence,
+          compact: false,
+          setCompact: (compact) => {
+            if (get().compact !== compact) set({ compact });
+          },
 
           steps: initialSteps,
           currentStep: 0,
@@ -507,6 +527,14 @@ export const createMemoryStore = (
               steps: withStep(get().steps, index, (step) => ({
                 ...step,
                 exercise: exercise || undefined,
+              })),
+            }),
+
+          setStepCheck: (index, check) =>
+            set({
+              steps: withStep(get().steps, index, (step) => ({
+                ...step,
+                check,
               })),
             }),
 
@@ -740,6 +768,9 @@ export const createMemoryStore = (
               ...(step.label ? { label: step.label } : {}),
               ...(step.note ? { note: step.note } : {}),
               ...(step.exercise ? { exercise: true } : {}),
+              ...(step.exercise && step.check && Object.keys(step.check).length
+                ? { check: step.check }
+                : {}),
               ...(step.statements?.length
                 ? { statements: step.statements }
                 : {}),

@@ -93,6 +93,32 @@ diagram.
 | `hideSteps`                  | Hide the step bar, for a lesson that is about one picture.  |
 | `hideStepChanges`            | Stop marking what a step changed compared with the one before it. |
 | `gcPrediction`               | Ask which objects are unreachable before collecting them. |
+| `hideUndoRedo`               | Hide the undo and redo buttons in the toolbar.          |
+| `hideDownloadPng`            | Hide "Download (PNG)" in the toolbar.                   |
+| `hideDownloadAllPng`         | Hide "Download all steps" in the toolbar.               |
+| `hidePrintMode`              | Hide the "B&W" print toggle in the toolbar.             |
+| `hideHelp`                   | Hide the help link (`?`) in the toolbar.                |
+| `hideSave`                   | Hide "Save" in the toolbar. Ctrl+S still saves and fires `change`. |
+
+The toolbar in the top-right corner shows undo and redo, with everything else
+in a ☰ menu. It drops a divider with the group it separated, and disappears
+entirely once every item in it is hidden. For example, an exercise embedded
+without downloads or help:
+
+```html
+<java-memory-playground
+  options='{"hideDownloadPng":true,"hideDownloadAllPng":true,"hideHelp":true}'
+></java-memory-playground>
+```
+
+### Small screens
+
+Below 1024×640 — the size of the playground itself, not the window, so a
+small iframe or embed counts too — the playground uses a compact layout: the
+palette folds behind an **Add** button, the zoom buttons give way to a "fit the
+diagram" entry in the ☰ menu, and the step card spans the width and can fold
+away. Nothing needs configuring; the `hide…` options above apply in both
+layouts.
 
 ## Events
 

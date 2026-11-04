@@ -428,6 +428,31 @@ describe("exercises", () => {
     expect(saved.steps![1].exercise).toBe(true);
     expect(Object.keys(saved.steps![1].objects)).toHaveLength(2);
   });
+
+  test("the check settings a teacher chose are saved with the exercise", () => {
+    const store = createMemoryStore(false, "edit");
+    store.getState().loadMemory(exerciseMemory);
+    store.getState().setStepCheck(1, { ignoreRoots: ["head"] });
+
+    expect(store.getState().getMemory().steps![1].check).toEqual({
+      ignoreRoots: ["head"],
+    });
+  });
+
+  test("the student's check uses the teacher's settings", () => {
+    const store = createMemoryStore(false, "view");
+    store.getState().loadMemory({
+      ...exerciseMemory,
+      steps: exerciseMemory.steps!.map((step, i) =>
+        i === 1 ? { ...step, check: { ignoreRoots: ["head"] } } : step,
+      ),
+    });
+    store.getState().goToStep(1);
+    // Unchanged from the step before, which would be wrong were head checked.
+    store.getState().checkExercise();
+
+    expect(store.getState().getExerciseResult()?.correct).toBe(true);
+  });
 });
 
 describe("garbage collection", () => {

@@ -1,3 +1,5 @@
+import type { CheckOptions } from "./canonical";
+
 export const numericDataTypes = [
   "int",
   "long",
@@ -146,6 +148,8 @@ export type Step = {
    * they build against it.
    */
   exercise?: boolean;
+  /** How strictly an exercise step is checked; the defaults when left out. */
+  check?: CheckOptions;
   /**
    * Assignments the reader may run against this step, in an order they choose.
    *
@@ -191,6 +195,18 @@ export type Memory = {
      * simply sweeping. Committing to an answer is where the learning is.
      */
     gcPrediction?: boolean;
+    /*
+     * The toolbar, item by item, for a host that has its own way of doing
+     * these or does not want them offered — an embedded exercise with no
+     * downloads, a page whose own help replaces ours. The Config button needs
+     * no flag: it only appears in the teacher's playground.
+     */
+    hideUndoRedo?: boolean;
+    hideDownloadPng?: boolean;
+    hideDownloadAllPng?: boolean;
+    hidePrintMode?: boolean;
+    hideHelp?: boolean;
+    hideSave?: boolean;
   };
   klasses: Klasses;
   /**

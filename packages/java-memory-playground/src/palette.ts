@@ -49,6 +49,9 @@ export const SURFACE_SUNKEN: PaletteEntry = {
 /** `--jmp-warning`. */
 export const WARNING: PaletteEntry = { light: "#b7791f", dark: "#d9a959" };
 
+/** `--jmp-danger`. */
+export const DANGER: PaletteEntry = { light: "#c0392b", dark: "#e08a7d" };
+
 /**
  * The palette entries as literal colours for one scheme, the form the SVG and
  * canvas drawing and the PNG export need.
@@ -60,6 +63,7 @@ export const paletteFor = (mode: ColorMode) => ({
   SURFACE: SURFACE[mode],
   SURFACE_SUNKEN: SURFACE_SUNKEN[mode],
   WARNING: WARNING[mode],
+  DANGER: DANGER[mode],
 });
 
 export type Palette = ReturnType<typeof paletteFor>;

@@ -19,6 +19,18 @@
      Flow's own 6px default. */
   --jmp-handle: 14px;
 
+  /* The chrome — panels, buttons, fields — on a scale of its own, separate
+     from the diagram's. Every control is one height, so a row of them reads as
+     a row, and every panel is dressed alike, so the palette, the toolbar and
+     the step card read as one set of furniture. */
+  --jmp-control: 28px;
+  --jmp-control-sm: 22px;
+  --jmp-ui-font: 13px;
+  --jmp-ui-font-sm: 12px;
+  --jmp-panel-radius: 10px;
+  --jmp-panel-pad: 6px;
+  --jmp-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
   /* The OpenPatch palette, from the branding repository. These are the only
      colours with names of their own; everything below is a role filled by one
      of them, so a diagram can be restyled by reassigning roles rather than by
@@ -68,6 +80,11 @@
   --jmp-shadow: light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 50%));
   --jmp-shadow-soft: light-dark(rgb(0 0 0 / 8%), rgb(0 0 0 / 30%));
   --jmp-scrim: rgb(0 0 0 / 50%);
+  /* Text on the accent. The dark half of the accent is a light green, which
+     white text does not clear 4.5:1 on. */
+  --jmp-on-accent: light-dark(#ffffff, #0f1f1c);
+  --jmp-hover: light-dark(rgb(0 0 0 / 6%), rgb(255 255 255 / 8%));
+  --jmp-pressed: light-dark(rgb(0 0 0 / 11%), rgb(255 255 255 / 14%));
 
   /* What the three kinds of box are made of. The palette has one accent, and
      it goes to the stack: a frame is Fresh Mint and the heap stays neutral, so
@@ -108,51 +125,61 @@
   --xy-controls-box-shadow: 0 0 2px 1px var(--jmp-shadow-soft);
 }
 
-.button-group {
-  display: flex;
-  gap: var(--jmp-space);
-  padding: var(--jmp-space);
-}
+/* ---------------------------------------------------------------------------
+   Controls
 
-/* The toolbar shares the top row with the palette in the opposite corner. On
-   a narrow canvas it wraps onto a second line rather than sliding underneath
-   it — 15px of panel margin, 140px of palette, and a gap. */
-.with-palette .react-flow__panel.top.right {
-  max-width: calc(100% - 170px);
-}
+   Form controls do not inherit `font-size`, so in a page of its own the
+   playground's controls would sit at the browser's ~13px default and the
+   container's 24px — the size the *diagram* is drawn at — never reaches them;
+   a host with a normalize sheet makes them inherit after all. Saying the size
+   out loud keeps the chrome the size it was drawn at wherever it is embedded.
 
-.react-flow__panel.top.right .button-group {
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-/* Form controls do not inherit `font-size`, so in a page of its own the
-   playground's controls sit at the browser's own ~13px default and the
-   container's 24px — which is the size the *diagram* is drawn at — never
-   reaches them. A host page with a normalize sheet (`button, input { font-size:
-   100% }`) makes them inherit after all, and the toolbar then comes out at
-   24px. Saying the size out loud keeps the chrome the size it was drawn at
-   wherever the playground is embedded. Rules further down override it; they
-   are all at least as specific. */
+   One button, four variants: the default (a filled neutral), `button-primary`
+   for the one action a panel is for, `button-ghost` for everything that
+   should recede until wanted, and `button-danger` for what removes things
+   from the diagram.
+   --------------------------------------------------------------------------- */
 .java-memory-playground button,
 .java-memory-playground input,
 .java-memory-playground select,
 .java-memory-playground textarea {
-  font-size: 13px;
-}
-
-.java-memory-playground button {
-  background: var(--jmp-surface-sunken);
-  color: var(--jmp-text-muted);
-  cursor: pointer;
-  border: 0;
-  border-radius: var(--jmp-radius);
-  padding: 5px 9px;
+  font-size: var(--jmp-ui-font);
   font-family: inherit;
 }
 
-.java-memory-playground button:hover {
+.java-memory-playground button,
+.java-memory-playground a.button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  min-height: var(--jmp-control);
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--jmp-radius);
+  background: var(--jmp-surface-sunken);
+  color: var(--jmp-text);
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.12s,
+    color 0.12s,
+    border-color 0.12s;
+}
+
+.java-memory-playground button:hover,
+.java-memory-playground a.button-icon:hover {
   background: var(--jmp-silver);
+}
+
+.java-memory-playground button:focus-visible,
+.java-memory-playground a.button-icon:focus-visible {
+  outline: 2px solid var(--jmp-accent);
+  outline-offset: 1px;
 }
 
 .java-memory-playground button:disabled {
@@ -164,52 +191,67 @@
   background: var(--jmp-surface-sunken);
 }
 
-/* Scoped through the container so it beats the base control size above,
-   which is one class plus one type. */
+.java-memory-playground .button-primary {
+  background: var(--jmp-accent);
+  color: var(--jmp-on-accent);
+}
+
+.java-memory-playground .button-primary:hover {
+  background: color-mix(in srgb, var(--jmp-accent) 85%, var(--jmp-text));
+}
+
+.java-memory-playground .button-ghost,
+.java-memory-playground .button-ghost:disabled:hover {
+  background: transparent;
+  color: var(--jmp-text-muted);
+}
+
+.java-memory-playground .button-ghost:hover {
+  background: var(--jmp-hover);
+  color: var(--jmp-text);
+}
+
+.java-memory-playground .button-ghost-danger:hover {
+  background: var(--jmp-danger-soft);
+  color: var(--jmp-danger-text);
+}
+
+.java-memory-playground .button-danger {
+  background: var(--jmp-danger-soft);
+  color: var(--jmp-danger-text);
+}
+
+.java-memory-playground .button-danger:hover {
+  background: var(--jmp-danger);
+  color: var(--jmp-white);
+}
+
+/* Square, for a glyph. Also used on the help link, which has to be told to
+   look like the buttons it sits with. */
 .java-memory-playground .button-icon {
-  min-width: 32px;
+  min-width: var(--jmp-control);
+  padding: 0;
   font-size: 16px;
   line-height: 1;
 }
 
-/* The help button is a link, so it has to be told to look like the buttons it
-   sits with — `.java-memory-playground button` does not reach an anchor. */
-.java-memory-playground a.button-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  background: var(--jmp-surface-sunken);
-  color: var(--jmp-text-muted);
-  border-radius: var(--jmp-radius);
-  padding: 5px 9px;
-  font-family: inherit;
-  font-weight: bold;
-  text-decoration: none;
-  cursor: pointer;
-}
-.java-memory-playground a.button-icon:hover {
-  background: var(--jmp-silver);
-}
-
-/* A toggle reads as on by being filled in, the way a pressed key is. */
-.java-memory-playground button.button-toggle[aria-pressed="true"] {
-  background: var(--jmp-text);
-  color: var(--jmp-surface);
-}
-
-/* Every control in the step strip is the same height, so a row of them reads
-   as a row rather than as a skyline. */
-.step-bar button {
-  min-height: 26px;
+/* A toggle reads as on by being pressed in, the way a key is. */
+.java-memory-playground .button-toggle[aria-pressed="true"],
+.java-memory-playground .button-toggle[aria-pressed="true"]:hover {
+  background: var(--jmp-pressed);
+  color: var(--jmp-text);
 }
 
 /* Otherwise a boolean field is painted in the browser's own accent, which is
    the one colour on the canvas nobody chose. */
 .java-memory-playground input[type="checkbox"] {
   accent-color: var(--jmp-accent);
+  margin: 0;
 }
 
+/* Fields inside the diagram — an int in an object, a String in a frame. They
+   are drawn at the diagram's size and kept narrow, because a node is only as
+   wide as its widest row. */
 .java-memory-playground input {
   display: inline-block;
   border-width: 1px;
@@ -217,10 +259,210 @@
   border-style: solid;
   border-radius: var(--jmp-radius);
   border-color: var(--jmp-quicksilver);
+  background: var(--jmp-surface);
+  color: var(--jmp-text);
   width: 64px;
   padding: 2px 4px;
-  font-family: inherit;
-  font-size: 12px;
+  font-size: var(--jmp-ui-font-sm);
+}
+
+/* Checkboxes are not text fields: the width and margin above are for those. */
+.java-memory-playground input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
+
+/* Fields in the chrome: full width of their column, one control high. */
+.java-memory-playground .jmp-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--jmp-control);
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid var(--jmp-border);
+  border-radius: var(--jmp-radius);
+  background: var(--jmp-surface);
+  color: var(--jmp-text);
+  font-size: var(--jmp-ui-font);
+}
+
+.java-memory-playground .jmp-input:hover {
+  border-color: var(--jmp-text-faint);
+}
+
+.java-memory-playground .jmp-input:focus {
+  outline: none;
+  border-color: var(--jmp-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--jmp-accent) 25%, transparent);
+}
+
+.java-memory-playground .jmp-input::placeholder {
+  color: var(--jmp-text-faint);
+}
+
+.java-memory-playground .jmp-input--code {
+  font-family: var(--jmp-mono);
+  font-size: var(--jmp-ui-font-sm);
+}
+
+/* A form in a panel: labels in one column, fields in the other, so the fields
+   start on one line and the labels can be scanned down the side. */
+.jmp-fields {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 12px;
+}
+
+/* In the step card the form and the check settings folded under it are two
+   grids; one label width makes them read as one form. */
+.step-bar .jmp-fields {
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+}
+
+.jmp-field-label {
+  font-size: var(--jmp-ui-font-sm);
+  font-weight: 500;
+  color: var(--jmp-text-muted);
+  white-space: nowrap;
+}
+
+/* Two or three choices of which exactly one holds, side by side. */
+.jmp-segmented {
+  justify-self: start;
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: calc(var(--jmp-radius) + 2px);
+  background: var(--jmp-surface-sunken);
+}
+
+.java-memory-playground .jmp-segmented button {
+  min-height: calc(var(--jmp-control) - 4px);
+  padding: 0 12px;
+  background: transparent;
+  color: var(--jmp-text-muted);
+}
+
+.java-memory-playground .jmp-segmented button:hover:not(:disabled) {
+  color: var(--jmp-text);
+  background: var(--jmp-hover);
+}
+
+.java-memory-playground .jmp-segmented button[aria-checked="true"] {
+  background: var(--jmp-surface);
+  color: var(--jmp-text);
+  box-shadow: 0 1px 2px var(--jmp-shadow);
+}
+
+/* A checkbox with its label, as one target. */
+.jmp-check,
+.jmp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.jmp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
+.jmp-chip {
+  min-height: var(--jmp-control-sm);
+  padding: 0 8px;
+  border: 1px solid var(--jmp-border);
+  border-radius: 999px;
+  background: var(--jmp-surface);
+}
+
+.jmp-chip:has(input:checked) {
+  border-color: color-mix(in srgb, var(--jmp-accent) 50%, var(--jmp-border));
+  background: color-mix(in srgb, var(--jmp-accent) 10%, var(--jmp-surface));
+}
+
+.jmp-chip code {
+  font-family: var(--jmp-mono);
+  font-size: var(--jmp-ui-font-sm);
+}
+
+.jmp-muted {
+  color: var(--jmp-text-muted);
+  font-size: var(--jmp-ui-font-sm);
+}
+
+/* ---------------------------------------------------------------------------
+   Panels
+
+   Everything that floats over the canvas — palette, collector, toolbar, step
+   card — is one kind of panel, so it reads as one set of furniture. The canvas
+   shows a little through, and a hairline keeps the edge when a node slides
+   underneath.
+   --------------------------------------------------------------------------- */
+.jmp-panel {
+  box-sizing: border-box;
+  background: var(--jmp-panel);
+  border: 1px solid var(--jmp-border);
+  border-radius: var(--jmp-panel-radius);
+  box-shadow:
+    0 1px 2px var(--jmp-shadow-soft),
+    0 6px 16px var(--jmp-shadow-soft);
+  backdrop-filter: blur(6px);
+  color: var(--jmp-text);
+  font-size: var(--jmp-ui-font);
+  line-height: 1.35;
+}
+
+/* A small label over a panel's contents, saying what kind of thing they are. */
+.jmp-panel__heading {
+  padding: 2px 4px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--jmp-text-muted);
+}
+
+/* The toolbar: groups of ghost buttons, divided by hairlines, ending in the
+   one filled button. */
+.jmp-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 4px;
+}
+
+.jmp-toolbar__sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 4px;
+  background: var(--jmp-border);
+}
+
+.jmp-toolbar .button-primary {
+  margin-left: 4px;
+}
+
+/* The toolbar shares the top row with the palette in the opposite corner. On
+   a narrow canvas it wraps onto a second line rather than sliding underneath
+   it — 15px of panel margin, the palette, and a gap. */
+.with-palette .react-flow__panel.top.right {
+  max-width: calc(100% - 210px);
+}
+
+/* React Flow's zoom controls keep their own size: the control height above is
+   for buttons with a label. */
+.java-memory-playground .react-flow__controls-button {
+  min-height: 0;
+  min-width: 0;
+  border-radius: 0;
 }
 
 .memory {
@@ -243,54 +485,95 @@
   overflow-y: auto;
 }
 
-/* The palette floats over the canvas like the other controls rather than
-   taking a column out of it, so a small embed keeps its width for the diagram. */
-/* The palette and the collector under it: two cards in one column. */
+/* The palette and the collector under it: two panels in one column, floating
+   over the canvas rather than taking a column out of it, so a small embed
+   keeps its width for the diagram. */
 .react-flow__panel.top.left {
   display: flex;
   flex-direction: column;
-  gap: var(--jmp-space);
+  gap: 6px;
+}
+
+.sidebar,
+.gc-panel {
+  width: 172px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--jmp-panel-pad);
 }
 
 .sidebar {
-  width: 132px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--jmp-space);
-  padding: var(--jmp-space);
-  background: var(--jmp-panel);
-  border-radius: var(--jmp-radius);
-  box-shadow: 0 2px 6px var(--jmp-shadow);
   /* Never taller than the canvas: a class-heavy diagram scrolls instead. */
   max-height: calc(100% - 30px);
   overflow-y: auto;
 }
 
-.sidebar-class,
-.sidebar-variable,
-.sidebar-method-call {
-  font-size: 13px;
-  border: 1px solid var(--jmp-black);
-  padding: 5px 8px;
+/* Something to drag onto the canvas. A row with a swatch of the box it makes,
+   rather than a button dressed in that box's colour: four differently painted
+   buttons read as four kinds of button, and a row of swatches reads as a key
+   to the diagram. Labels wrap instead of being cut — "Declare Global
+   Variable" is not a label anyone can guess from its first word. */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  min-height: var(--jmp-control);
+  padding: 4px 8px;
+  border: 1px solid transparent;
   border-radius: var(--jmp-radius);
-  text-align: center;
+  font-size: var(--jmp-ui-font);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--jmp-text);
   cursor: grab;
   user-select: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.sidebar-class {
-  background: var(--jmp-surface);
+.sidebar-item:hover {
+  background: var(--jmp-hover);
+  border-color: var(--jmp-border);
 }
 
-.sidebar-variable {
-  background: var(--jmp-variable);
+.sidebar-item:active {
+  cursor: grabbing;
 }
 
-.sidebar-method-call {
-  background: var(--jmp-frame);
+/* A thumbnail of the box the item makes, in its fill: an object or a frame
+   with its header line, a variable with the handle its reference leaves from.
+   Shapes rather than plain squares, which read as checkboxes. */
+.sidebar-item__swatch {
+  flex: none;
+  width: 20px;
+  height: 15px;
+  box-sizing: border-box;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 0 0 1px var(--jmp-text-faint),
+    0 1px 2px var(--jmp-shadow-soft);
+}
+
+.sidebar-class .sidebar-item__swatch {
+  background:
+    linear-gradient(var(--jmp-text-faint), var(--jmp-text-faint)) 0 5px / 100% 1px
+      no-repeat,
+    var(--jmp-object);
+}
+
+.sidebar-variable .sidebar-item__swatch {
+  height: 11px;
+  background:
+    radial-gradient(circle at 14px 50%, var(--jmp-accent) 2.5px, transparent 3px),
+    var(--jmp-variable);
+}
+
+.sidebar-method-call .sidebar-item__swatch {
+  border-radius: 0;
+  background:
+    linear-gradient(var(--jmp-text-faint), var(--jmp-text-faint)) 0 5px / 100% 1px
+      no-repeat,
+    var(--jmp-frame);
 }
 
 .react-flow__edge-path {
@@ -396,11 +679,24 @@
   gap: var(--jmp-space);
 }
 
+/* Part of the frame, not of the chrome: drawn at the diagram's size, and light
+   enough on the mint that the variables above stay the frame's content. */
+.java-memory-playground .method-call-node__buttons button {
+  min-height: var(--jmp-control-sm);
+  padding: 2px 8px;
+  font-size: var(--jmp-ui-font-sm);
+  background: color-mix(in srgb, var(--jmp-surface) 55%, transparent);
+  border-color: color-mix(in srgb, var(--jmp-text) 12%, transparent);
+}
+
+.java-memory-playground .method-call-node__buttons button:hover:not(:disabled) {
+  background: var(--jmp-surface);
+}
+
 /* A small mark rather than a button: it repeats on every reference in the
    frame, so at full size it competes with the variable names for attention. */
-/* Scoped through the container for the same reason `.button-gc` is: a bare
-   class loses to `.java-memory-playground button`, which is one class plus one
-   type. Unscoped, the 9px of side padding meant for a full-size button
+/* Scoped through the container: a bare class loses to
+   `.java-memory-playground button`, which is one class plus one type. Unscoped, the 9px of side padding meant for a full-size button
    survived here and — the button being only 16px wide — left no room for the
    glyph, which then started at the padding edge and overflowed to the right of
    its own box. The background and the red hover were lost the same way. */
@@ -413,6 +709,8 @@
   padding: 0;
   width: 16px;
   height: 16px;
+  min-height: 0;
+  border: 0;
   font-size: 11px;
   line-height: 1;
   border-radius: var(--jmp-radius);
@@ -531,19 +829,6 @@ span.method-call-node__variable-value {
   opacity: 0.7;
 }
 
-/* The collector wears the colour the diagram uses for garbage, which is what
-   sets it apart from the step controls beside it in the bottom bar.
-   Scoped through the container because `.java-memory-playground button` is
-   one class plus one type, and beat a bare `.button-gc`. */
-.java-memory-playground button.button-gc {
-  color: var(--jmp-black);
-  background: var(--jmp-danger-soft);
-}
-
-.java-memory-playground button.button-gc:hover {
-  background: var(--jmp-danger);
-}
-
 .object-node__body.gc {
   background: var(--jmp-danger-soft);
   border-bottom-left-radius: var(--jmp-radius);
@@ -638,8 +923,11 @@ path.react-flow__edge-path:hover {
 .ghostnode {
   position: fixed;
   pointer-events: none;
-  width: 100px;
   z-index: 1000;
+  white-space: nowrap;
+  background: var(--jmp-panel);
+  border-color: var(--jmp-border);
+  box-shadow: 0 6px 16px var(--jmp-shadow);
 }
 
 .inline-string {
@@ -663,121 +951,84 @@ path.react-flow__edge-path:hover {
   min-width: 0;
 }
 
-/* React Flow centres this panel with `left: 50%`, which caps how wide it can
-   shrink-to-fit at half the canvas — so the bottom row wrapped with the whole
-   right half of the screen still empty. Percentages resolve against the flow
-   container, so an embedded playground gets its own width, not the page's. */
+/* ---------------------------------------------------------------------------
+   Step card
+
+   The card along the bottom, in up to three parts divided by hairlines:
+   where the reader is, what the step asks of them, and — for the author — the
+   form that describes the step.
+
+   React Flow centres this panel with `left: 50%`, which caps how wide it can
+   shrink-to-fit at half the canvas. Percentages resolve against the flow
+   container, so an embedded playground gets its own width, not the page's.
+   The panel stops short of the zoom controls in the bottom-left corner on both
+   sides, because it is centred and would otherwise have to stop being so.
+   --------------------------------------------------------------------------- */
 .react-flow__panel.bottom.center {
   width: max-content;
-  /* Stops short of React Flow's zoom controls, which sit in the bottom-left
-     corner: 15px of panel margin, 26px of buttons, and a gap. Reserved on
-     both sides, because the panel is centred and would otherwise have to
-     stop being centred to avoid them. */
-  max-width: calc(100% - 2 * 56px);
+  max-width: min(620px, calc(100% - 2 * 56px));
 }
 
-/* The strip along the bottom: the walk through the trace, what the step is,
-   and what to do about it — stacked into clear rows so a student reads
-   navigation first, the task second, and the actions third.
-
-   It used to be a single wrapping row, which put dots, badge, task, hint,
-   check and solution all on one line and made it hard to tell navigation
-   from the exercise. Each concern now has a row of its own, divided by a
-   hairline so the eye does not have to guess where one ends and the next
-   begins. */
 .step-bar {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  gap: 0;
-  padding: 0 var(--jmp-space-lg);
-  font-size: 13px;
-  /* The strip floats over the canvas, so it needs to stay legible when a node
-     happens to sit underneath it. */
-  background: var(--jmp-panel);
-  border-radius: var(--jmp-radius);
-  box-shadow: 0 2px 6px var(--jmp-shadow);
+  min-width: min(300px, 100%);
   max-width: 100%;
-  min-width: 0;
 }
 
-/* Each row of the strip: navigation, the step body, and the authoring row. */
-.step-bar__nav,
-.step-bar__body,
-.step-bar__author {
-  padding: var(--jmp-space) 0;
+/* The author's card keeps one width whatever is typed in it, so it does not
+   jump about as the fields fill and empty. */
+.step-bar--editing {
+  width: 620px;
 }
 
-/* A hairline between rows, but only when there is a row above to divide from. */
-.step-bar__nav + .step-bar__body,
-.step-bar__body + .step-bar__author,
-.step-bar__nav + .step-bar__author {
+.step-bar > * + * {
   border-top: 1px solid var(--jmp-border);
 }
 
-/* Row 2: the step's task and its actions, in one body. The body wraps its
-   children onto lines as needed, keeping the badge and label together while
-   the buttons flow beside them. */
-.step-bar__body {
+/* Where the reader is. */
+.step-bar__nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: var(--jmp-space) var(--jmp-space-lg);
+  gap: 4px 8px;
+  padding: 4px 6px;
+}
+
+.step-bar--editing .step-bar__nav {
+  justify-content: space-between;
+}
+
+.step-bar__walk {
+  display: flex;
+  align-items: center;
+  gap: 2px;
   min-width: 0;
 }
 
-/* What the step is: the chip and the task. It is the one part of the row that
-   grows, so a short task leaves the row compact and a long one takes the
-   width the buttons do not need. */
-.step-bar__intro {
-  flex: 1 1 22ch;
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: var(--jmp-space);
-  /* Down to a measure worth reading and no further. Past that the buttons
-     give way instead — a verdict appearing beside them used to squeeze the
-     task into a four-line column, and a verdict reads fine on a line of its
-     own while a task does not. */
-  min-width: min(34ch, 100%);
-}
-
-/* The prompt, as a mark on the task rather than a banner over everything. It
-   carries the full "Your turn: build this step" as its title. */
-.step-bar__badge {
-  flex: none;
-  padding: 1px var(--jmp-space-lg);
-  border-radius: 999px;
-  background: var(--jmp-prompt);
-  color: var(--jmp-prompt-text);
-  font-weight: 600;
+.step-bar__count {
+  padding: 0 6px;
+  font-size: var(--jmp-ui-font-sm);
+  color: var(--jmp-text-muted);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-/* Wrapping is a last resort — see `.step-bar__controls > *`, which keeps the
-   controls at full size — but a second line beats a "Delete step" that has
-   been pushed off the edge of a phone. */
-.step-bar__controls {
+.step-bar__step-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: var(--jmp-space);
-  min-width: 0;
-  max-width: 100%;
+  gap: 2px;
 }
 
-/* Walking through the steps: the two arrows with the strip of dots between
-   them, on a row of their own. It keeps its size — the arrows are the one
-   thing a reader goes for without looking — and a long trace wraps its dots
-   rather than the arrows drifting apart. */
-.step-bar__nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--jmp-space);
-  min-width: 0;
+.step-bar__chevron {
+  display: inline-block;
+  transform: rotate(90deg);
+  transition: transform 0.15s;
+}
+
+.step-bar__chevron.open {
+  transform: rotate(-90deg);
 }
 
 /* The dots are the only part of the row that gives up width: a trace long
@@ -789,123 +1040,257 @@ path.react-flow__edge-path:hover {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
+  padding: 0 4px;
 }
 
-/* A dot, not a button: the strip sets a height for every button in it, which
-   is right for a button and too tall for this.
-   Two classes, and the scope is deliberately not written out — the build
-   prefixes it onto every selector, so naming it here would leave this rule at
-   the same weight as `.step-bar button` (a class and a type, once prefixed)
-   and the height would go on being the strip's. */
+/* A dot, not a button — the control height is for buttons with a label.
+   Two classes, and the scope is deliberately not written out: the build
+   prefixes it onto every selector. */
 .step-bar__steps .step-bar__dot {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+  min-width: 0;
   min-height: 0;
   flex: none;
   padding: 0;
   border: 1px solid transparent;
   border-radius: 50%;
   box-shadow: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
+  font-size: 9px;
+  font-weight: 700;
   line-height: 1;
-  cursor: pointer;
 }
 
 .step-bar__steps .step-bar__dot:hover {
   transform: scale(1.2);
 }
 
-.step-bar__steps .step-bar__dot:focus-visible {
-  outline: 2px solid var(--jmp-accent);
-  outline-offset: 2px;
-}
-
-/* Nothing to do here: a step of the trace, which is read rather than built. */
-.step-bar__steps .step-bar__dot.none {
-  background: var(--jmp-text);
+/* Nothing to do here: a step of the trace, which is read rather than built.
+   Faint, so the dots that ask something of the reader stand out. */
+.step-bar__steps .step-bar__dot.none,
+.step-bar__steps .step-bar__dot.none:hover {
+  background: var(--jmp-text-faint);
   color: var(--jmp-surface);
 }
 
-.step-bar__steps .step-bar__dot.untried {
+.step-bar__steps .step-bar__dot.untried,
+.step-bar__steps .step-bar__dot.untried:hover {
   background: var(--jmp-warning);
   color: var(--jmp-warning-text);
 }
 
-.step-bar__steps .step-bar__dot.correct {
+.step-bar__steps .step-bar__dot.correct,
+.step-bar__steps .step-bar__dot.correct:hover {
   background: var(--jmp-success);
   color: var(--jmp-white);
 }
 
-.step-bar__steps .step-bar__dot.wrong {
+.step-bar__steps .step-bar__dot.wrong,
+.step-bar__steps .step-bar__dot.wrong:hover {
   background: var(--jmp-danger);
   color: var(--jmp-white);
 }
 
 /* Which step is on screen. A ring around the dot rather than a fifth colour,
-   because where you are and how the step went are two different questions —
-   and in the ink of the text rather than the accent, which is the green a
-   correct step is already painted in. */
+   because where you are and how the step went are two different questions. */
 .step-bar__steps .step-bar__dot.current {
   outline: 2px solid var(--jmp-text);
   outline-offset: 2px;
 }
 
-/* The only part of the bar worth narrowing, so the row stays one row for as
-   long as it can. Everything else is a control that has to stay readable. */
-.java-memory-playground input.step-bar__label {
-  width: 150px;
-  flex: 0 1 150px;
-  min-width: 64px;
+/* A card with something to do takes its full width, so the task and its
+   buttons share a line instead of the task wrapping in a narrow column — every
+   line saved is diagram the card does not cover. */
+.step-bar:has(.step-bar__task) {
+  width: 620px;
 }
 
-/* The label and the result are prose, not controls. A description that ends in
-   an ellipsis is a description the reader has lost — and on an exercise step
-   the label is the task — so these two wrap rather than being cut, and they are
-   the two things in the row that give up width when the bar is short of it: a
-   button cannot be read at half a word, a sentence reads fine over three lines.
-   The measure is capped so a long note breaks into lines instead of stretching
-   the bar the width of the canvas. */
-.step-bar__label-text,
-.step-bar__result {
-  flex: 0 1 auto;
+/* What the step asks of the reader. In a short frame — an iframe in a
+   course page — a long task with its hint, verdict and run log open would
+   cover most of the diagram, so past a share of the height it scrolls. */
+.step-bar__task {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px;
+  max-height: 42vh;
+  overflow-y: auto;
+}
+
+/* The task and its actions share a row while there is room; the actions drop
+   under the task, still to the right, when there is not. */
+.step-bar__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.step-bar__prompt {
+  flex: 1 1 24ch;
   min-width: 0;
-  max-width: 52ch;
-  white-space: normal;
-  /* A Java identifier can be longer than the measure with nowhere to break;
-     breaking it mid-word beats it hanging out of the bar. */
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
   overflow-wrap: anywhere;
-  text-align: center;
-  /* The container's 1.2 is set for single lines of diagram text. */
-  line-height: 1.35;
 }
 
-.step-bar__label-text {
-  padding: 0 4px;
+.step-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-left: auto;
 }
 
-/* Authoring, on a row under the reader's strip: two fields worth typing in
-   beside the controls that add and remove a step. */
-.step-bar__author {
+/* The prompt, as a mark in front of the task. It carries the full "Your turn:
+   build this step" as its title. */
+.step-bar__badge {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--jmp-prompt);
+  color: var(--jmp-prompt-text);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+/* What the hint and the check say: a block under the task, coloured by what
+   kind of thing it is. Amber for a hint, which says nothing about the attempt;
+   green and red for a verdict. */
+.step-bar__callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--jmp-radius);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.step-bar__callout--hint {
+  background: var(--jmp-warning-soft);
+  color: var(--jmp-warning-text);
+  white-space: pre-wrap;
+}
+
+.step-bar__callout--correct {
+  background: var(--jmp-success-soft);
+  color: var(--jmp-success-text);
+}
+
+.step-bar__callout--wrong {
+  background: var(--jmp-danger-soft);
+  color: var(--jmp-danger-text);
+}
+
+.step-bar__callout-icon {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: var(--jmp-space);
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 50%;
+  color: var(--jmp-white);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.step-bar__callout--hint .step-bar__callout-icon {
+  background: var(--jmp-warning);
+}
+
+.step-bar__callout-body {
+  margin: 0;
+}
+
+.step-bar__callout--correct .step-bar__callout-icon {
+  background: var(--jmp-success);
+}
+
+.step-bar__callout--wrong .step-bar__callout-icon {
+  background: var(--jmp-danger);
+}
+
+.step-bar__callout-body {
   min-width: 0;
 }
 
-/* Controls keep their size rather than squeezing; when there is genuinely no
-   room the row wraps and they move to a second line intact. */
-.step-bar__controls > * {
-  flex: none;
+/* Each difference is its own thing to fix, so each gets a line. */
+.step-bar__diffs {
+  margin: 4px 0 0;
+  padding-left: 18px;
 }
 
-.step-bar button {
-  white-space: nowrap;
+.step-bar__diffs li + li {
+  margin-top: 2px;
+}
+
+.step-bar__diffs-more {
+  list-style: none;
+  margin-left: -18px;
+  opacity: 0.8;
+}
+
+/* The author's form. */
+.step-bar__author {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+}
+
+/* How an exercise is checked: folded under the form, because it is set once
+   and the defaults are right for most exercises. */
+.step-bar__check {
+  border-top: 1px dashed var(--jmp-border);
+  padding-top: 6px;
+}
+
+.step-bar__check summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--jmp-control-sm);
+  font-size: var(--jmp-ui-font-sm);
+  font-weight: 500;
+  color: var(--jmp-text-muted);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.step-bar__check summary::-webkit-details-marker {
+  display: none;
+}
+
+.step-bar__check summary::before {
+  content: "›";
+  display: inline-block;
+  width: 10px;
+  font-size: 15px;
+  line-height: 1;
+  transition: transform 0.15s;
+}
+
+.step-bar__check[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.step-bar__check summary:hover {
+  color: var(--jmp-text);
+}
+
+.step-bar__check-fields {
+  margin-top: 6px;
 }
 
 /* What a step changed, compared with the step before it. The marks sit on top
@@ -961,57 +1346,37 @@ path.react-flow__edge-path:hover {
   z-index: 2;
 }
 
-/* A card under the palette, the same width and dressed the same, so the two
-   read as one column. Stacked rather than in a row: the labels are sentences,
-   not words, and a prediction adds a count and a way out to them. */
-.gc-panel {
-  width: 132px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--jmp-space);
-  padding: var(--jmp-space);
-  background: var(--jmp-panel);
-  border-radius: var(--jmp-radius);
-  box-shadow: 0 2px 6px var(--jmp-shadow);
-}
-
-/* The palette's items wrap their labels, so these do too rather than being
-   the one thing in the column that insists on a line of its own. */
 .java-memory-playground .gc-panel button {
   white-space: normal;
   text-align: center;
+  padding: 4px 10px;
 }
 
 .gc-hint,
 .gc-result {
-  font-size: 13px;
-  padding: 0 var(--jmp-space);
+  padding: 2px 4px;
+  font-size: var(--jmp-ui-font-sm);
   text-align: center;
-  line-height: 1.35;
+  color: var(--jmp-text-muted);
 }
 
-.step-bar__exercise {
-  display: flex;
-  align-items: center;
-  gap: var(--jmp-space);
-  font-size: 13px;
-  white-space: nowrap;
+/* What the last check found wrong. Danger rather than the warning of a step's
+   changes, and solid, so the two marks are told apart when both are on. */
+.react-flow__node.check-wrong {
+  opacity: 1;
 }
 
-.step-bar__result {
-  padding: 2px var(--jmp-space-lg);
-  border-radius: var(--jmp-radius);
+.react-flow__node.check-wrong::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 12px;
+  border: 3px solid var(--jmp-danger);
+  pointer-events: none;
 }
 
-.step-bar__result.correct {
-  background: var(--jmp-success-soft);
-  color: var(--jmp-success-text);
-}
-
-.step-bar__result.wrong {
-  background: var(--jmp-danger-soft);
-  color: var(--jmp-danger-text);
+.react-flow__edge.check-wrong .react-flow__edge-path {
+  opacity: 1;
 }
 
 /* ---------------------------------------------------------------------------
@@ -1032,13 +1397,20 @@ path.react-flow__edge-path:hover {
 .step-bar__statement-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--jmp-space);
-  justify-content: center;
+  gap: 4px;
 }
 
 .java-memory-playground button.step-bar__statement {
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  font-size: 12px;
+  font-family: var(--jmp-mono);
+  font-size: var(--jmp-ui-font-sm);
+  font-weight: 400;
+  background: var(--jmp-surface);
+  border-color: var(--jmp-border);
+}
+
+.java-memory-playground button.step-bar__statement:hover {
+  border-color: var(--jmp-accent);
+  background: var(--jmp-surface);
 }
 
 /* The order the reader chose, which is the thing being learnt. Numbered, so
@@ -1064,24 +1436,208 @@ path.react-flow__edge-path:hover {
   color: var(--jmp-danger-text);
 }
 
-/* The hint's text, shown inline under the controls rather than floating
-   above the bar. A hint that appears in place stays beside the button that
-   opened it and does not cover the diagram the reader is working on. It
-   takes the full width of the body so the text wraps at a readable measure.
+/* ---------------------------------------------------------------------------
+   Menu
 
-   Amber keeps it apart from the green and red of a verdict: a hint says
-   nothing about the attempt. */
-.step-bar__note {
-  flex: 1 1 100%;
-  margin: 0;
-  padding: var(--jmp-space) var(--jmp-space-lg);
+   The toolbar's menu, in every layout: everything but undo and redo, as a
+   list hanging from the button that opened it.
+   --------------------------------------------------------------------------- */
+.jmp-toolbar-root {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Three bars, drawn rather than typed, so they line up in any font. */
+.jmp-burger {
+  display: block;
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  box-shadow:
+    0 -5px 0 currentColor,
+    0 5px 0 currentColor;
+}
+
+.jmp-menu {
+  margin-top: 6px;
+  min-width: 220px;
+  max-width: calc(100vw - 32px);
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Opaque, unlike the panels that float over the diagram: a menu is read
+   item by item, and a reference showing through one is noise. */
+.jmp-menu.jmp-panel {
+  background: var(--jmp-surface);
+}
+
+/* An item is a button or, for help, a link — which the button styles do not
+   reach, so it is told to look like one. */
+.java-memory-playground .jmp-menu__item {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  border: 0;
   border-radius: var(--jmp-radius);
-  background: var(--jmp-warning-soft);
-  color: var(--jmp-warning-text);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  font-size: var(--jmp-ui-font);
+  text-decoration: none;
+  cursor: pointer;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  min-height: var(--jmp-control);
+  padding: 0 10px;
+  background: transparent;
+  color: var(--jmp-text);
+  font-weight: 500;
+  text-align: left;
+}
+
+.java-memory-playground .jmp-menu__item:hover:not(:disabled),
+.java-memory-playground .jmp-menu__item:focus-visible {
+  background: var(--jmp-hover);
+}
+
+/* The one filled item, last, the way it is last in the row. */
+.java-memory-playground .jmp-menu__item.primary,
+.java-memory-playground .jmp-menu__item.primary:hover {
+  justify-content: center;
+  margin-top: 4px;
+  background: var(--jmp-accent);
+  color: var(--jmp-on-accent);
+}
+
+.jmp-menu__icon {
+  width: 18px;
+  flex: none;
   text-align: center;
-  line-height: 1.35;
+  color: var(--jmp-text-muted);
+}
+
+.jmp-menu__item.primary .jmp-menu__icon {
+  display: none;
+}
+
+.jmp-menu__sep {
+  height: 1px;
+  margin: 3px 6px;
+  background: var(--jmp-border);
+}
+
+/* ---------------------------------------------------------------------------
+   Compact layout
+
+   A phone, or an embed too small for the panels to sit beside the diagram.
+   The palette folds behind a button, the toolbar keeps undo and redo and
+   puts the rest in a menu, the step card takes the full width, and every
+   control grows to the size of a finger.
+   --------------------------------------------------------------------------- */
+.jmp-compact {
+  --jmp-control: 36px;
+  --jmp-control-sm: 28px;
+}
+
+.jmp-compact .react-flow__panel {
+  margin: 8px;
+}
+
+.jmp-compact .react-flow__panel.top.right,
+.jmp-compact.memory-view .with-palette .react-flow__panel.top.right {
+  max-width: none;
+}
+
+/* The fold button for the palette: a panel of its own, so the corner looks
+   the same whether the palette is open or not. */
+.java-memory-playground .jmp-fold-button {
+  align-self: flex-start;
+  gap: 6px;
+  padding: 0 14px 0 10px;
+  font-weight: 600;
+  color: var(--jmp-text);
+}
+
+.java-memory-playground .jmp-fold-button > span {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--jmp-text-muted);
+}
+
+.java-memory-playground .jmp-fold-button.open {
+  background: var(--jmp-surface);
+}
+
+.jmp-compact .sidebar {
+  /* Room under the fold button and above the step card. */
+  max-height: 55vh;
+}
+
+/* The card takes the width of the screen, less the margin all panels keep,
+   up to the width it has in the regular layout — on a tablet, a card the
+   full width of the screen is a long line to read. Anchored to both sides
+   and centred by its margins: React Flow centres this panel with `left: 50%`
+   and a transform, which a margin then pushes off-centre. */
+.jmp-compact .react-flow__panel.bottom.center {
+  left: 0;
+  right: 0;
+  transform: none;
+  width: auto;
+  max-width: min(620px, calc(100% - 16px));
+  margin: 8px auto;
+}
+
+.jmp-compact .step-bar,
+.jmp-compact .step-bar--editing,
+.jmp-compact .step-bar:has(.step-bar__task) {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Labels over their fields: beside them, a label column took half of a
+   phone's width and left the fields too narrow to show what was typed. */
+.jmp-compact .step-bar .jmp-fields {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+}
+
+.jmp-compact .step-bar .jmp-field-label {
+  margin-top: 6px;
+}
+
+.jmp-compact .step-bar .jmp-fields > .jmp-field-label:first-child {
+  margin-top: 0;
+}
+
+/* A phone held sideways has a few hundred pixels of height; the task scrolls
+   sooner, and the card can fold away entirely from its chevron. */
+.jmp-compact .step-bar__task {
+  max-height: 34vh;
+}
+
+.jmp-compact .step-bar__dot {
+  /* A bigger target for a finger, with the dot drawn the same size. */
+  box-shadow: 0 0 0 6px transparent;
+}
+
+/* On a touch screen, iOS zooms the whole page into any text field set
+   smaller than 16px the moment it is focused, and does not zoom back out.
+   The fields in the panels and dialogs are typed into, so they are set at
+   16px there; the fields inside the diagram stay at the diagram's size,
+   which the diagram's own zoom decides anyway. The dialogs style their fields
+   inline, hence the `!important`. */
+@media (pointer: coarse) {
+  .java-memory-playground .jmp-input,
+  .java-memory-playground .jmp-dialog input,
+  .java-memory-playground .jmp-dialog select,
+  .java-memory-playground .jmp-dialog textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* ---------------------------------------------------------------------------

@@ -119,6 +119,7 @@ export const stepsOf = (m: Partial<Memory>): Step[] => {
       label: step?.label,
       note: step?.note,
       exercise: step?.exercise,
+      check: step?.check,
       statements: step?.statements,
       objects: step?.objects ?? {},
       variables: step?.variables ?? {},

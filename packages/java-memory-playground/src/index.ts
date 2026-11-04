@@ -11,8 +11,15 @@ export { KeyboardShortcuts, defaultKeyBindings } from "./KeyboardShortcuts";
 export { InlineString } from "./InlineString";
 export { StepBar } from "./StepBar";
 export { diffSteps, emptyDiff } from "./stepDiff";
-export { canonicalRoots, checkAgainst } from "./canonical";
-export type { ExerciseResult } from "./canonical";
+export { canonicalRoots, checkAgainst, rootsOf } from "./canonical";
+export { diffMessage, resultMessages } from "./checkMessages";
+export type {
+  CheckDiff,
+  CheckOptions,
+  ExerciseResult,
+  Root,
+  StackDiff,
+} from "./canonical";
 export {
   executeStatement,
   parseStatement,
@@ -27,7 +34,12 @@ export { klassImpact, hasImpact } from "./klassImpact";
 export type { KlassImpact } from "./klassImpact";
 export { optionPresets } from "./presets";
 export type { PresetName } from "./presets";
-export { captureDiagram, downloadAllSteps } from "./exportSteps";
+export {
+  captureDiagram,
+  captureDiagramCanvas,
+  downloadAllSteps,
+} from "./exportSteps";
+export type { CaptureSession } from "./exportSteps";
 export type { StepDiff } from "./stepDiff";
 export { useColorMode, usedColorScheme } from "./colorMode";
 export type { ColorMode } from "./colorMode";

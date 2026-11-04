@@ -12,8 +12,23 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { ariaLabelsFor } from "./ariaLabels";
-import { captureDiagram, downloadAllSteps } from "./exportSteps";
+import {
+  CaptureSession,
+  captureDiagramCanvas,
+  downloadAllSteps,
+} from "./exportSteps";
 import { fitPaddingFor } from "./fitPadding";
+import { Toolbar, ToolbarItem } from "./Toolbar";
+
+/**
+ * Below either size the playground switches to its compact layout: phones,
+ * tablets, and the iframes and embeds a course page puts a diagram in. The
+ * compact layout leaves the diagram most of the room, which is worth it long
+ * before the regular one actually runs out of space; only a full desktop
+ * window keeps the palette, the full toolbar and the zoom buttons out.
+ */
+const COMPACT_WIDTH = 1024;
+const COMPACT_HEIGHT = 640;
 import { paletteFor } from "./palette";
 import { useColorMode } from "./colorMode";
 import useStore, { useMemoryStore } from "./storeContext";
@@ -22,10 +37,11 @@ import { RFState } from "./store";
 import { useShallow } from "zustand/shallow";
 import ObjectNode, { ObjectNodeType } from "./ObjectNode";
 import VariableNode from "./VariableNode";
-import { useCallback, useState, useRef, useMemo } from "react";
+import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { Sidebar } from "./Sidebar";
 import { StepBar } from "./StepBar";
 import { diffSteps } from "./stepDiff";
+import { wrongSlots } from "./checkMessages";
 import {
   Attribute,
   builtInDataTypes,
@@ -80,6 +96,7 @@ const selector = (state: RFState) => ({
   toggleGcPrediction: state.toggleGcPrediction,
   cancelGcPrediction: state.cancelGcPrediction,
   collectGarbage: state.collectGarbage,
+  exerciseResult: state.getExerciseResult(),
   t: state.getTranslations(),
 });
 
@@ -125,10 +142,18 @@ export const MemoryView = () => {
     toggleGcPrediction,
     cancelGcPrediction,
     collectGarbage,
+    exerciseResult,
     t,
   } = useStore(useShallow(selector));
-  const { screenToFlowPosition, getViewport, setViewport, fitView } =
+  const {
+    screenToFlowPosition,
+    getViewport,
+    setViewport,
+    fitView,
+    getInternalNode,
+  } =
     useReactFlow();
+
   const store = useMemoryStore();
   const connectingNode = useRef<OnConnectStartParams | null>(null);
   // Scoped to this instance so that exporting works when a page embeds more
@@ -152,6 +177,40 @@ export const MemoryView = () => {
   // the chrome around them. Print is paper: always the light half.
   const viewRef = useRef<HTMLDivElement>(null);
   const colorMode = useColorMode(viewRef);
+
+  // The layout follows the playground's own size rather than the window's: a
+  // small embed on a large screen is as short of room as a phone.
+  const compact = useStore((state) => state.compact);
+  const setCompact = useStore((state) => state.setCompact);
+  useEffect(() => {
+    const element = viewRef.current;
+    if (!element || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setCompact(width < COMPACT_WIDTH || height < COMPACT_HEIGHT);
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [setCompact]);
+
+  // Which of the compact layout's folded panels is open.
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // The first frame is fitted before the playground has measured itself, so
+  // a phone gets the desktop's margins — a palette's width out of 390 pixels.
+  // Fit again whenever the layout changes, with the margins it now has.
+  const lastLayout = useRef(false);
+  useEffect(() => {
+    if (lastLayout.current === compact) return;
+    lastLayout.current = compact;
+    const frame = requestAnimationFrame(() =>
+      fitView({ padding: fitPaddingFor(options, compact) }),
+    );
+    return () => cancelAnimationFrame(frame);
+    // Only a change of layout re-frames; an option toggled in the config view
+    // should not throw away where the reader has panned to.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compact]);
   const palette = paletteFor(printMode ? "light" : colorMode);
 
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
@@ -438,52 +497,79 @@ export const MemoryView = () => {
     setRoute("config");
   };
 
-  const settle = (ms: number) =>
-    new Promise((resolve) => setTimeout(resolve, ms));
+  const nextFrame = () =>
+    new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+  /**
+   * Waits until what is on screen can be photographed: React has rendered the
+   * step and React Flow has measured every node in it. A fixed timeout either
+   * waited far longer than that — it was most of the time an export of a long
+   * trace took — or, on a slow machine, not long enough.
+   */
+  const settle = async () => {
+    await nextFrame();
+    const deadline = performance.now() + 1000;
+    while (performance.now() < deadline) {
+      // React Flow's own record of each node, which is where a measurement
+      // lands; the nodes handed to it do not always carry one back.
+      const measured = store
+        .getState()
+        .getNodes()
+        .every((n) => {
+          const size = getInternalNode(n.id)?.measured;
+          return Boolean(size?.width && size?.height);
+        });
+      if (measured) break;
+      await nextFrame();
+    }
+  };
 
   /**
    * Photographs the step on screen, framing the whole diagram first so that
    * nothing scrolled out of view is missing from the picture, and putting the
    * view back afterwards.
    */
-  const captureCurrentStep = async () => {
+  const captureStepCanvas = async (session?: CaptureSession) => {
     if (!flowRef.current) return null;
     const before = getViewport();
-    fitView({ padding: 0.12, duration: 0 });
-    await settle(120);
-    const dataUrl = await captureDiagram(
+    await settle();
+    await fitView({ padding: 0.12, duration: 0 });
+    // The new viewport is applied on the next render.
+    await nextFrame();
+    const canvas = await captureDiagramCanvas(
       flowRef.current,
       store.getState().getNodes(),
       getViewport(),
       // The PNG is a photograph of the live diagram, so its caption and
       // backdrop wear the scheme the diagram on screen is drawn in.
       printMode ? "light" : colorMode,
+      session,
     );
     setViewport(before);
-    return dataUrl;
+    return canvas;
   };
 
   const onDownloadPng = async () => {
-    const dataUrl = await captureCurrentStep();
-    if (!dataUrl) return;
+    const canvas = await captureStepCanvas();
+    if (!canvas) return;
     const a = document.createElement("a");
     a.setAttribute("download", "java-memory-playground.png");
-    a.setAttribute("href", dataUrl);
+    a.setAttribute("href", canvas.toDataURL("image/png"));
     a.click();
   };
 
   const onDownloadAllPng = async () => {
     if (!flowRef.current) return;
     const back = currentStep;
+    // One session for the whole trace, so the fonts are read once.
+    const session: CaptureSession = {};
     await downloadAllSteps({
       stepCount: steps.length,
       labelFor: (i) => steps[i]?.label ?? "",
       showStep: async (i) => {
         goToStep(i);
-        // Let the step render and be measured before it is photographed.
-        await settle(320);
       },
-      captureNow: captureCurrentStep,
+      captureNow: () => captureStepCanvas(session),
       mode: printMode ? "light" : colorMode,
     });
     goToStep(back);
@@ -731,6 +817,14 @@ export const MemoryView = () => {
     [previousStep, nodes, edges],
   );
 
+  // What the last check found wrong, so the diagram points at it: the node
+  // holding the slot, and the reference leaving it if there is one.
+  const wrong = useMemo(() => wrongSlots(exerciseResult), [exerciseResult]);
+  const wrongOwners = useMemo(
+    () => new Set([...wrong].map((slot) => slot.split(" ")[0])),
+    [wrong],
+  );
+
   // While Strings are inlined they are still real objects with real references
   // — they are only left out of the drawing, and out of it as edge targets.
   const { visibleNodes, visibleEdges } = useMemo(() => {
@@ -748,8 +842,56 @@ export const MemoryView = () => {
     };
   }, [nodes, edges, options.inlineStrings]);
 
+  // The toolbar, grouped by what each part acts on: history, pictures of the
+  // diagram, the setup. Each item can be switched off by the host; a group
+  // with nothing left in it takes its divider with it, and a toolbar with
+  // nothing left in it is not drawn at all. Undo and redo stay in the row;
+  // the rest goes in the toolbar's menu.
+  const toolbarItems: ToolbarItem[] = [
+    !options.hideUndoRedo && {
+      key: "undo", group: 0, icon: "↶", label: t.undo, onClick: undo, disabled: !canUndo,
+    },
+    !options.hideUndoRedo && {
+      key: "redo", group: 0, icon: "↷", label: t.redo, onClick: redo, disabled: !canRedo,
+    },
+    !options.hideDownloadPng && {
+      key: "png", group: 1, label: t.downloadPng, onClick: onDownloadPng,
+    },
+    !options.hideDownloadAllPng && steps.length > 1 && {
+      key: "all", group: 1, label: t.downloadAllPng, title: t.downloadAllPngHint,
+      onClick: onDownloadAllPng,
+    },
+    // A toggle rather than a third download: it changes the diagram, and the
+    // downloads beside it then follow.
+    !options.hidePrintMode && {
+      key: "print", group: 1, label: t.printMode, title: t.printModeHint,
+      pressed: printMode, onClick: () => setPrintMode((on) => !on),
+    },
+    // The zoom controls are not drawn in the compact layout — they would sit
+    // in the corner the step card needs, and a phone pinches to zoom — but
+    // framing the whole diagram again is still worth a button.
+    compact && {
+      key: "fit", group: 2, icon: "⛶", label: t.a11y.fitView,
+      onClick: () => fitView({ padding: fitPaddingFor(options, true), duration: 200 }),
+    },
+    mode === "edit" && {
+      key: "config", group: 2, label: t.config, onClick: onConfig,
+    },
+    // A link rather than a button, so that whatever owns navigation around
+    // the playground opens it the way it opens any link: a new tab in a
+    // browser, the external browser from a VS Code webview. `window.open` is
+    // blocked in some of those hosts.
+    !options.hideHelp && {
+      key: "help", group: 2, icon: "?", label: t.help, href: DOCUMENTATION_URL,
+    },
+    !options.hideSave && {
+      key: "save", group: 2, label: persistence ? t.saveUrl : t.save,
+      onClick: save, primary: true,
+    },
+  ].filter(Boolean) as ToolbarItem[];
+
   return (
-    <div className="memory-view" ref={viewRef}>
+    <div className={`memory-view${compact ? " jmp-compact" : ""}`} ref={viewRef}>
       <ReactFlow
         ref={flowRef}
         // Flips React Flow's own `dark` class, so the parts of its chrome the
@@ -774,6 +916,7 @@ export const MemoryView = () => {
             else if (diff.changed.has(n.id)) classes.push("step-changed");
           }
           if (gcPrediction?.includes(n.id)) classes.push("gc-predicted");
+          if (wrongOwners.has(n.id)) classes.push("check-wrong");
           return {
             ...n,
             className: classes.filter(Boolean).join(" "),
@@ -786,8 +929,10 @@ export const MemoryView = () => {
           const stack = stackClass.get(e.source) ?? "";
           const live = stack === "last-method-call" || source?.type === "variable";
           const changed = showChanges && diff.edges.has(e.id);
+          const checkWrong = wrong.has(`${e.source} ${e.sourceHandle ?? ""}`);
           const classes = [live ? "last-method-call" : stack];
           if (changed) classes.push("step-changed");
+          if (checkWrong) classes.push("check-wrong");
           return {
             ...e,
             className: classes.filter(Boolean).join(" "),
@@ -803,12 +948,14 @@ export const MemoryView = () => {
             style: {
               stroke: printMode
                 ? palette.BLACK
-                : changed
-                  ? palette.WARNING
-                  : palette.TEXT_MUTED,
+                : checkWrong
+                  ? palette.DANGER
+                  : changed
+                    ? palette.WARNING
+                    : palette.TEXT_MUTED,
               strokeWidth: 4,
               strokeDasharray: printMode && changed ? "12 7" : undefined,
-              opacity: changed || live ? 1 : stack ? 0.6 : 0.2,
+              opacity: changed || checkWrong || live ? 1 : stack ? 0.6 : 0.2,
             },
           };
         })}
@@ -837,7 +984,7 @@ export const MemoryView = () => {
           hideAttribution: true,
         }}
         fitView
-        fitViewOptions={{ padding: fitPaddingFor(options) }}
+        fitViewOptions={{ padding: fitPaddingFor(options, compact) }}
         ariaLabelConfig={ariaLabelsFor(t)}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
@@ -845,119 +992,91 @@ export const MemoryView = () => {
       >
         {(!options.hideSidebar || !options.disableGarbageCollector) && (
           <Panel position="top-left">
-            {!options.hideSidebar && (
-              <Sidebar
-                klasses={klasses}
-                options={options}
-                onNodeDrop={onNodeDrop}
-              />
+            {/* In the compact layout the palette folds behind one button, so a
+                phone keeps its width for the diagram. It stays open while a
+                garbage prediction runs: that mode has a count and a way out,
+                and they must not be hidden. */}
+            {compact && !options.hideSidebar && (
+              <button
+                className={`jmp-fold-button jmp-panel${paletteOpen ? " open" : ""}`}
+                onClick={() => setPaletteOpen(!paletteOpen)}
+                aria-expanded={paletteOpen || gcPrediction !== null}
+                title={paletteOpen ? t.hidePalette : t.showPalette}
+              >
+                <span aria-hidden="true">{paletteOpen ? "×" : "+"}</span>
+                {t.paletteHeading}
+              </button>
             )}
-            {/* Under the palette, because collecting is another thing done to
-                what is on the canvas — the palette puts objects there, this
-                takes them away. It used to sit along the bottom beside the
-                trace, which made the strip about two unrelated things and
-                stacked a second card over the middle of the diagram. A
-                prediction is a mode, with a running count and a way out, and
-                a column has the room for that. */}
-            {!options.disableGarbageCollector && (
-              <div className="gc-panel">
-                {gcResult && (
-                  <span className="gc-result">
-                    {t.gcScore(gcResult.found, gcResult.missed, gcResult.wrong)}
-                  </span>
+            {(!compact || options.hideSidebar || paletteOpen || gcPrediction !== null) && (
+              <>
+                {!options.hideSidebar && (!compact || paletteOpen) && (
+                  <Sidebar
+                    klasses={klasses}
+                    options={options}
+                    onNodeDrop={(...args) => {
+                      onNodeDrop(...args);
+                      // What was added should be seen, not hidden under the
+                      // palette that added it.
+                      if (compact) setPaletteOpen(false);
+                    }}
+                  />
                 )}
-                {options.gcPrediction && gcPrediction === null && (
-                  <button className="button-gc" onClick={startGcPrediction}>
-                    {t.predictGarbage}
-                  </button>
+                {/* Under the palette, because collecting is another thing done
+                    to what is on the canvas — the palette puts objects there,
+                    this takes them away. A prediction is a mode, with a running
+                    count and a way out, and a column has the room for that. */}
+                {!options.disableGarbageCollector && (
+                  <div className="gc-panel jmp-panel">
+                    {gcResult && (
+                      <span className="gc-result">
+                        {t.gcScore(gcResult.found, gcResult.missed, gcResult.wrong)}
+                      </span>
+                    )}
+                    {options.gcPrediction && gcPrediction === null && (
+                      <button className="button-danger" onClick={startGcPrediction}>
+                        {t.predictGarbage}
+                      </button>
+                    )}
+                    {gcPrediction !== null && (
+                      <>
+                        <span className="gc-hint">
+                          {t.predictGarbageHint(gcPrediction.length)}
+                        </span>
+                        <button className="button-ghost" onClick={cancelGcPrediction}>
+                          {t.cancel}
+                        </button>
+                      </>
+                    )}
+                    {(!options.gcPrediction || gcPrediction !== null) && (
+                      <button
+                        className="button-danger"
+                        onClick={() => {
+                          collectGarbage();
+                          if (compact) setPaletteOpen(false);
+                        }}
+                      >
+                        {gcPrediction !== null
+                          ? t.checkAndCollect
+                          : t.runGarbageCollector}
+                      </button>
+                    )}
+                  </div>
                 )}
-                {gcPrediction !== null && (
-                  <>
-                    <span className="gc-hint">
-                      {t.predictGarbageHint(gcPrediction.length)}
-                    </span>
-                    <button onClick={cancelGcPrediction}>{t.cancel}</button>
-                  </>
-                )}
-                {(!options.gcPrediction || gcPrediction !== null) && (
-                  <button className="button-gc" onClick={collectGarbage}>
-                    {gcPrediction !== null
-                      ? t.checkAndCollect
-                      : t.runGarbageCollector}
-                  </button>
-                )}
-              </div>
+              </>
             )}
           </Panel>
         )}
-        <Panel position="top-right">
-          <div className="button-group">
-            <button
-              className="button-icon"
-              onClick={undo}
-              disabled={!canUndo}
-              title={t.undo}
-              aria-label={t.undo}
-            >
-              ↶
-            </button>
-            <button
-              className="button-icon"
-              onClick={redo}
-              disabled={!canRedo}
-              title={t.redo}
-              aria-label={t.redo}
-            >
-              ↷
-            </button>
-            <button onClick={save}>{persistence ? t.saveUrl : t.save}</button>
-            <button onClick={onDownloadPng}>{t.downloadPng}</button>
-            {steps.length > 1 && (
-              <button onClick={onDownloadAllPng} title={t.downloadAllPngHint}>
-                {t.downloadAllPng}
-              </button>
-            )}
-            {/* A toggle rather than a second download button: it changes the
-                diagram, and the two downloads beside it then follow. */}
-            <button
-              className="button-toggle"
-              onClick={() => setPrintMode((on) => !on)}
-              aria-pressed={printMode}
-              title={t.printModeHint}
-            >
-              {t.printMode}
-            </button>
-            {mode === "edit" && (
-              <button onClick={onConfig}>{t.config}</button>
-            )}
-            {/* A link rather than a button, so that whatever owns navigation
-                around the playground opens it the way it opens any link: a new
-                tab in a browser, the external browser from a VS Code webview.
-                `window.open` is blocked in some of those hosts. */}
-            <a
-              className="button-icon"
-              href={DOCUMENTATION_URL}
-              target="_blank"
-              rel="noreferrer noopener"
-              title={t.help}
-              aria-label={t.help}
-            >
-              ?
-            </a>
-          </div>
-        </Panel>
-        {/* The trace alone, along the bottom. The collector used to share this
-            row — it had been given its own panel, the two slid into each other
-            on a narrow screen, and putting them together stacked a second thing
-            on a strip that was already the tallest furniture on the canvas. It
-            acts on the whole diagram, like saving and printing, so it now sits
-            with those instead and the strip is about the step again. */}
+        {toolbarItems.length > 0 && (
+          <Panel position="top-right">
+            <Toolbar items={toolbarItems} t={t} />
+          </Panel>
+        )}
         {!options.hideSteps && (
           <Panel position="bottom-center">
             <StepBar editable={mode === "edit"} />
           </Panel>
         )}
-        <Controls />
+        {!compact && <Controls />}
         <Background />
       </ReactFlow>
       {showArrayDialog && arrayDialogCallback && (

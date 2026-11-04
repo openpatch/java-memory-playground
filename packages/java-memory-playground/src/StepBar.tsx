@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useShallow } from "zustand/shallow";
 
+import { CheckSettings } from "./CheckSettings";
+import { resultMessages } from "./checkMessages";
 import { parseStatementList } from "./statements";
 import { StatementEntry, RFState, StepStatus } from "./store";
 import useStore from "./storeContext";
@@ -15,6 +17,7 @@ const selector = (state: RFState) => ({
   setStepLabel: state.setStepLabel,
   setStepNote: state.setStepNote,
   setStepExercise: state.setStepExercise,
+  setStepCheck: state.setStepCheck,
   hasSolution: state.solutions[state.currentStep] !== undefined,
   exerciseResult: state.getExerciseResult(),
   getStepStatus: state.getStepStatus,
@@ -70,8 +73,11 @@ const statusLabel = (t: Translations, status: StepStatus, step: number) => {
 /**
  * Walks through the steps of a diagram.
  *
- * A single-step diagram is just a picture, so the bar only appears once there
- * is something to walk through — or as soon as the author adds a step.
+ * One card in three parts, each with one job: where the reader is (and, for
+ * the author, adding and removing steps), what this step asks of them, and —
+ * in the teacher's playground — the form that describes the step. A single-step
+ * diagram is just a picture, so the card only appears once there is something
+ * to walk through or something to do.
  */
 export function StepBar({ editable = true }: { editable?: boolean }) {
   const {
@@ -83,6 +89,7 @@ export function StepBar({ editable = true }: { editable?: boolean }) {
     setStepLabel,
     setStepNote,
     setStepExercise,
+    setStepCheck,
     hasSolution,
     exerciseResult,
     getStepStatus,
@@ -99,153 +106,261 @@ export function StepBar({ editable = true }: { editable?: boolean }) {
   // Which step's hint is open, rather than whether one is: moving on closes it
   // without an effect to reset it, and a hint is asked for per step anyway.
   const [hintFor, setHintFor] = useState<number | null>(null);
+  // The authoring form folds away so the author can look at the diagram the
+  // way the reader will; it stays folded from step to step. On a phone it
+  // starts folded: open, it is most of the screen.
+  const compact = useStore((state) => state.compact);
+  const [detailsOpen, setDetailsOpen] = useState(!compact);
+  // The layout is measured after the first render, so follow it when it
+  // changes rather than only reading it once.
+  useEffect(() => setDetailsOpen(!compact), [compact]);
+  // On a short screen the reader's card can fold down to its dots, so the
+  // whole diagram can be seen; it opens again from the same button.
+  const [taskOpen, setTaskOpen] = useState(true);
+  const id = useId();
 
   const step = steps[currentStep];
+  const only = steps.length === 1;
+  const isExercise = Boolean(step?.exercise) && currentStep > 0;
+
   // The author edits the label and the note in fields of their own, so the
   // prose versions are the reader's.
   const label = editable ? undefined : step?.label;
   const note = editable ? undefined : step?.note;
   const hintOpen = hintFor === currentStep;
 
-  // An empty row still costs a gap, and in the teacher's playground every one
-  // of these is absent: the buttons belong to a reader working on an exercise.
-  const hasControls = Boolean(note) || hasSolution || Boolean(exerciseResult);
-
   // The reader runs the lines; the author only writes them down, because
   // running one in the teacher's playground would edit the solution itself.
   const runnable = !editable && statements.length > 0;
 
-  const only = steps.length === 1;
+  const messages =
+    exerciseResult && !exerciseResult.correct
+      ? resultMessages(t, exerciseResult)
+      : [];
+  // The first difference is the headline; a few more are listed under it — a
+  // long list of everything wrong is a list nobody reads, and fixing the first
+  // often fixes the next.
+  const SHOWN = 4;
+
+  const hasTask =
+    Boolean(label) || hasSolution || Boolean(note) || runnable || Boolean(exerciseResult);
+
   // A single-step diagram is just a picture, unless it is an exercise, the
-  // author left a hint on it, or there are lines to run — either way there is
-  // something to press.
-  if (only && !editable && !hasSolution && !note && !runnable) return null;
+  // author left a hint on it, or there are lines to run.
+  if (only && !editable && !hasTask) return null;
 
   return (
-    <div className="step-bar">
-      {/* Row 1 — where the reader is in the trace. The dots carry the count
-          and the status of each step. Leading the panel: a walk reads left to
-          right, and putting navigation first leaves the task and the buttons
-          in the order they are used in. */}
-      {!only && (
+    <div className={`step-bar jmp-panel${editable ? " step-bar--editing" : ""}`}>
+      {/* Where the reader is. The dots carry the count and the status of each
+          step; the author's step actions sit at the far end of the same row,
+          because adding and removing steps is about the sequence, not about
+          what is in the step. */}
+      {(!only || editable) && (
         <div className="step-bar__nav">
-          <button
-            className="button-icon"
-            onClick={() => goToStep(currentStep - 1)}
-            disabled={currentStep === 0}
-            title={t.previousStep}
-            aria-label={t.previousStep}
-          >
-            ◀
-          </button>
-          <div
-            className="step-bar__steps"
-            role="group"
-            aria-label={t.stepOverview}
-          >
-            {steps.map((_, i) => {
-              const status = getStepStatus(i);
-              const statusText = statusLabel(t, status, i + 1);
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  className={`step-bar__dot ${status}${
-                    i === currentStep ? " current" : ""
-                  }`}
-                  onClick={() => goToStep(i)}
-                  aria-current={i === currentStep ? "step" : undefined}
-                  aria-label={statusText}
-                  title={statusText}
+          <div className="step-bar__walk">
+            <button
+              className="button-icon button-ghost"
+              onClick={() => goToStep(currentStep - 1)}
+              disabled={currentStep === 0}
+              title={t.previousStep}
+              aria-label={t.previousStep}
+            >
+              ‹
+            </button>
+            <div
+              className="step-bar__steps"
+              role="group"
+              aria-label={t.stepOverview}
+            >
+              {steps.map((_, i) => {
+                const status = getStepStatus(i);
+                const statusText = statusLabel(t, status, i + 1);
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`step-bar__dot ${status}${
+                      i === currentStep ? " current" : ""
+                    }`}
+                    onClick={() => goToStep(i)}
+                    aria-current={i === currentStep ? "step" : undefined}
+                    aria-label={statusText}
+                    title={statusText}
+                  >
+                    <span aria-hidden="true">{statusMark[status]}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              className="button-icon button-ghost"
+              onClick={() => goToStep(currentStep + 1)}
+              disabled={currentStep === steps.length - 1}
+              title={t.nextStep}
+              aria-label={t.nextStep}
+            >
+              ›
+            </button>
+            <span className="step-bar__count">
+              {t.stepCounter(currentStep + 1, steps.length)}
+            </span>
+            {!editable && compact && hasTask && (
+              <button
+                className="button-icon button-ghost"
+                onClick={() => setTaskOpen(!taskOpen)}
+                aria-expanded={taskOpen}
+                aria-controls={`${id}-task`}
+                title={taskOpen ? t.stepDetailsHide : t.stepDetailsShow}
+                aria-label={taskOpen ? t.stepDetailsHide : t.stepDetailsShow}
+              >
+                <span
+                  className={`step-bar__chevron${taskOpen ? " open" : ""}`}
+                  aria-hidden="true"
                 >
-                  <span aria-hidden="true">{statusMark[status]}</span>
-                </button>
-              );
-            })}
+                  ‹
+                </span>
+              </button>
+            )}
           </div>
-          <button
-            className="button-icon"
-            onClick={() => goToStep(currentStep + 1)}
-            disabled={currentStep === steps.length - 1}
-            title={t.nextStep}
-            aria-label={t.nextStep}
-          >
-            ▶
-          </button>
+
+          {editable && (
+            <div className="step-bar__step-actions">
+              <button
+                className="button-ghost"
+                onClick={addStep}
+                title={t.addStepHint}
+              >
+                <span aria-hidden="true">+</span> {t.addStep}
+              </button>
+              <button
+                className="button-ghost button-ghost-danger"
+                onClick={() => deleteStep(currentStep)}
+                disabled={only}
+                title={t.deleteStep}
+              >
+                {t.deleteStep}
+              </button>
+              <button
+                className="button-icon button-ghost"
+                onClick={() => setDetailsOpen(!detailsOpen)}
+                aria-expanded={detailsOpen}
+                aria-controls={`${id}-details`}
+                title={detailsOpen ? t.stepDetailsHide : t.stepDetailsShow}
+                aria-label={detailsOpen ? t.stepDetailsHide : t.stepDetailsShow}
+              >
+                <span
+                  className={`step-bar__chevron${detailsOpen ? " open" : ""}`}
+                  aria-hidden="true"
+                >
+                  ‹
+                </span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Row 2 — what the step is and what to do about it. The badge marks an
-          exercise; the label describes the step; the buttons act on it. They
-          share a row because the task and its actions are read together, and
-          sit under the navigation rather than beside it so a long task does not
-          squeeze the dots. */}
-      {(hasSolution || label || hasControls) && (
-        <div className="step-bar__body">
-          {/* What the step is. "Your turn" used to be a banner across the whole
-              bar, which made the strip a heading plus a row for every other thing
-              it had to say; as a chip in front of the task it marks the step just
-              as clearly and costs no line of its own. The full prompt stays on it
-              as a title. */}
-          {(hasSolution || label) && (
-            <div className="step-bar__intro">
-              {hasSolution && (
-                <span className="step-bar__badge" title={t.yourTurn}>
-                  {t.exerciseBadge}
-                </span>
-              )}
-              {label && <span className="step-bar__label-text">{label}</span>}
-            </div>
-          )}
-
-          {hasControls && (
-            <div className="step-bar__controls">
-              {note && (
-                <button
-                  className="button-toggle"
-                  onClick={() => setHintFor(hintOpen ? null : currentStep)}
-                  aria-expanded={hintOpen}
-                  title={hintOpen ? t.hideHint : t.showHint}
-                >
-                  {t.showHint}
-                </button>
+      {/* What this step asks of the reader: the task, the actions on it, and
+          what the last check or the hint said, as callouts under it. */}
+      {!editable && hasTask && (taskOpen || !compact || only) && (
+        <div className="step-bar__task" id={`${id}-task`}>
+          {(hasSolution || label || note) && (
+            <div className="step-bar__head">
+              {(hasSolution || label) && (
+                <p className="step-bar__prompt">
+                  {hasSolution && (
+                    <span className="step-bar__badge" title={t.yourTurn}>
+                      {t.exerciseBadge}
+                    </span>
+                  )}
+                  {label && <span className="step-bar__label-text">{label}</span>}
+                </p>
               )}
 
-              {hasSolution && (
-                <>
-                  <button onClick={checkExercise}>{t.checkAnswer}</button>
-                  <button onClick={revealSolution}>{t.showSolution}</button>
-                </>
-              )}
-
-              {exerciseResult && (
-                <span
-                  className={
-                    exerciseResult.correct
-                      ? "step-bar__result correct"
-                      : "step-bar__result wrong"
-                  }
-                >
-                  {exerciseResult.correct
-                    ? t.exerciseCorrect
-                    : exerciseResult.wrong.length > 0
-                      ? t.exerciseWrong(exerciseResult.wrong)
-                      : t.exerciseExtra(exerciseResult.extra)}
-                </span>
+              {(note || hasSolution) && (
+                <div className="step-bar__actions">
+                  {note && (
+                    <button
+                      className="button-ghost button-toggle"
+                      onClick={() => setHintFor(hintOpen ? null : currentStep)}
+                      aria-pressed={hintOpen}
+                      aria-expanded={hintOpen}
+                      title={hintOpen ? t.hideHint : t.showHint}
+                    >
+                      {t.showHint}
+                    </button>
+                  )}
+                  {hasSolution && (
+                    <>
+                      <button className="button-ghost" onClick={revealSolution}>
+                        {t.showSolution}
+                      </button>
+                      <button className="button-primary" onClick={checkExercise}>
+                        {t.checkAnswer}
+                      </button>
+                    </>
+                  )}
+                </div>
               )}
             </div>
           )}
 
-          {/* Inline under the controls, not floating above the bar: a hint that
-              appears in place stays beside the button that opened it and does not
-              cover the diagram the reader is working on. */}
-          {hintOpen && note && <p className="step-bar__note">{note}</p>}
+          {hintOpen && note && (
+            <div className="step-bar__callout step-bar__callout--hint">
+              <span className="step-bar__callout-icon" aria-hidden="true">
+                ?
+              </span>
+              <p className="step-bar__callout-body">{note}</p>
+            </div>
+          )}
+
+          {exerciseResult && (
+            <div
+              className={`step-bar__callout ${
+                exerciseResult.correct
+                  ? "step-bar__callout--correct"
+                  : "step-bar__callout--wrong"
+              }`}
+              role="status"
+            >
+              <span className="step-bar__callout-icon" aria-hidden="true">
+                {exerciseResult.correct ? "✓" : "✕"}
+              </span>
+              <div className="step-bar__callout-body">
+                {exerciseResult.correct ? (
+                  <strong>{t.exerciseCorrect}</strong>
+                ) : (
+                  <>
+                    <strong>{t.checkVerdictWrong}</strong>
+                    <ul className="step-bar__diffs">
+                      {(messages.length > 0
+                        ? messages
+                        : [
+                            exerciseResult.wrong.length > 0
+                              ? t.exerciseWrong(exerciseResult.wrong)
+                              : t.exerciseExtra(exerciseResult.extra),
+                          ]
+                      )
+                        .slice(0, SHOWN)
+                        .map((message, i) => (
+                          <li key={i}>{message}</li>
+                        ))}
+                      {messages.length > SHOWN && (
+                        <li className="step-bar__diffs-more">
+                          {t.checkMore(messages.length - SHOWN)}
+                        </li>
+                      )}
+                    </ul>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* The lines to run, and what running them did. Dragging an edge says
               where a reference should end up; a line says what it means at the
               moment it runs, which is where the order of two lines starts to
-              matter. Both stay available: the palette is an extra way in, not a
-              replacement for the diagram. */}
+              matter. */}
           {runnable && (
             <div className="step-bar__statements">
               <div className="step-bar__statement-buttons">
@@ -261,7 +376,7 @@ export function StepBar({ editable = true }: { editable?: boolean }) {
                 ))}
                 {statementLog.length > 0 && (
                   <button
-                    className="button-toggle"
+                    className="button-ghost"
                     onClick={resetStatements}
                     title={t.resetStatementsHint}
                   >
@@ -291,53 +406,86 @@ export function StepBar({ editable = true }: { editable?: boolean }) {
         </div>
       )}
 
-      {/* Row 3 — authoring, on a row of its own. The reader's strip stays the
-          same shape in both playgrounds, and the two fields keep a width worth
-          typing in rather than being squeezed between the buttons. */}
-      {editable && (
-        <div className="step-bar__author">
-          <label className="step-bar__exercise" title={t.exerciseStepHint}>
+      {/* The author's description of the step, as a labelled form. Whether the
+          step is read or built comes first, because it changes what the other
+          fields mean: the title of a step is the task of an exercise. */}
+      {editable && detailsOpen && (
+        <div className="step-bar__author" id={`${id}-details`}>
+          <div className="jmp-fields">
+            <span className="jmp-field-label" id={`${id}-kind`}>
+              {t.stepKind}
+            </span>
+            <div
+              className="jmp-segmented"
+              role="radiogroup"
+              aria-labelledby={`${id}-kind`}
+            >
+              <button
+                role="radio"
+                aria-checked={!isExercise}
+                onClick={() => setStepExercise(currentStep, false)}
+                title={t.stepKindTraceHint}
+              >
+                {t.stepKindTrace}
+              </button>
+              <button
+                role="radio"
+                aria-checked={isExercise}
+                onClick={() => setStepExercise(currentStep, true)}
+                disabled={currentStep === 0}
+                title={currentStep === 0 ? t.exerciseNotFirst : t.exerciseStepHint}
+              >
+                {t.stepKindExercise}
+              </button>
+            </div>
+
+            <label className="jmp-field-label" htmlFor={`${id}-label`}>
+              {isExercise ? t.stepTask : t.stepTitle}
+            </label>
             <input
-              type="checkbox"
-              checked={step?.exercise ?? false}
-              onChange={(e) => setStepExercise(currentStep, e.target.checked)}
+              id={`${id}-label`}
+              className="jmp-input"
+              value={step?.label ?? ""}
+              placeholder={isExercise ? t.stepTaskPlaceholder : t.stepTitlePlaceholder}
+              onChange={(e) => setStepLabel(currentStep, e.target.value)}
             />
-            {t.exerciseStep}
-          </label>
-          <input
-            className="step-bar__label"
-            value={step?.label ?? ""}
-            placeholder={t.stepLabelPlaceholder}
-            aria-label={t.stepLabel}
-            onChange={(e) => setStepLabel(currentStep, e.target.value)}
-          />
-          <input
-            className="step-bar__label"
-            value={step?.note ?? ""}
-            placeholder={t.stepNotePlaceholder}
-            aria-label={t.stepNote}
-            onChange={(e) => setStepNote(currentStep, e.target.value)}
-          />
-          <input
-            className="step-bar__label"
-            value={step?.statements?.join("; ") ?? ""}
-            placeholder={t.statementsPlaceholder}
-            aria-label={t.statements}
-            title={t.statementsHint}
-            onChange={(e) =>
-              setStepStatements(currentStep, parseStatementList(e.target.value))
-            }
-          />
-          <button onClick={addStep} title={t.addStepHint}>
-            {t.addStep}
-          </button>
-          <button
-            onClick={() => deleteStep(currentStep)}
-            disabled={only}
-            title={t.deleteStep}
-          >
-            {t.deleteStep}
-          </button>
+
+            <label className="jmp-field-label" htmlFor={`${id}-note`}>
+              {t.showHint}
+            </label>
+            <input
+              id={`${id}-note`}
+              className="jmp-input"
+              value={step?.note ?? ""}
+              placeholder={t.stepNotePlaceholder}
+              onChange={(e) => setStepNote(currentStep, e.target.value)}
+            />
+
+            <label className="jmp-field-label" htmlFor={`${id}-statements`}>
+              {t.statements}
+            </label>
+            <input
+              id={`${id}-statements`}
+              className="jmp-input jmp-input--code"
+              value={step?.statements?.join("; ") ?? ""}
+              placeholder={t.statementsPlaceholder}
+              title={t.statementsHint}
+              onChange={(e) =>
+                setStepStatements(currentStep, parseStatementList(e.target.value))
+              }
+            />
+          </div>
+
+          {isExercise && step && (
+            <details className="step-bar__check">
+              <summary title={t.checkSettingsHint}>{t.checkSettings}</summary>
+              <CheckSettings
+                step={step}
+                onChange={(check) => setStepCheck(currentStep, check)}
+                t={t}
+              />
+            </details>
+          )}
         </div>
       )}
     </div>

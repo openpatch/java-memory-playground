@@ -14,14 +14,14 @@ export function DragGhost({ type }: DragGhostProps) {
 
   if (!position) return null;
 
-  let className = "sidebar-class";
+  let className = "sidebar-item sidebar-class";
   let label = type === "Array" ? t.newArray : t.newInstanceOf(type ?? "");
 
   if (type === "method-call") {
-    className = "sidebar-method-call";
+    className = "sidebar-item sidebar-method-call";
     label = t.callMethod;
   } else if (type === "variable") {
-    className = "sidebar-variable";
+    className = "sidebar-item sidebar-variable";
     label = t.declareGlobalVariable;
   }
 
@@ -33,10 +33,31 @@ export function DragGhost({ type }: DragGhostProps) {
         transform: `translate(${position.x}px, ${position.y}px) translate(-50%, -50%)`,
       }}
     >
+      <span className="sidebar-item__swatch" aria-hidden="true" />
       {label}
     </div>
   );
 }
+
+/** One thing to drag onto the canvas, with a swatch of the box it makes. */
+const PaletteItem = ({
+  kind,
+  label,
+  onPointerDown,
+}: {
+  kind: "class" | "variable" | "method-call";
+  label: string;
+  onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void;
+}) => (
+  <div
+    className={`dndnode sidebar-item sidebar-${kind}`}
+    onPointerDown={onPointerDown}
+    title={label}
+  >
+    <span className="sidebar-item__swatch" aria-hidden="true" />
+    <span className="sidebar-item__label">{label}</span>
+  </div>
+);
 
 export const Sidebar = ({
   klasses,
@@ -59,54 +80,43 @@ export const Sidebar = ({
     [onNodeDrop]
   );
 
+  const start =
+    (type: string) => (event: React.PointerEvent<HTMLDivElement>) => {
+      setType(type);
+      onDragStart(event, makeOnDropAction(type));
+    };
+
+  // Heap first, then the roots that point into it: the order a diagram is
+  // usually built in, and the order the three colours appear on the canvas.
   return (
     <>
       {isDragging && <DragGhost type={type} />}
-      <aside className="sidebar">
-        {Object.entries(klasses).map(([name]) => (
-          <div
+      <aside className="sidebar jmp-panel" aria-label={t.paletteHeading}>
+        <div className="jmp-panel__heading">{t.paletteHeading}</div>
+        {Object.keys(klasses).map((name) => (
+          <PaletteItem
             key={name}
-            className="dndnode sidebar-class"
-            onPointerDown={(event) => {
-              setType(name);
-              onDragStart(event, makeOnDropAction(name));
-            }}
-          >
-            {t.newInstanceOf(name)}
-          </div>
+            kind="class"
+            label={t.newInstanceOf(name)}
+            onPointerDown={start(name)}
+          />
         ))}
         {!options.hideNewArray && (
-          <div
-            className="dndnode sidebar-class"
-            onPointerDown={(event) => {
-              setType('Array');
-              onDragStart(event, makeOnDropAction('Array'));
-            }}
-          >
-            {t.newArray}
-          </div>
+          <PaletteItem kind="class" label={t.newArray} onPointerDown={start("Array")} />
         )}
         {!options.hideDeclareGlobalVariable && (
-          <div
-            className="sidebar-variable"
-            onPointerDown={(event) => {
-              setType('variable');
-              onDragStart(event, makeOnDropAction('variable'));
-            }}
-          >
-            {t.declareGlobalVariable}
-          </div>
+          <PaletteItem
+            kind="variable"
+            label={t.declareGlobalVariable}
+            onPointerDown={start("variable")}
+          />
         )}
         {!options.hideCallMethod && (
-          <div
-            className="sidebar-method-call"
-            onPointerDown={(event) => {
-              setType('method-call');
-              onDragStart(event, makeOnDropAction('method-call'));
-            }}
-          >
-            {t.callMethod}
-          </div>
+          <PaletteItem
+            kind="method-call"
+            label={t.callMethod}
+            onPointerDown={start("method-call")}
+          />
         )}
       </aside>
     </>

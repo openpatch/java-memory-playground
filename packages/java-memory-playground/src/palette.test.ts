@@ -73,6 +73,7 @@ describe("the palette in JavaScript", () => {
     ["--jmp-surface", palette.SURFACE],
     ["--jmp-surface-sunken", palette.SURFACE_SUNKEN],
     ["--jmp-warning", palette.WARNING],
+    ["--jmp-danger", palette.DANGER],
   ])("matches %s", (token, entry) => {
     expect(resolve(token)).toEqual(entry);
   });

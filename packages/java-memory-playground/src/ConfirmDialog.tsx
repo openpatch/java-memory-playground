@@ -40,6 +40,7 @@ export function ConfirmDialog({
       onClick={onCancel}
     >
       <div
+        className="jmp-dialog"
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -47,12 +48,15 @@ export function ConfirmDialog({
           backgroundColor: "var(--jmp-surface)",
           padding: "24px",
           borderRadius: "8px",
-          minWidth: "400px",
-          maxWidth: "min(560px, 90vw)",
+          // Never wider than the screen less its margin: a 400px minimum was
+          // wider than a phone, and cut off the title and the OK button.
+          width: "min(400px, calc(100vw - 32px))",
+          boxSizing: "border-box",
+          maxWidth: "min(560px, calc(100vw - 32px))",
           maxHeight: "80vh",
           overflowY: "auto",
           border: "1px solid var(--jmp-border)",
-          margin: "20px",
+          margin: "16px",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -80,31 +84,13 @@ export function ConfirmDialog({
           <button
             onClick={onCancel}
             autoFocus
-            style={{
-              backgroundColor: "var(--jmp-surface)",
-              color: "var(--jmp-text-muted)",
-              padding: "8px 16px",
-              fontSize: "14px",
-              fontWeight: "500",
-              border: "1px solid var(--jmp-border)",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
+            className="button-ghost"
           >
             {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
-            style={{
-              backgroundColor: destructive ? "var(--jmp-danger)" : "var(--jmp-text)",
-              color: "var(--jmp-surface)",
-              padding: "8px 16px",
-              fontSize: "14px",
-              fontWeight: "500",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
+            className={destructive ? "button-danger" : "button-primary"}
           >
             {confirmLabel}
           </button>

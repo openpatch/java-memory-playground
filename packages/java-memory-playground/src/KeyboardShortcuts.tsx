@@ -60,6 +60,7 @@ export const KeyboardShortcuts = ({
   const setRoute = useStore((state) => state.setRoute);
   const mode = useStore((state) => state.mode);
   const options = useStore((state) => state.options);
+  const compact = useStore((state) => state.compact);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -91,7 +92,7 @@ export const KeyboardShortcuts = ({
         zoomTo(1);
       } else if (matchesKeyBinding(e, keyBindings.fitView)) {
         e.preventDefault();
-        fitView({ padding: fitPaddingFor(options) });
+        fitView({ padding: fitPaddingFor(options, compact) });
       }
     };
 

@@ -9,12 +9,18 @@ import {
   useState,
 } from 'react';
 
+/** How far a press may wander and still count as a tap, in pixels. */
+const TAP_DISTANCE = 8;
+
 export type OnDropAction = ({ position }: { position: XYPosition }) => void;
 
 interface DnDContextType {
   // If a node is being dragged.
   isDragging: boolean;
   setIsDragging: Dispatch<SetStateAction<boolean>>;
+  /** Where the press started, to tell a tap from a drag. */
+  start: XYPosition | null;
+  setStart: Dispatch<SetStateAction<XYPosition | null>>;
   // The action to be performed when something is dropped on the flow.
   dropAction: OnDropAction | null;
   setDropAction: Dispatch<SetStateAction<OnDropAction | null>>;
@@ -30,12 +36,15 @@ const DnDContext = createContext<DnDContextType | null>(null);
 export function DnDProvider({ children }: { children: React.ReactNode }) {
   const [isDragging, setIsDragging] = useState(false);
   const [dropAction, setDropAction] = useState<OnDropAction | null>(null);
+  const [start, setStart] = useState<XYPosition | null>(null);
 
   return (
     <DnDContext.Provider
       value={{
         isDragging,
         setIsDragging,
+        start,
+        setStart,
         dropAction,
         // This is a workaround to ensure that the drop action is not treated as a lazy function.
         setDropAction: (action) => setDropAction(() => action),
@@ -57,7 +66,8 @@ export const useDnD = () => {
     throw new Error('useDnD must be used within a DnDProvider');
   }
 
-  const { isDragging, setIsDragging, setDropAction, dropAction } = context;
+  const { isDragging, setIsDragging, setDropAction, dropAction, start, setStart } =
+    context;
 
   // This callback will be returned by the `useDnD` hook, and can be used in your UI,
   // when you want to start dragging a node into the flow.
@@ -66,10 +76,11 @@ export const useDnD = () => {
     (event: React.PointerEvent<HTMLDivElement>, onDrop: OnDropAction) => {
       event.preventDefault();
       (event.target as HTMLElement).setPointerCapture(event.pointerId);
+      setStart({ x: event.clientX, y: event.clientY });
       setIsDragging(true);
       setDropAction(onDrop);
     },
-    [setIsDragging, setDropAction],
+    [setIsDragging, setDropAction, setStart],
   );
 
   const onDragEnd = useCallback(
@@ -83,18 +94,34 @@ export const useDnD = () => {
 
       // Use elementFromPoint to get the actual element under the pointer
       const elementUnderPointer = document.elementFromPoint(event.clientX, event.clientY);
-      const isDroppingOnFlow = elementUnderPointer?.closest('.react-flow');
+      const moved = start
+        ? Math.hypot(event.clientX - start.x, event.clientY - start.y)
+        : Infinity;
+      const tapped = moved < TAP_DISTANCE;
+      // Only allow dropping on the flow area — which a tap on the palette, a
+      // panel floating over the flow, always is.
+      const flow =
+        elementUnderPointer?.closest('.react-flow') ??
+        (tapped ? (event.target as HTMLElement).closest('.react-flow') : null);
       event.preventDefault();
 
-      // Only allow dropping on the flow area
-      if (isDroppingOnFlow) {
-        const flowPosition = screenToFlowPosition({ x: event.clientX, y: event.clientY });
-        dropAction?.({ position: flowPosition });
+      if (flow) {
+        // A tap, or a drop onto one of the panels floating over the canvas,
+        // would put the new box underneath that panel — where, on a phone,
+        // the palette covers half the screen. Both mean "add one", so it goes
+        // in the middle of what is visible instead.
+        let point = { x: event.clientX, y: event.clientY };
+        if (tapped || elementUnderPointer?.closest('.react-flow__panel')) {
+          const rect = flow.getBoundingClientRect();
+          point = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        }
+        dropAction?.({ position: screenToFlowPosition(point) });
       }
+      setStart(null);
 
       setIsDragging(false);
     },
-    [screenToFlowPosition, setIsDragging, dropAction],
+    [screenToFlowPosition, setIsDragging, dropAction, start, setStart],
   );
 
   // Add global touch event listeners

@@ -46,6 +46,28 @@ export interface Translations {
   exerciseCorrect: string;
   exerciseWrong: (wrong: string[]) => string;
   exerciseExtra: (extra: string[]) => string;
+  /** A path inside a frame, e.g. `node.next (in List.add)`. */
+  checkInFrame: (path: string, frame: string) => string;
+  checkMissing: (path: string) => string;
+  checkExpectedNull: (path: string) => string;
+  checkExpectedObject: (path: string) => string;
+  checkValue: (path: string, expected: string, found: string) => string;
+  checkKlass: (path: string, expected: string, found: string) => string;
+  checkSameAs: (path: string, other: string) => string;
+  checkDistinctFrom: (path: string, other: string) => string;
+  checkExtraRoot: (path: string) => string;
+  checkStack: (expected: string[], found: string[]) => string;
+  checkMore: (count: number) => string;
+  checkSettings: string;
+  checkSettingsHint: string;
+  checkRoots: string;
+  checkRootsHint: string;
+  checkNoRoots: string;
+  checkExtraRoots: string;
+  checkExtraRootsAllow: string;
+  checkExtraRootsForbid: string;
+  checkStringIdentity: string;
+  checkStringIdentityHint: string;
   statements: string;
   statementsPlaceholder: string;
   statementsHint: string;
@@ -59,6 +81,26 @@ export interface Translations {
   statementUnknownAttribute: (name: string, klass: string) => string;
   statementNotAReference: (path: string) => string;
   stepOverview: string;
+  /** "Step 2 of 5", beside the dots. */
+  stepCounter: (step: number, total: number) => string;
+  stepKind: string;
+  stepKindTrace: string;
+  stepKindTraceHint: string;
+  stepKindExercise: string;
+  exerciseNotFirst: string;
+  stepTitle: string;
+  stepTask: string;
+  stepTitlePlaceholder: string;
+  stepTaskPlaceholder: string;
+  stepDetailsShow: string;
+  stepDetailsHide: string;
+  checkVerdictWrong: string;
+  paletteHeading: string;
+  /** The button that opens the toolbar's menu in the compact layout. */
+  menu: string;
+  /** The button that shows the palette in the compact layout. */
+  showPalette: string;
+  hidePalette: string;
   stepStatusNone: (step: number) => string;
   stepStatusUntried: (step: number) => string;
   stepStatusCorrect: (step: number) => string;
@@ -145,7 +187,14 @@ export interface Translations {
     hideSteps: string;
     hideStepChanges: string;
     gcPrediction: string;
+    hideUndoRedo: string;
+    hideDownloadPng: string;
+    hideDownloadAllPng: string;
+    hidePrintMode: string;
+    hideHelp: string;
+    hideSave: string;
   };
+  toolbarOptions: string;
 }
 
 const en: Translations = {
@@ -197,6 +246,35 @@ const en: Translations = {
   exerciseCorrect: "That matches.",
   exerciseWrong: (wrong) => `Not right yet: ${wrong.join(", ")}`,
   exerciseExtra: (extra) => `Not part of this step: ${extra.join(", ")}`,
+  checkInFrame: (path, frame) => `${path} (in ${frame})`,
+  checkMissing: (path) => `${path} does not exist yet`,
+  checkExpectedNull: (path) => `${path} should be null`,
+  checkExpectedObject: (path) => `${path} should refer to an object, not null`,
+  checkValue: (path, expected, found) => `${path} should be ${expected}, not ${found}`,
+  checkKlass: (path, expected, found) =>
+    `${path} should be a ${expected}, not a ${found}`,
+  checkSameAs: (path, other) =>
+    `${path} should refer to the same object as ${other}`,
+  checkDistinctFrom: (path, other) =>
+    `${path} should refer to an object of its own, not the one ${other} refers to`,
+  checkExtraRoot: (path) => `${path} is not part of this step`,
+  checkStack: (expected, found) =>
+    `The call stack should be ${expected.join(" → ") || "empty"}, not ${
+      found.join(" → ") || "empty"
+    }`,
+  checkMore: (count) => `and ${count} more`,
+  checkSettings: "Check settings",
+  checkSettingsHint: "Choose what checking this exercise looks at",
+  checkRoots: "Checked",
+  checkRootsHint:
+    "Unticked variables are not checked; anything the student builds there is fine",
+  checkNoRoots: "This step has no variables yet",
+  checkExtraRoots: "Other variables",
+  checkExtraRootsAllow: "allowed (e.g. a temporary variable)",
+  checkExtraRootsForbid: "not allowed",
+  checkStringIdentity: "Strings by identity (==)",
+  checkStringIdentityHint:
+    "Two Strings with the same characters only match when they are the same object",
   statements: "Statements",
   statementsPlaceholder: "neu.next = current.next; current.next = neu",
   statementsHint:
@@ -213,6 +291,23 @@ const en: Translations = {
   statementNotAReference: (path) =>
     `${path} holds a value, not a reference.`,
   stepOverview: "Steps",
+  stepCounter: (step, total) => `Step ${step} of ${total}`,
+  stepKind: "Type",
+  stepKindTrace: "Step",
+  stepKindTraceHint: "The reader looks at this step",
+  stepKindExercise: "Exercise",
+  exerciseNotFirst: "The first step is where an exercise starts from, so it cannot be one",
+  stepTitle: "Title",
+  stepTask: "Task",
+  stepTitlePlaceholder: "What happens here, e.g. head = head.next;",
+  stepTaskPlaceholder: "What to build, e.g. insert a node at the head",
+  stepDetailsShow: "Show step details",
+  stepDetailsHide: "Hide step details",
+  checkVerdictWrong: "Not right yet",
+  paletteHeading: "Add",
+  menu: "Menu",
+  showPalette: "Show what can be added",
+  hidePalette: "Hide what can be added",
   stepStatusNone: (step) => `Step ${step}: nothing to do`,
   stepStatusUntried: (step) => `Step ${step}: not checked yet`,
   stepStatusCorrect: (step) => `Step ${step}: correct`,
@@ -299,7 +394,14 @@ const en: Translations = {
     hideSteps: "Hide the step bar",
     hideStepChanges: "Do not mark what changed in a step",
     gcPrediction: "Ask which objects are garbage before collecting",
+    hideUndoRedo: "Hide undo and redo",
+    hideDownloadPng: "Hide „Download (PNG)“",
+    hideDownloadAllPng: "Hide „Download all steps“",
+    hidePrintMode: "Hide „B&W“",
+    hideHelp: "Hide the help link (?)",
+    hideSave: "Hide „Save“",
   },
+  toolbarOptions: "Toolbar",
 };
 
 const de: Translations = {
@@ -358,6 +460,36 @@ const de: Translations = {
   exerciseCorrect: "Das passt.",
   exerciseWrong: (wrong) => `Noch nicht richtig: ${wrong.join(", ")}`,
   exerciseExtra: (extra) => `Gehört nicht zu diesem Schritt: ${extra.join(", ")}`,
+  checkInFrame: (path, frame) => `${path} (in ${frame})`,
+  checkMissing: (path) => `${path} gibt es noch nicht`,
+  checkExpectedNull: (path) => `${path} sollte null sein`,
+  checkExpectedObject: (path) => `${path} sollte auf ein Objekt zeigen, nicht null sein`,
+  checkValue: (path, expected, found) =>
+    `${path} sollte ${expected} sein, nicht ${found}`,
+  checkKlass: (path, expected, found) =>
+    `${path} sollte ein ${expected} sein, kein ${found}`,
+  checkSameAs: (path, other) =>
+    `${path} sollte auf dasselbe Objekt zeigen wie ${other}`,
+  checkDistinctFrom: (path, other) =>
+    `${path} sollte auf ein eigenes Objekt zeigen, nicht auf das von ${other}`,
+  checkExtraRoot: (path) => `${path} gehört nicht zu diesem Schritt`,
+  checkStack: (expected, found) =>
+    `Der Aufrufstapel sollte ${expected.join(" → ") || "leer"} sein, nicht ${
+      found.join(" → ") || "leer"
+    }`,
+  checkMore: (count) => `und ${count} weitere`,
+  checkSettings: "Prüfung",
+  checkSettingsHint: "Festlegen, worauf die Prüfung dieser Aufgabe achtet",
+  checkRoots: "Geprüft",
+  checkRootsHint:
+    "Nicht angehakte Variablen werden nicht geprüft; dort ist alles erlaubt",
+  checkNoRoots: "Dieser Schritt hat noch keine Variablen",
+  checkExtraRoots: "Weitere Variablen",
+  checkExtraRootsAllow: "erlaubt (z. B. eine Hilfsvariable)",
+  checkExtraRootsForbid: "nicht erlaubt",
+  checkStringIdentity: "Strings nach Identität (==)",
+  checkStringIdentityHint:
+    "Zwei Strings mit denselben Zeichen passen nur, wenn sie dasselbe Objekt sind",
   statements: "Anweisungen",
   statementsPlaceholder: "neu.next = current.next; current.next = neu",
   statementsHint:
@@ -375,6 +507,23 @@ const de: Translations = {
   statementNotAReference: (path) =>
     `${path} enthält einen Wert, keine Referenz.`,
   stepOverview: "Schritte",
+  stepCounter: (step, total) => `Schritt ${step} von ${total}`,
+  stepKind: "Art",
+  stepKindTrace: "Schritt",
+  stepKindTraceHint: "Dieser Schritt wird angeschaut",
+  stepKindExercise: "Aufgabe",
+  exerciseNotFirst: "Vom ersten Schritt geht eine Aufgabe aus, er kann selbst keine sein",
+  stepTitle: "Titel",
+  stepTask: "Aufgabe",
+  stepTitlePlaceholder: "Was hier passiert, z. B. head = head.next;",
+  stepTaskPlaceholder: "Was zu bauen ist, z. B. Knoten vorne einfügen",
+  stepDetailsShow: "Schrittdetails zeigen",
+  stepDetailsHide: "Schrittdetails ausblenden",
+  checkVerdictWrong: "Noch nicht richtig",
+  paletteHeading: "Hinzufügen",
+  menu: "Menü",
+  showPalette: "Zeigen, was hinzugefügt werden kann",
+  hidePalette: "Ausblenden, was hinzugefügt werden kann",
   stepStatusNone: (step) => `Schritt ${step}: nichts zu tun`,
   stepStatusUntried: (step) => `Schritt ${step}: noch nicht geprüft`,
   stepStatusCorrect: (step) => `Schritt ${step}: richtig`,
@@ -461,7 +610,14 @@ const de: Translations = {
     hideSteps: "Schrittleiste ausblenden",
     hideStepChanges: "Änderungen eines Schritts nicht hervorheben",
     gcPrediction: "Vor dem Aufräumen fragen, welche Objekte Müll sind",
+    hideUndoRedo: "Rückgängig und Wiederholen ausblenden",
+    hideDownloadPng: "„Herunterladen (PNG)“ ausblenden",
+    hideDownloadAllPng: "„Alle Schritte herunterladen“ ausblenden",
+    hidePrintMode: "„S/W“ ausblenden",
+    hideHelp: "Hilfe-Link (?) ausblenden",
+    hideSave: "„Speichern“ ausblenden",
   },
+  toolbarOptions: "Werkzeugleiste",
 };
 
 export const translations: Record<string, Translations> = {
