@@ -1,4 +1,4 @@
-import type { CheckOptions } from "./canonical";
+import type { CheckOptions } from "./canonical.js";
 
 export const numericDataTypes = [
   "int",

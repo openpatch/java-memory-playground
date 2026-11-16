@@ -1,8 +1,8 @@
 import { useId, useMemo } from "react";
 
-import { CheckOptions, rootsOf } from "./canonical";
-import { StoreStep } from "./store";
-import { Translations } from "./translations";
+import { CheckOptions, rootsOf } from "./canonical.js";
+import { StoreStep } from "./store.js";
+import { Translations } from "./translations.js";
 
 /**
  * How an exercise step is checked, for the teacher who authors it.

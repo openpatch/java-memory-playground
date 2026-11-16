@@ -3,8 +3,8 @@ import {
   executeStatement,
   parseStatement,
   parseStatementList,
-} from "./statements";
-import { CustomEdgeType, CustomNodeType } from "./types";
+} from "./statements.js";
+import { CustomEdgeType, CustomNodeType } from "./types.js";
 
 const node = (id: string, next?: string) =>
   ({

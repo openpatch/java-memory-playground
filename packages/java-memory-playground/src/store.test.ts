@@ -3,8 +3,8 @@ import {
   createMemoryStore,
   isPersistenceEnabled,
   setPersistence,
-} from "./store";
-import { Memory, STRING_KLASS, initialMemory } from "./memory";
+} from "./store.js";
+import { Memory, STRING_KLASS, initialMemory } from "./memory.js";
 
 afterEach(() => {
   setPersistence(false);

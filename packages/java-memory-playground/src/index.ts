@@ -1,56 +1,56 @@
 import MemoryPlayground, {
   MemoryPlaygroundEditor,
-} from "./MemoryPlayground";
+} from "./MemoryPlayground.js";
 
 export { MemoryPlayground, MemoryPlaygroundEditor };
-export type { MemoryPlaygroundProps } from "./MemoryPlayground";
+export type { MemoryPlaygroundProps } from "./MemoryPlayground.js";
 
-export { MemoryView } from "./MemoryView";
-export { ConfigView } from "./ConfigView";
-export { KeyboardShortcuts, defaultKeyBindings } from "./KeyboardShortcuts";
-export { InlineString } from "./InlineString";
-export { StepBar } from "./StepBar";
-export { diffSteps, emptyDiff } from "./stepDiff";
-export { canonicalRoots, checkAgainst, rootsOf } from "./canonical";
-export { diffMessage, resultMessages } from "./checkMessages";
+export { MemoryView } from "./MemoryView.js";
+export { ConfigView } from "./ConfigView.js";
+export { KeyboardShortcuts, defaultKeyBindings } from "./KeyboardShortcuts.js";
+export { InlineString } from "./InlineString.js";
+export { StepBar } from "./StepBar.js";
+export { diffSteps, emptyDiff } from "./stepDiff.js";
+export { canonicalRoots, checkAgainst, rootsOf } from "./canonical.js";
+export { diffMessage, resultMessages } from "./checkMessages.js";
 export type {
   CheckDiff,
   CheckOptions,
   ExerciseResult,
   Root,
   StackDiff,
-} from "./canonical";
+} from "./canonical.js";
 export {
   executeStatement,
   parseStatement,
   parseStatementList,
-} from "./statements";
-export type { StatementError, StatementResult, Slot } from "./statements";
-export { ClassSource } from "./ClassSource";
-export { ConfirmDialog } from "./ConfirmDialog";
-export { parseJavaClasses, toJavaSource } from "./javaSource";
-export type { ParsedClasses } from "./javaSource";
-export { klassImpact, hasImpact } from "./klassImpact";
-export type { KlassImpact } from "./klassImpact";
-export { optionPresets } from "./presets";
-export type { PresetName } from "./presets";
+} from "./statements.js";
+export type { StatementError, StatementResult, Slot } from "./statements.js";
+export { ClassSource } from "./ClassSource.js";
+export { ConfirmDialog } from "./ConfirmDialog.js";
+export { parseJavaClasses, toJavaSource } from "./javaSource.js";
+export type { ParsedClasses } from "./javaSource.js";
+export { klassImpact, hasImpact } from "./klassImpact.js";
+export type { KlassImpact } from "./klassImpact.js";
+export { optionPresets } from "./presets.js";
+export type { PresetName } from "./presets.js";
 export {
   captureDiagram,
   captureDiagramCanvas,
   downloadAllSteps,
-} from "./exportSteps";
-export type { CaptureSession } from "./exportSteps";
-export type { StepDiff } from "./stepDiff";
-export { useColorMode, usedColorScheme } from "./colorMode";
-export type { ColorMode } from "./colorMode";
-export { paletteFor } from "./palette";
-export type { Palette, PaletteEntry } from "./palette";
+} from "./exportSteps.js";
+export type { CaptureSession } from "./exportSteps.js";
+export type { StepDiff } from "./stepDiff.js";
+export { useColorMode, usedColorScheme } from "./colorMode.js";
+export type { ColorMode } from "./colorMode.js";
+export { paletteFor } from "./palette.js";
+export type { Palette, PaletteEntry } from "./palette.js";
 
 export {
   createMemoryStore,
   setPersistence,
   isPersistenceEnabled,
-} from "./store";
+} from "./store.js";
 export type {
   RFState,
   Route,
@@ -59,26 +59,26 @@ export type {
   StoreStep,
   StatementEntry,
   GcPredictionResult,
-} from "./store";
+} from "./store.js";
 export {
   useStore,
   useMemoryStore,
   useTemporalStore,
   StoreProvider,
-} from "./storeContext";
-export { useUndoRedo } from "./useUndoRedo";
+} from "./storeContext.js";
+export { useUndoRedo } from "./useUndoRedo.js";
 
 export {
   translations,
   getTranslations,
   getLanguage,
   detectBrowserLanguage,
-} from "./translations";
-export type { Translations } from "./translations";
+} from "./translations.js";
+export type { Translations } from "./translations.js";
 
-export { parseMemory } from "./helper";
-export { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
-export { serializeState, deserializeState } from "./serde";
+export { parseMemory } from "./helper.js";
+export { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes.js";
+export { serializeState, deserializeState } from "./serde.js";
 export {
   initialMemory,
   defaultValueFor,
@@ -86,7 +86,7 @@ export {
   numericDataTypes,
   builtInDataTypes,
   STRING_KLASS,
-} from "./memory";
+} from "./memory.js";
 export type {
   Memory,
   Step,
@@ -96,5 +96,5 @@ export type {
   Klass,
   Attribute,
   DataType,
-} from "./memory";
-export type { KeyBinding, KeyBindings } from "./types";
+} from "./memory.js";
+export type { KeyBinding, KeyBindings } from "./types.js";

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { diffSteps } from "./stepDiff";
-import { StoreStep } from "./store";
-import { CustomEdgeType, CustomNodeType } from "./types";
+import { diffSteps } from "./stepDiff.js";
+import { StoreStep } from "./store.js";
+import { CustomEdgeType, CustomNodeType } from "./types.js";
 
 const objectNode = (
   id: string,

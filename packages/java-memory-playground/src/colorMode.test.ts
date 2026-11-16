@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { usedColorScheme } from "./colorMode";
+import { usedColorScheme } from "./colorMode.js";
 
 /*
  * The hook derives the JS-side palette from the used color-scheme of the

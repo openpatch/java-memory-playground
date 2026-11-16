@@ -3,6 +3,10 @@
   "compilerOptions": {
     "noEmit": false,
     "allowImportingTsExtensions": false,
+    // Emit declarations that resolve for consumers using node16/nodenext:
+    // relative imports must carry a .js extension, and this enforces it.
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "rootDir": "src",
     "declarationDir": "dist"
   },

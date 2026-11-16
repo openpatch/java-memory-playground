@@ -1,6 +1,6 @@
-import { STRING_KLASS, defaultValueFor, primitveDataTypes } from "./memory";
-import { StoreStep } from "./store";
-import { CustomEdgeType, CustomNodeType } from "./types";
+import { STRING_KLASS, defaultValueFor, primitveDataTypes } from "./memory.js";
+import { StoreStep } from "./store.js";
+import { CustomEdgeType, CustomNodeType } from "./types.js";
 
 /**
  * The shape of a diagram, written so that two diagrams built independently can

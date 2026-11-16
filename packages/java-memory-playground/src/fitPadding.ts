@@ -1,6 +1,6 @@
 import { FitViewOptions } from "@xyflow/react";
 
-import { Memory } from "./memory";
+import { Memory } from "./memory.js";
 
 /** React Flow's own margin around a `<Panel>`. */
 const PANEL_MARGIN = 15;

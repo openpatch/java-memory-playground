@@ -1,11 +1,11 @@
 import { ChangeEventHandler } from "react";
 import { useShallow } from "zustand/shallow";
 
-import { STRING_KLASS } from "./memory";
-import { RFState } from "./store";
-import useStore from "./storeContext";
-import { CustomEdgeType, CustomNodeType } from "./types";
-import { getRanMemoryAdress } from "./utils";
+import { STRING_KLASS } from "./memory.js";
+import { RFState } from "./store.js";
+import useStore from "./storeContext.js";
+import { CustomEdgeType, CustomNodeType } from "./types.js";
+import { getRanMemoryAdress } from "./utils.js";
 
 const selector = (state: RFState) => ({
   nodes: state.steps[state.currentStep]?.nodes ?? [],

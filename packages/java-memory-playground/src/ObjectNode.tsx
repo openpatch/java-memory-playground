@@ -16,12 +16,12 @@ import {
   STRING_KLASS,
   numericDataTypes,
   primitveDataTypes,
-} from "./memory";
-import { InlineString } from "./InlineString";
-import { isConnectedToMethodCall, isConnectedToVariable } from "./utils";
-import { CustomEdgeType, CustomNodeType } from "./types";
-import useStore from "./storeContext";
-import { RFState } from "./store";
+} from "./memory.js";
+import { InlineString } from "./InlineString.js";
+import { isConnectedToMethodCall, isConnectedToVariable } from "./utils.js";
+import { CustomEdgeType, CustomNodeType } from "./types.js";
+import useStore from "./storeContext.js";
+import { RFState } from "./store.js";
 import { useShallow } from "zustand/shallow";
 
 function AttributeHandle({

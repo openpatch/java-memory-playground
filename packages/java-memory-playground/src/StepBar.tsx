@@ -1,12 +1,12 @@
 import { useEffect, useId, useState } from "react";
 import { useShallow } from "zustand/shallow";
 
-import { CheckSettings } from "./CheckSettings";
-import { resultMessages } from "./checkMessages";
-import { parseStatementList } from "./statements";
-import { StatementEntry, RFState, StepStatus } from "./store";
-import useStore from "./storeContext";
-import { Translations } from "./translations";
+import { CheckSettings } from "./CheckSettings.js";
+import { resultMessages } from "./checkMessages.js";
+import { parseStatementList } from "./statements.js";
+import { StatementEntry, RFState, StepStatus } from "./store.js";
+import useStore from "./storeContext.js";
+import { Translations } from "./translations.js";
 
 const selector = (state: RFState) => ({
   steps: state.steps,

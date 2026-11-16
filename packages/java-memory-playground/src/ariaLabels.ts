@@ -1,6 +1,6 @@
 import { ReactFlowProps } from "@xyflow/react";
 
-import { Translations } from "./translations";
+import { Translations } from "./translations.js";
 
 /**
  * React Flow's own accessible text, in the playground's language.

@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
-import { Memory } from "./memory";
-import { useDnDPosition, useDnD, OnDropAction } from "./useDnD";
-import useStore from "./storeContext";
+import { Memory } from "./memory.js";
+import { useDnDPosition, useDnD, OnDropAction } from "./useDnD.js";
+import useStore from "./storeContext.js";
 
 interface DragGhostProps {
   type: string | null;

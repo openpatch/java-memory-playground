@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import useStore from "./storeContext";
+import useStore from "./storeContext.js";
 
 interface SimpleInputDialogProps {
   title: string;

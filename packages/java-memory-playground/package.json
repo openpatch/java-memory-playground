@@ -37,7 +37,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "rimraf dist && vite build && pnpm build:types",
-    "build:types": "tsc --project tsconfig.build.json --declaration --emitDeclarationOnly",
+    "build:types": "tsc --project tsconfig.build.json --declaration --emitDeclarationOnly && node scripts/strip-css-imports.mjs dist",
     "dev": "vite build --watch",
     "schema": "typescript-json-schema ./src/memory.ts Memory Obj Variable MethodCall Klass DataType --out ./schemas/memory.schema.json --required"
   },

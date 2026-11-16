@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
-import { Memory, initialMemory } from "./memory";
+import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes.js";
+import { Memory, initialMemory } from "./memory.js";
 
 const roundTrip = (memory: Memory) => {
   const { nodes, edges } = getEdgesAndNodes(memory);

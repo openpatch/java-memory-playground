@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 // `?raw` rather than `node:fs`, so the test needs no path handling and no
 // Node type definitions.
 import css from "./index.css?raw";
-import * as palette from "./palette";
+import * as palette from "./palette.js";
 
 /**
  * The `.java-memory-playground` block, which is where the palette is declared.

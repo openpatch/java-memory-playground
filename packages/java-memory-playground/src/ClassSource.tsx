@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-import { Klasses } from "./memory";
-import { parseJavaClasses, toJavaSource } from "./javaSource";
-import { Translations } from "./translations";
+import { Klasses } from "./memory.js";
+import { parseJavaClasses, toJavaSource } from "./javaSource.js";
+import { Translations } from "./translations.js";
 
 /**
  * The classes of a diagram, written as Java.

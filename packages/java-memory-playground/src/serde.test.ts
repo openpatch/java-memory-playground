@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { deserializeState } from "./serde";
+import { deserializeState } from "./serde.js";
 
 test("parse antoher pako string", () => {
   expect(

@@ -1,4 +1,4 @@
-import { DataType } from "./memory";
+import { DataType } from "./memory.js";
 
 interface ArrayCreationDialogProps {
   onConfirm: (name: string, length: number, elementType: DataType) => void;
