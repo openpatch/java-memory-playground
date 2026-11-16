@@ -4,15 +4,15 @@ import { ReactFlowProvider } from "@xyflow/react";
 import { useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/shallow";
 
-import { ConfigView } from "./ConfigView";
-import { KeyboardShortcuts } from "./KeyboardShortcuts";
-import { MemoryView } from "./MemoryView";
-import { parseMemory } from "./helper";
-import { Memory } from "./memory";
-import { PlaygroundMode, RFState } from "./store";
-import useStore, { StoreProvider, useMemoryStore } from "./storeContext";
-import { KeyBindings } from "./types";
-import { DnDProvider } from "./useDnD";
+import { ConfigView } from "./ConfigView.js";
+import { KeyboardShortcuts } from "./KeyboardShortcuts.js";
+import { MemoryView } from "./MemoryView.js";
+import { parseMemory } from "./helper.js";
+import { Memory } from "./memory.js";
+import { PlaygroundMode, RFState } from "./store.js";
+import useStore, { StoreProvider, useMemoryStore } from "./storeContext.js";
+import { KeyBindings } from "./types.js";
+import { DnDProvider } from "./useDnD.js";
 
 export interface MemoryPlaygroundProps {
   /**

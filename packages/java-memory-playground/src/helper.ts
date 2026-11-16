@@ -5,7 +5,7 @@ import {
   STRING_KLASS,
   Step,
   initialMemory,
-} from "./memory";
+} from "./memory.js";
 
 const isReference = (value: unknown): value is string =>
   typeof value === "string" && value.startsWith("@");

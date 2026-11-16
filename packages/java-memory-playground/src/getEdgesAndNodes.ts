@@ -1,5 +1,5 @@
-import { MethodCall, Obj, Step, Variable, primitveDataTypes } from "./memory";
-import { CustomEdgeType, CustomNodeType } from "./types";
+import { MethodCall, Obj, Step, Variable, primitveDataTypes } from "./memory.js";
+import { CustomEdgeType, CustomNodeType } from "./types.js";
 
 export type EdgeData = {};
 

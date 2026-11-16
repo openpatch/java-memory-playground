@@ -4,7 +4,7 @@ import {
   NodeProps,
   Position,
 } from "@xyflow/react";
-import { Variable } from "./memory";
+import { Variable } from "./memory.js";
 
 export type VariableNode = Node<Variable, "variable">
 

@@ -1,13 +1,13 @@
 import { useShallow } from "zustand/shallow";
-import useStore from "./storeContext";
-import { RFState } from "./store";
+import useStore from "./storeContext.js";
+import { RFState } from "./store.js";
 import { useCallback, useState, useEffect } from "react";
-import { DataType, builtInDataTypes } from "./memory";
-import { SimpleInputDialog } from "./SimpleInputDialog";
-import { optionPresets } from "./presets";
-import { ClassSource } from "./ClassSource";
-import { ConfirmDialog } from "./ConfirmDialog";
-import { hasImpact, klassImpact, KlassImpact } from "./klassImpact";
+import { DataType, builtInDataTypes } from "./memory.js";
+import { SimpleInputDialog } from "./SimpleInputDialog.js";
+import { optionPresets } from "./presets.js";
+import { ClassSource } from "./ClassSource.js";
+import { ConfirmDialog } from "./ConfirmDialog.js";
+import { hasImpact, klassImpact, KlassImpact } from "./klassImpact.js";
 
 const selector = (state: RFState) => ({
   storedKlasses: state.klasses,

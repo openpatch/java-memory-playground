@@ -1,5 +1,5 @@
-import { CheckDiff, ExerciseResult } from "./canonical";
-import { Translations } from "./translations";
+import { CheckDiff, ExerciseResult } from "./canonical.js";
+import { Translations } from "./translations.js";
 
 /** A path as the reader would write it, with its frame when it is a local. */
 const where = (t: Translations, path: string, frame?: string) =>

@@ -11,23 +11,23 @@ import {
   ExerciseResult,
   checkAgainst,
   fingerprintOf,
-} from "./canonical";
-import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes";
-import { parseMemory, stepsOf } from "./helper";
-import { Memory, Step, initialMemory } from "./memory";
-import { deserializeState, serializeState } from "./serde";
+} from "./canonical.js";
+import { getEdgesAndNodes, getMemory } from "./getEdgesAndNodes.js";
+import { parseMemory, stepsOf } from "./helper.js";
+import { Memory, Step, initialMemory } from "./memory.js";
+import { deserializeState, serializeState } from "./serde.js";
 import {
   Translations,
   detectBrowserLanguage,
   getTranslations,
   translations,
-} from "./translations";
+} from "./translations.js";
 import {
   StatementError,
   executeStatement,
-} from "./statements";
-import { CustomEdgeType, CustomNodeType } from "./types";
-import { isConnectedToMethodCall, isConnectedToVariable } from "./utils";
+} from "./statements.js";
+import { CustomEdgeType, CustomNodeType } from "./types.js";
+import { isConnectedToMethodCall, isConnectedToVariable } from "./utils.js";
 
 export type Route = "view" | "config";
 

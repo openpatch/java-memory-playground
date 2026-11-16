@@ -14,10 +14,10 @@ import {
   numericDataTypes,
   primitveDataTypes,
   STRING_KLASS,
-} from "./memory";
-import { CustomEdgeType, CustomNodeType } from "./types";
-import useStore from "./storeContext";
-import { InlineString } from "./InlineString";
+} from "./memory.js";
+import { CustomEdgeType, CustomNodeType } from "./types.js";
+import useStore from "./storeContext.js";
+import { InlineString } from "./InlineString.js";
 
 function LocalVariableHandle({
   name,

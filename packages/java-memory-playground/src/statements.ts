@@ -1,5 +1,5 @@
-import { primitveDataTypes } from "./memory";
-import { CustomEdgeType, CustomNodeType } from "./types";
+import { primitveDataTypes } from "./memory.js";
+import { CustomEdgeType, CustomNodeType } from "./types.js";
 
 /**
  * Assignments a reader can fire at the diagram, one at a time.

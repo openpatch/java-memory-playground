@@ -4,7 +4,7 @@ import {
   isConnectedTo,
   isConnectedToMethodCall,
   isConnectedToVariable,
-} from "./utils";
+} from "./utils.js";
 
 const node = (id: string, type: string): Node =>
   ({ id, type, data: {}, position: { x: 0, y: 0 } }) as Node;

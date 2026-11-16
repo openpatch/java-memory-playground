@@ -1,10 +1,10 @@
 import { getNodesBounds, Viewport } from "@xyflow/react";
 import { getFontEmbedCSS, toCanvas } from "html-to-image";
 
-import type { ColorMode } from "./colorMode";
-import { pruneFontCss, textOf } from "./fontSubset";
-import { paletteFor } from "./palette";
-import { CustomNodeType } from "./types";
+import type { ColorMode } from "./colorMode.js";
+import { pruneFontCss, textOf } from "./fontSubset.js";
+import { paletteFor } from "./palette.js";
+import { CustomNodeType } from "./types.js";
 
 /**
  * Everything floating over the diagram rather than part of it.

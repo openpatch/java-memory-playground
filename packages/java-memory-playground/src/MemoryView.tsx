@@ -11,14 +11,14 @@ import {
   MarkerType,
   useReactFlow,
 } from "@xyflow/react";
-import { ariaLabelsFor } from "./ariaLabels";
+import { ariaLabelsFor } from "./ariaLabels.js";
 import {
   CaptureSession,
   captureDiagramCanvas,
   downloadAllSteps,
-} from "./exportSteps";
-import { fitPaddingFor } from "./fitPadding";
-import { Toolbar, ToolbarItem } from "./Toolbar";
+} from "./exportSteps.js";
+import { fitPaddingFor } from "./fitPadding.js";
+import { Toolbar, ToolbarItem } from "./Toolbar.js";
 
 /**
  * Below either size the playground switches to its compact layout: phones,
@@ -29,19 +29,19 @@ import { Toolbar, ToolbarItem } from "./Toolbar";
  */
 const COMPACT_WIDTH = 1024;
 const COMPACT_HEIGHT = 640;
-import { paletteFor } from "./palette";
-import { useColorMode } from "./colorMode";
-import useStore, { useMemoryStore } from "./storeContext";
-import { useUndoRedo } from "./useUndoRedo";
-import { RFState } from "./store";
+import { paletteFor } from "./palette.js";
+import { useColorMode } from "./colorMode.js";
+import useStore, { useMemoryStore } from "./storeContext.js";
+import { useUndoRedo } from "./useUndoRedo.js";
+import { RFState } from "./store.js";
 import { useShallow } from "zustand/shallow";
-import ObjectNode, { ObjectNodeType } from "./ObjectNode";
-import VariableNode from "./VariableNode";
+import ObjectNode, { ObjectNodeType } from "./ObjectNode.js";
+import VariableNode from "./VariableNode.js";
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
-import { Sidebar } from "./Sidebar";
-import { StepBar } from "./StepBar";
-import { diffSteps } from "./stepDiff";
-import { wrongSlots } from "./checkMessages";
+import { Sidebar } from "./Sidebar.js";
+import { StepBar } from "./StepBar.js";
+import { diffSteps } from "./stepDiff.js";
+import { wrongSlots } from "./checkMessages.js";
 import {
   Attribute,
   builtInDataTypes,
@@ -49,19 +49,19 @@ import {
   numericDataTypes,
   DataType,
   STRING_KLASS,
-} from "./memory";
+} from "./memory.js";
 import {
   getRanMemoryAdress,
   isConnectedTo,
   isConnectedToVariable,
-} from "./utils";
+} from "./utils.js";
 import MethodCallNode, {
   isMethodCallNode,
-} from "./MethodCallNode";
-import ReferenceEdge from "./ReferenceEdge";
-import { CustomEdgeType, CustomNodeType } from "./types";
-import { ArrayCreationDialog } from "./ArrayCreationDialog";
-import { SimpleInputDialog } from "./SimpleInputDialog";
+} from "./MethodCallNode.js";
+import ReferenceEdge from "./ReferenceEdge.js";
+import { CustomEdgeType, CustomNodeType } from "./types.js";
+import { ArrayCreationDialog } from "./ArrayCreationDialog.js";
+import { SimpleInputDialog } from "./SimpleInputDialog.js";
 
 /**
  * Where the help button goes: the documentation page served next to the app.

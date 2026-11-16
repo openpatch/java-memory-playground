@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { pruneFontCss, unicodeRangesOf } from "./fontSubset";
+import { pruneFontCss, unicodeRangesOf } from "./fontSubset.js";
 
 const face = (name: string, range?: string) =>
   `@font-face { font-family: 'Inter'; src: url(data:font/woff2;base64,${name}); ${

@@ -7,7 +7,7 @@ import {
   MemoryStore,
   PlaygroundMode,
   RFState,
-} from "./store";
+} from "./store.js";
 
 const StoreContext = createContext<MemoryStore | null>(null);
 

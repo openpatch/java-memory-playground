@@ -1,8 +1,8 @@
 import type { BuiltInEdge } from "@xyflow/react";
-import { ObjectNodeType } from "./ObjectNode";
-import { VariableNode } from "./VariableNode";
-import { MethodCallNodeType } from "./MethodCallNode";
-import { ReferenceEdge } from "./ReferenceEdge";
+import { ObjectNodeType } from "./ObjectNode.js";
+import { VariableNode } from "./VariableNode.js";
+import { MethodCallNodeType } from "./MethodCallNode.js";
+import { ReferenceEdge } from "./ReferenceEdge.js";
 
 // Only the three node types registered in `nodeTypes` can occur. Including
 // React Flow's BuiltInNode here widened the union to nodes that require a

@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useTemporalStore } from "./storeContext";
+import { useTemporalStore } from "./storeContext.js";
 
 /**
  * Undo/redo for the surrounding playground, backed by zundo's temporal store.

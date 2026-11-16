@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { canonicalRoots, checkAgainst } from "./canonical";
-import { StoreStep } from "./store";
-import { CustomEdgeType, CustomNodeType } from "./types";
+import { canonicalRoots, checkAgainst } from "./canonical.js";
+import { StoreStep } from "./store.js";
+import { CustomEdgeType, CustomNodeType } from "./types.js";
 
 const obj = (id: string, klass: string, attributes: Record<string, any> = {}) =>
   ({

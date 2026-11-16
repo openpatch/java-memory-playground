@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
-import { parseMemory } from "./helper";
-import { initialMemory } from "./memory";
+import { parseMemory } from "./helper.js";
+import { initialMemory } from "./memory.js";
 
 describe("parseMemory", () => {
   test("returns null when there is nothing to load", () => {

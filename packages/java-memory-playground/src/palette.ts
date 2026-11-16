@@ -1,4 +1,4 @@
-import type { ColorMode } from "./colorMode";
+import type { ColorMode } from "./colorMode.js";
 
 /**
  * The handful of palette entries that have to exist in JavaScript as well as in

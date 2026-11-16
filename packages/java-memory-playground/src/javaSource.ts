@@ -1,4 +1,4 @@
-import { DataType, Klasses } from "./memory";
+import { DataType, Klasses } from "./memory.js";
 
 /**
  * Reads the class structure out of Java source.

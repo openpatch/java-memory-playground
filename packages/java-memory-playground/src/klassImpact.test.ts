@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
-import { hasImpact, klassImpact } from "./klassImpact";
-import { CustomEdgeType, CustomNodeType } from "./types";
+import { hasImpact, klassImpact } from "./klassImpact.js";
+import { CustomEdgeType, CustomNodeType } from "./types.js";
 
 const object = (
   id: string,

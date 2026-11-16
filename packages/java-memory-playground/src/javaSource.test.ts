@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { parseJavaClasses, toJavaSource } from "./javaSource";
+import { parseJavaClasses, toJavaSource } from "./javaSource.js";
 
 const attributesOf = (source: string, name: string) =>
   parseJavaClasses(source).klasses[name]?.attributes;

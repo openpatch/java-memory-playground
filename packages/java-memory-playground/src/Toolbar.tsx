@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useId, useRef, useState } from "react";
 
-import { Translations } from "./translations";
+import { Translations } from "./translations.js";
 
 /** One thing the toolbar offers. */
 export type ToolbarItem = {

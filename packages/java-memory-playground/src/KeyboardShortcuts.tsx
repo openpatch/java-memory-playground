@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { useReactFlow } from "@xyflow/react";
 
-import { fitPaddingFor } from "./fitPadding";
-import useStore from "./storeContext";
-import { useUndoRedo } from "./useUndoRedo";
-import { KeyBinding, KeyBindings } from "./types";
+import { fitPaddingFor } from "./fitPadding.js";
+import useStore from "./storeContext.js";
+import { useUndoRedo } from "./useUndoRedo.js";
+import { KeyBinding, KeyBindings } from "./types.js";
 
 interface KeyboardShortcutsProps {
   keyBindings?: Partial<KeyBindings>;
