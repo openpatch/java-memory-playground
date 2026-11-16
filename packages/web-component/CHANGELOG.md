@@ -1,5 +1,12 @@
 # @openpatch/java-memory-playground-web-component
 
+## 0.4.1
+
+### Patch Changes
+
+- Updated dependencies [[`ea075c9`](https://github.com/openpatch/java-memory-playground/commit/ea075c981213e2e6ca87393022014a9daccc9516)]:
+  - @java-memory-playground/java-memory-playground@0.3.1
+
 ## 0.4.0
 
 ### Minor Changes
