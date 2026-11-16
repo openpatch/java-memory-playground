@@ -1,5 +1,11 @@
 # @openpatch/java-memory-playground
 
+## 0.3.1
+
+### Patch Changes
+
+- [#22](https://github.com/openpatch/java-memory-playground/pull/22) [`ea075c9`](https://github.com/openpatch/java-memory-playground/commit/ea075c981213e2e6ca87393022014a9daccc9516) Thanks [@mikebarkmin](https://github.com/mikebarkmin)! - Fix type resolution for consumers using `moduleResolution: node16`/`nodenext`. Relative imports now carry `.js` extensions, so the emitted `.d.ts` files resolve instead of collapsing every export to `any`. Side-effect CSS imports are also stripped from the declarations, which removes TS2882 errors under TypeScript 7 with `skipLibCheck: false`.
+
 ## 0.3.0
 
 ### Minor Changes
